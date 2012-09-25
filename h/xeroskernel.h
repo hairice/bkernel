@@ -20,9 +20,43 @@ typedef	char		Bool;		/* Boolean type			*/
 					/*  (usu. defined as ^B)	*/
 #define	BLOCKERR	-5		/* non-blocking op would block	*/
 
+#define MAX_PROC	32
+#define KERNEL_INT	64
+
+#define STOP        	0
+#define YIELD      	1
+#define CREATE     	2
+
+
+typedef struct pcb pcb_t;
+struct pcb 
+{
+	int pid;
+	int state;
+	int esp;
+	long args;
+	pcb_t *next;
+};
+
+pcb_t proc_table[MAX_PROC];
+
+typedef struct context_frame context_frame_t;
+struct context_frame 
+{
+	unsigned int   edi;
+	unsigned int   esi;
+	unsigned int   ebp;
+	unsigned int   esp;
+	unsigned int   ebx;
+	unsigned int   edx;
+	unsigned int   ecx;
+	unsigned int   eax;
+	unsigned int   iret_eip;
+	unsigned int   iret_cs;
+	unsigned int   eflags;
+};
+
 /* Functions defined by startup code */
-
-
 void bzero(void *base, int cnt);
 void bcopy(const void *src, void *dest, unsigned int n);
 int kprintf(char * fmt, ...);
@@ -31,3 +65,33 @@ void init8259(void);
 void disable(void);
 void outb(unsigned int, unsigned char);
 unsigned char inb(unsigned int);
+
+
+/* Assignment 1 Functions */
+
+// Memory Managment Unit
+extern void kmeminit(void);
+extern void *kmalloc(int size);
+extern void kfree(void *ptr);
+
+// Process Management Unit
+extern void dispatch();
+extern pcb_t* next();
+extern void ready(pcb_t *p);
+extern int contextswitch( pcb_t *p );
+
+extern int create(void (*func)(), int stack, int i); 
+
+// System Calls
+extern int syscall(int call, ...);
+extern int syscreate();
+extern void sysyield();
+extern void sysstop();
+
+// User Processes
+extern void root();
+extern void producer();
+extern void consumer();
+
+
+

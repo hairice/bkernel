@@ -9,7 +9,7 @@ boot: a
 log: bochsout.txt
 #one of the two clock lines needs to be enabled if the clock time is to match wall clock time. 
 #clock: sync=realtime
-clock: sync=slowdown
+clock: sync=slowdown, time0=1
 panic: action=fatal
 error: action=report
 info: action=report
