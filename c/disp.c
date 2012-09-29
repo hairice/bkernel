@@ -28,7 +28,6 @@ void dispatch()
 
 		switch(request) {
 			case CREATE:	
-				kprintf("rcv create request!\n");	
 				ap = (va_list)p->args;
 				funcptr = (va_arg(ap, int));
 				stack = va_arg(ap, int);
@@ -38,12 +37,11 @@ void dispatch()
 				break;
 
 			case YIELD:
-				kprintf("rcv yield request!\n");
 				ready(p);
 				break;
 
 			case STOP:
-				kprintf("rcv stop request!\n");	
+				kfree(p->mem);
 				break;
 		}
 	}

@@ -16,6 +16,8 @@ int create(void (*func)(), int stack, int i)
 	mem = kmalloc(stack*2); 
 	if(!mem) return -1;
 
+	proc_table[i].mem = mem;
+
 	// Set General Reg 
 	frame = (context_frame_t *) ((int)mem+stack);	
 	frame->iret_cs = getCS();

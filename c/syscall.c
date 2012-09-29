@@ -12,7 +12,6 @@ int syscall (int call, ...) {
 	int stack;
 
 	va_start(ap, call);
-	kprintf("hi from syscall!\n");
 	__asm __volatile( " \
 		movl %0, %%eax \n\
 		movl %1, %%edx \n\

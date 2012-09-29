@@ -10,16 +10,6 @@
 
 extern long freemem;
 
-typedef struct memHeader memHeader_t;
-struct memHeader 
-{ 
-	unsigned long size; 
-	memHeader_t *prev; 
-	memHeader_t *next; 
-	char *sanityCheck; 
-	unsigned char dataStart[0]; 
-}; 
-
 memHeader_t *memSlot;
 
 /*

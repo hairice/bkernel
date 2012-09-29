@@ -23,7 +23,6 @@ int contextswitch( pcb_t *p )
 	ESP = p->esp;	
 
 	//kprintf("ESP: %d\n", ESP);  	
-	kprintf("hi from contextswitch!\n");
 	__asm __volatile( " \
      		pushf  \n\
      		pusha  \n\

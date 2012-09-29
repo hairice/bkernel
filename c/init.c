@@ -33,7 +33,6 @@ void initproc( void )				/* The beginning */
         /* Your code goes here */
 	kmeminit();
 
-
 	create(&root, 2000, 0);
 	contextinit();
 	dispatch();

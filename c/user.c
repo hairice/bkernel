@@ -11,8 +11,8 @@ void root()
 {
 	kprintf("hi from root, make producer!\n");
 	syscreate(&producer, 2000);
-	kprintf("hi from root, make consumer!\n");
-	syscreate(&consumer, 2000);
+//	kprintf("hi from root, make consumer!\n");
+//	syscreate(&consumer, 2000);
 
 
 	for(;;) 
@@ -33,7 +33,7 @@ void producer ()
 		sysyield();
 	}
 
-//	sysstop();
+	sysstop();
 }
 
 
@@ -48,5 +48,5 @@ void consumer ()
 		sysyield();
 	}
 
-//	sysstop();
+	sysstop();
 }
