@@ -25,19 +25,25 @@ extern char	*maxaddr;	/* max memory address (set in i386.c)	*/
  */
 extern pcb_t proc_table[MAX_PROC];
 
-
+/*
+*
+*
+*/
 void initproc( void )				/* The beginning */
 {
+	int i;
 	kprintf( "\n\nCPSC 415, 2012W1 \n32 Bit Xeros 1.1\nLocated at: %x to %x\n", &entry, &end ); 
 
         /* Your code goes here */
 	kmeminit();
 
-	create(&root, 2000, 0);
+	// Fill the stop queue
+	for(i=0 ; i<MAX_PROC ; i++) 
+		stop(&proc_table[i]);
+
+	create(&root, PROC_STACK);
 	contextinit();
 	dispatch();
-
-//	contextswitch(&proc_table[0]);
 
         /* This code should never be reached after you are done */
 	for(;;); /* loop forever */

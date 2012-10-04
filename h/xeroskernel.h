@@ -22,23 +22,35 @@ typedef	char		Bool;		/* Boolean type			*/
 
 #define MAX_PROC	32
 #define KERNEL_INT	64
+#define PROC_STACK	1024*4
 
 #define STOP        	0
 #define YIELD      	1
 #define CREATE     	2
 
 
+typedef struct memHeader memHeader_t;
+struct memHeader 
+{ 
+	unsigned long size; 
+	memHeader_t *prev; 
+	memHeader_t *next; 
+	char *sanityCheck; 
+	unsigned char dataStart[0]; 
+}; 
+
 typedef struct pcb pcb_t;
 struct pcb 
 {
 	int pid;
-	int state;
 	int esp;
+	int *mem;
 	long args;
 	pcb_t *next;
 };
 
 pcb_t proc_table[MAX_PROC];
+pcb_t *stop_q;
 
 typedef struct context_frame context_frame_t;
 struct context_frame 
@@ -78,9 +90,10 @@ extern void kfree(void *ptr);
 extern void dispatch();
 extern pcb_t* next();
 extern void ready(pcb_t *p);
-extern int contextswitch( pcb_t *p );
+extern void stop(pcb_t *p);
 
-extern int create(void (*func)(), int stack, int i); 
+extern int contextswitch(pcb_t *p);
+extern int create(void (*func)(), int stack); 
 
 // System Calls
 extern int syscall(int call, ...);

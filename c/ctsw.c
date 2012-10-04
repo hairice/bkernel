@@ -18,6 +18,11 @@ static unsigned int ESP;
 static unsigned int rc;
 long args;
 
+
+/*
+*
+*
+*/
 int contextswitch( pcb_t *p ) 
 {
 	ESP = p->esp;	
@@ -46,11 +51,13 @@ int contextswitch( pcb_t *p )
  
 	p->esp = ESP;
 	p->args = args;
-	kprintf("back from process!: %d\n", rc);
 	return rc;
 }
 
-
+/*
+*
+*
+*/
 void contextinit() 
 {
 	set_evec(KERNEL_INT, _ISREntryPoint);

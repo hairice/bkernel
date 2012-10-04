@@ -158,6 +158,7 @@ void kfree(void *ptr)
 		tmpMemSlot = tmpMemSlot->next;
 	}
 
+/*
 	tmp = memSlot;
 	kprintf("\n");
 	while(tmp)
@@ -167,6 +168,7 @@ void kfree(void *ptr)
 		tmp = tmp->next;		
 	}
 	kprintf("\n");
+*/
 }
 
 
