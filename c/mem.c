@@ -7,6 +7,7 @@
 #include <i386.h>
 #define PARAGRAPH_MASK (~(0xf))
 #define PARAGRAPH_SIZE	0x10
+#define SANITY_CHECK	0xff
 
 extern long freemem;
 
@@ -24,10 +25,12 @@ void kmeminit(void)
 	memHeader_t *tmp;
 	memSlot = (memHeader_t *) ((freemem + (int)PARAGRAPH_SIZE) & PARAGRAPH_MASK);
 	memSlot->size = (int)0xA0000 - (int)(&(memSlot->dataStart));
+	memSlot->sanityCheck = SANITY_CHECK;
 	memSlot->prev = NULL;
 	memSlot->next = (memHeader_t *) HOLEEND;
 
 	memSlot->next->size = (int)0x400000 - (int)0x196000 - (int)PARAGRAPH_SIZE;
+	memSlot->next->sanityCheck = SANITY_CHECK;
 	memSlot->next->prev = memSlot;
 	memSlot->next->next = NULL;
 }
@@ -73,6 +76,7 @@ void *kmalloc(int size)
 
 	// Set Alloc Memory Block
 	allocMemSlot->size = amnt - sizeof(memHeader_t);
+	allocMemSlot->sanityCheck = SANITY_CHECK;
 	allocMemSlot->next = NULL;
 	allocMemSlot->prev = NULL;
 
@@ -102,6 +106,10 @@ void kfree(void *ptr)
 	else
 		allocSlot = (memHeader_t *) (memAddr - sizeof(memHeader_t));
 
+	// Sanity check
+	if(allocSlot->sanityCheck != SANITY_CHECK) return;
+
+	// Find closiest block to allocated memory block
 	if(memAddr - sizeof(memHeader_t) >= (int)tmpMemSlot + sizeof(memHeader_t) + tmpMemSlot->size)
 		diff = memAddr - sizeof(memHeader_t) - (((int)tmpMemSlot + sizeof(memHeader_t) + tmpMemSlot->size));
 
