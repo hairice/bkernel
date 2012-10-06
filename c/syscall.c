@@ -7,6 +7,15 @@
 /* Your code goes here */
 
 
+/*
+* syscall
+*
+* @desc:	Generates an interrupt call to the kernel
+*
+* @param:	call		System call request id
+*		funcptr		Process function
+*		stack		Process stack size
+*/
 int syscall (int call, ...) {
     	va_list	ap;
 	int stack;
@@ -22,17 +31,34 @@ int syscall (int call, ...) {
 	);
 }
 
+/*
+* syscreate
+*
+* @desc:	Signals a create process interrupt 
+*
+* @param:	funcptr		Process function
+*		stack		Process stack size
+*/
 int syscreate(void (*func)(), int stack)
 {
 	return (syscall(CREATE, func, stack));
 }
 
+/*
+* sysyield
+*
+* @desc:	Signals a yield process interrupt
+*/
 void sysyield() 
 {
 	return (syscall(YIELD));
 }
 
-
+/*
+* sysstop
+*
+* @desc:	Signals a stop process interrupt
+*/
 void sysstop()
 {
 	return (syscall(STOP));

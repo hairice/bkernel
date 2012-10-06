@@ -7,8 +7,9 @@
 
 
 /*
+* root
 *
-*
+* @desc:	Executes the root thread
 */
 void root()
 {
@@ -25,8 +26,9 @@ void root()
 }
 
 /*
+* producer
 *
-*
+* @desc:	Executes the producer thread
 */
 void producer ()
 {
@@ -42,8 +44,9 @@ void producer ()
 }
 
 /*
+* consumer
 *
-*
+* @desc:	Executes the consumer thread
 */
 void consumer ()
 {

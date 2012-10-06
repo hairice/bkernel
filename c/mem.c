@@ -16,9 +16,7 @@ memHeader_t *memSlot;
 /*
 * kmeminit
 *
-* @desc:
-*
-* @param:
+* @desc:	Initialize the memory manager
 */
 void kmeminit(void)
 {
@@ -40,9 +38,9 @@ void kmeminit(void)
 /*
 * kmalloc
 *
-* @desc:
+* @desc:	Allocate unallocated memory space and return the start of the free memory space
 *
-* @param:
+* @param:	size		Amount of memory space to allocate
 */
 void *kmalloc(int size)
 {
@@ -87,9 +85,9 @@ void *kmalloc(int size)
 /*
 * kfree
 *
-* @desc:
+* @desc:	Free allocated memory space and coalese to existing unallocated blocks if possible
 *
-* @param:
+* @param:	ptr		Start of the allocated memory location
 */
 void kfree(void *ptr)
 {

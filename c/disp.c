@@ -10,8 +10,9 @@ extern pcb_t *stop_q;
 pcb_t *ready_q;
 
 /*
+* dispatch
 *
-*
+* @desc:	Executes the dispatcher
 */
 void dispatch() 
 {
@@ -28,9 +29,12 @@ void dispatch()
 
 		switch(request) {
 			case CREATE:	
+				// Retrieve args passed from system call
 				ap = (va_list)p->args;
 				funcptr = (va_arg(ap, int));
 				stack = va_arg(ap, int);
+
+				// Create new process and put process on ready queue
 				create(funcptr, stack);
 				ready(p);
 				break;
@@ -40,6 +44,7 @@ void dispatch()
 				break;
 
 			case STOP:
+				// Free allocated memory and put process on stop queue
 				stop(p);
 				kfree(p->mem);
 				break;

@@ -20,14 +20,18 @@ long args;
 
 
 /*
+* contextswitch
 *
+* @desc:	Entrant/exit point between kernel and application
 *
+* @param:	p	Process pcb block to context switch into
 */
 int contextswitch( pcb_t *p ) 
 {
+	// Save process esp
 	ESP = p->esp;	
 
-	//kprintf("ESP: %d\n", ESP);  	
+	// Context switch between process and kernel
 	__asm __volatile( " \
      		pushf  \n\
      		pusha  \n\
@@ -49,14 +53,16 @@ int contextswitch( pcb_t *p )
   		: "%eax"
   		);
  
+	// Save process esp and passed args
 	p->esp = ESP;
 	p->args = args;
 	return rc;
 }
 
 /*
+* contextinit
 *
-*
+* @desc:	Set kernel interrupt event entry in IDT
 */
 void contextinit() 
 {
