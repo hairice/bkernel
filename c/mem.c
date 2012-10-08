@@ -43,25 +43,6 @@ void kmeminit(void)
 }
 
 /*
-* kmemprint
-*
-* @desc: 	Debug print memory space
-*/
-void kmemprint ()
-{
-	memHeader_t *tmp = memSlot;
-	kprintf("\n");
-	while(tmp)
-	{
-		kprintf("mem:%d\t", tmp);
-		kprintf("mem->size:%d\n", tmp->size);
-		tmp = tmp->next;		
-	}
-	kprintf("\n");
-}
-
-
-/*
 * kmalloc
 *
 * @desc:	Allocate unallocated memory space and return the start of the free memory space
@@ -216,18 +197,49 @@ void kfree(void *ptr)
 #endif
 }
 
+/*
+* kmemprint
+*
+* @desc: 	Debug print memory space
+*/
+void kmemprint ()
+{
+	memHeader_t *tmp = memSlot;
+	kprintf("\n");
+	while(tmp)
+	{
+		kprintf("mem:%d\t", tmp);
+		kprintf("mem->size:%d\n", tmp->size);
+		tmp = tmp->next;		
+	}
+	kprintf("\n");
+}
 
 /*
-* kmemcount
+* kmemhdsize
 *
 * @desc:	Gets the size of the head free memory blocks
 */
-int kmemcount (void)
+int kmemhdsize (void)
 {
 	memHeader_t *tmp = memSlot;
 	return tmp->size;
 }
 
+/*
+* kmemtotalsize
+*
+* @desc:	Gets the size of the head free memory blocks
+*/
+int kmemtotalsize (void)
+{
+	int total_size=0;
+	memHeader_t *tmp = memSlot;
 
-
-
+	while(tmp)
+	{
+		total_size += tmp->size + sizeof(memHeader_t);
+		tmp = tmp->next;		
+	}
+	return total_size;
+}

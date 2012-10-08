@@ -88,20 +88,46 @@ void testdriver(void)
 	int *blka, *blkb, *blkc, *blkd;
 	int total_mem=0;
 
-	// Test Case 1: 
-	// Allocate all the available space and attempt to allocate another block
 	
 #ifdef	MEM_TEST
-	blka = kmalloc(kmemcount()/2);
-	blkb = kmalloc(kmemcount()/2);
-	blkc = kmalloc(kmemcount()/2);
-	blkd = kmalloc(kmemcount()/2);
+	total_mem = kmemtotalsize();
+	// Test Case 1: 
+	// Attempt to allocate memory that is bigger than any available space
+	blka = kmalloc(kmemhdsize()/2);
+	blkb = kmalloc(kmemhdsize()/2);
+	blkc = kmalloc(kmemhdsize()/2);
+	blkd = kmalloc(kmemhdsize()*100);
 
+	if(!blkd) 
+	{
+		result[0]=1;
+		kprintf("TC1 [Pass]: Able to degrade gracefully when attempting to allocate more memory than available\n");
+	}
+	else
+	{
+		result[0]=0;
+		kprintf("TC1 [Fail]: Allocated memory in space that is larger than any available space in memory\n");
+	}
+
+	// Test Case 2: 
+	// Free all allocated memory and does not free any memory that is NULL
 	kfree(blkc);
 	kfree(blka);
 	kfree(blkb);
 	kfree(blkd);
 
+	// Compare total free memory space
+	if(kmemtotalsize() == total_mem) 
+	{
+		result[1]=1;
+		kprintf("TC2 [Pass]: Able to degrade gracefully when attempting to allocate more memory than available\n");
+	}
+	else
+	{
+		result[1]=0;
+		kprintf("TC2 [Fail]: Allocated memory in space that is larger than any available space in memory\n");
+	}
+	total_mem = kmemtotalsize();
 #endif
 
 #ifdef	PROC_TEST

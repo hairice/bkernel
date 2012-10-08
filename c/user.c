@@ -5,7 +5,6 @@
 
 /* Your code goes here */
 
-
 /*
 * root
 *
@@ -53,7 +52,7 @@ void consumer ()
 	//			print "New Year", sysyield()	
 	for(i; i<15; i++) 
 	{
-		kprintf("New Year!\n");
+		kprintf("New Year\n");
 		sysyield();
 	}
 

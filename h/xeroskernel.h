@@ -31,11 +31,11 @@ typedef	char		Bool;		/* Boolean type			*/
 
 #ifndef TEST_MODE
 // Uncomment line to execute 2 memory managment test cases and 2 process management test cases
-#define TEST_MODE
+//#define TEST_MODE
 
 #ifndef MEM_TEST
 // Uncomment to enable memory managment test cases print out
-#define MEM_TEST
+//#define MEM_TEST
 #endif
 
 #ifndef PROC_TEST
@@ -49,21 +49,21 @@ typedef	char		Bool;		/* Boolean type			*/
 typedef struct memHeader memHeader_t;
 struct memHeader 
 { 
-	unsigned long size; 
-	memHeader_t *prev; 
-	memHeader_t *next; 
-	char *sanityCheck; 
-	unsigned char dataStart[0]; 
+	unsigned long size; 		// Size of the memory block after the memory header
+	memHeader_t *prev; 		// Link to previous memory block that is lower in address
+	memHeader_t *next;  		// Link to next memory block that is higher in address
+	char *sanityCheck; 		// Corrupt check for memory block
+	unsigned char dataStart[0]; 	// Start of the data portion of a memory block
 }; 
 
 typedef struct pcb pcb_t;
 struct pcb 
 {
-	int pid;
-	int esp;
-	int *mem;
-	long args;
-	pcb_t *next;
+	int pid;			// Process pid
+	int esp;			// Process stack pointer
+	int *mem;			// Process memory 'dataStart' pointer
+	long args;			// Retains all arguments passed from a system call
+	pcb_t *next;			// Link to the next pcb block, two queues exist in the os, ready and stop
 };
 
 pcb_t proc_table[MAX_PROC];
@@ -72,17 +72,17 @@ pcb_t *stop_q;
 typedef struct context_frame context_frame_t;
 struct context_frame 
 {
-	unsigned int   edi;
-	unsigned int   esi;
-	unsigned int   ebp;
-	unsigned int   esp;
-	unsigned int   ebx;
-	unsigned int   edx;
-	unsigned int   ecx;
-	unsigned int   eax;
-	unsigned int   iret_eip;
-	unsigned int   iret_cs;
-	unsigned int   eflags;
+	unsigned int   edi;		//
+	unsigned int   esi;		//
+	unsigned int   ebp;		// Process frame pointer
+	unsigned int   esp;		// Process stack pointer
+	unsigned int   ebx;		//
+	unsigned int   edx;		// Process data register
+	unsigned int   ecx;		//
+	unsigned int   eax;		// Process return value register
+	unsigned int   iret_eip;	// Process instruction pointer
+	unsigned int   iret_cs;		// Process code segment start
+	unsigned int   eflags;		// Process error flags
 };
 
 /* Functions defined by startup code */
@@ -103,7 +103,8 @@ extern void kmeminit(void);
 extern void *kmalloc(int size);
 extern void kfree(void *ptr);
 extern void kmemprint(void);
-extern int kmemcount(void);
+extern int kmemhdsize(void);
+extern int kmemtotalsize(void);
 
 // Process Management Unit
 extern void dispatch(void);
@@ -131,5 +132,3 @@ extern void testdriver(void);
 extern void testroot(void);
 extern void testproc(void);
 extern void testresult(void);
-
-
