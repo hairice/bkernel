@@ -26,8 +26,9 @@ extern char	*maxaddr;	/* max memory address (set in i386.c)	*/
 extern pcb_t proc_table[MAX_PROC];
 
 /*
+* initproc
 *
-*
+* @desc: Initializes xeros by starting the memory management unit, dispatcher, and context switcher
 */
 void initproc( void )				/* The beginning */
 {
@@ -41,12 +42,25 @@ void initproc( void )				/* The beginning */
 	for(i=0 ; i<MAX_PROC ; i++) 
 		stop(&proc_table[i]);
 
+#ifdef TEST_MODE	// By default test_mode is turned off
+	// Execute test cases
+	testdriver();
+#else
 	create(&root, PROC_STACK);
 	contextinit();
 	dispatch();
+#endif
 
         /* This code should never be reached after you are done */
 	for(;;); /* loop forever */
 }
 
+/*
+* sleep
+*
+* @desc:	Hang application for x seconds
+*/
+void sleep (int sec)
+{
 
+}

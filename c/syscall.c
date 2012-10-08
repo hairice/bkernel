@@ -18,7 +18,6 @@
 */
 int syscall (int call, ...) {
     	va_list	ap;
-	int stack;
 
 	va_start(ap, call);
 	__asm __volatile( " \
@@ -29,6 +28,8 @@ int syscall (int call, ...) {
 		:
 		: "r"(call), "r"(ap), "i" (KERNEL_INT)
 	);
+
+	return 0;
 }
 
 /*
@@ -51,7 +52,7 @@ int syscreate(void (*func)(), int stack)
 */
 void sysyield() 
 {
-	return (syscall(YIELD));
+	syscall(YIELD);
 }
 
 /*
@@ -61,5 +62,5 @@ void sysyield()
 */
 void sysstop()
 {
-	return (syscall(STOP));
+	syscall(STOP);
 }

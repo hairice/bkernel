@@ -49,5 +49,5 @@ int create(void (*func)(), int stack)
 
 	// Add proc to ready queue
 	ready(p);	
-	return 0;
+	return 1;
 }

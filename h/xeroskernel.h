@@ -29,6 +29,23 @@ typedef	char		Bool;		/* Boolean type			*/
 #define CREATE     	2
 
 
+#ifndef TEST_MODE
+// Uncomment line to execute 2 memory managment test cases and 2 process management test cases
+#define TEST_MODE
+
+#ifndef MEM_TEST
+// Uncomment to enable memory managment test cases print out
+#define MEM_TEST
+#endif
+
+#ifndef PROC_TEST
+// Uncomment to enable process managment test cases print out
+//#define PROC_TEST
+#endif
+
+#endif
+
+
 typedef struct memHeader memHeader_t;
 struct memHeader 
 { 
@@ -85,26 +102,34 @@ unsigned char inb(unsigned int);
 extern void kmeminit(void);
 extern void *kmalloc(int size);
 extern void kfree(void *ptr);
+extern void kmemprint(void);
+extern int kmemcount(void);
 
 // Process Management Unit
-extern void dispatch();
-extern pcb_t* next();
+extern void dispatch(void);
+extern pcb_t* next(void);
 extern void ready(pcb_t *p);
 extern void stop(pcb_t *p);
+extern int count(void);
 
 extern int contextswitch(pcb_t *p);
 extern int create(void (*func)(), int stack); 
 
 // System Calls
 extern int syscall(int call, ...);
-extern int syscreate();
-extern void sysyield();
-extern void sysstop();
+extern int syscreate(void (*func)(), int stack);
+extern void sysyield(void);
+extern void sysstop(void);
 
 // User Processes
-extern void root();
-extern void producer();
-extern void consumer();
+extern void root(void);
+extern void producer(void);
+extern void consumer(void);
 
+// Test Driver
+extern void testdriver(void);
+extern void testroot(void);
+extern void testproc(void);
+extern void testresult(void);
 
 

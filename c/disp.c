@@ -16,15 +16,18 @@ pcb_t *ready_q;
 */
 void dispatch() 
 {
-	int i,request,stack=0;
+	int i, request,stack=0;
 	pcb_t *p=NULL;
     	va_list ap;
 	void (*funcptr)(void);
 
 	// Start dispatcher
-	for(i=0;i<10;i++) 
+	for(;;) 
 	{
 		p = next();
+
+		if(!p) break; 	// End of process management test mode
+
 		request = contextswitch(p);
 
 		switch(request) {
@@ -35,8 +38,8 @@ void dispatch()
 				stack = va_arg(ap, int);
 
 				// Create new process and put process on ready queue
-				create(funcptr, stack);
-				ready(p);
+				if(create(funcptr, stack));
+					ready(p);
 				break;
 
 			case YIELD:
@@ -53,8 +56,9 @@ void dispatch()
 }
 
 /*
+* next
 *
-*
+* @desc: 	Pop the head of ready queue
 */
 pcb_t* next ()
 {
@@ -64,15 +68,15 @@ pcb_t* next ()
 }
 
 /*
+* ready
 *
-*
+* @desc:	Push pcb block to the end of ready queue
 */
 void ready(pcb_t *p) 
 {
-	pcb_t *tmp;
+	pcb_t *tmp = ready_q;
 
 	p->next=NULL;
-	tmp = ready_q;
 	if(!tmp) 
 	{
 		ready_q = p;
@@ -87,17 +91,36 @@ void ready(pcb_t *p)
 	tmp->next = p;
 }
 
+/*
+* count
+*
+* @desc:	Count the number of pcb in the ready queue
+* @note:	The stop queue count is (MAX_PROC-cnt)
+*/
+int count (void)
+{
+	int cnt=0;
+	pcb_t *tmp = ready_q;
+
+	while(tmp) 
+	{
+		cnt++;
+		tmp=tmp->next;
+	}
+
+	return cnt;
+}
 
 /*
+* stop
 *
-*
+* @desc: 	Add pcb block to the end of stop queue
 */
 void stop (pcb_t *p)
 {
-	pcb_t *tmp;
+	pcb_t *tmp = stop_q;
 
 	p->next=NULL;
-	tmp = stop_q;
 	if(!tmp) 
 	{
 		stop_q = p;

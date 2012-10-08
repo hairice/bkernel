@@ -9,34 +9,31 @@
 /*
 * root
 *
-* @desc:	Executes the root thread
+* @desc:	Executes the root process
 */
 void root()
 {
-	kprintf("hi from root, make producer!\n");
-	syscreate(&producer, 4096);
-	kprintf("hi from root, make consumer!\n");
-	syscreate(&consumer, 4096);
+	syscreate(&producer, PROC_STACK);
+	syscreate(&consumer, PROC_STACK);
 
 	for(;;) 
-	{
-		kprintf("hi from root, work done!\n");
 		sysyield();
-	}
 }
 
 /*
 * producer
 *
-* @desc:	Executes the producer thread
+* @desc:	Executes the producer process
 */
 void producer ()
 {
 	int i=0;
 
-	for(i; i<1; i++)
+	// Assignment 1: 	Cycle 12 iterations 
+	//			print "Happy ", sysyield()	
+	for(i; i<12; i++)
 	{
-		kprintf("Happy\n");
+		kprintf("Happy ");
 		sysyield();
 	}
 
@@ -46,13 +43,15 @@ void producer ()
 /*
 * consumer
 *
-* @desc:	Executes the consumer thread
+* @desc:	Executes the consumer process
 */
 void consumer ()
 {
 	int i=0;
 
-	for(i; i<1; i++) 
+	// Assignment 1: 	Cycle 15 iterations 
+	//			print "New Year", sysyield()	
+	for(i; i<15; i++) 
 	{
 		kprintf("New Year!\n");
 		sysyield();
