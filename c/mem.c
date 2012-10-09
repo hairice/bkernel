@@ -172,7 +172,7 @@ void kfree(void *ptr)
 		tmp = tmpMemSlot->next;
 		while(tmp)
 		{
-			// Check for base+hdr+size is equal the next base
+			// Check for base+hdr+size is equal to the next base
 			if(((int)tmpMemSlot + sizeof(memHeader_t) + tmpMemSlot->size) == (int)tmp) 
 			{
 				tmpMemSlot->size = tmpMemSlot->size + tmp->size + sizeof(memHeader_t);

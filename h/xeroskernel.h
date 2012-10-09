@@ -66,26 +66,26 @@ struct memHeader
 typedef struct pcb pcb_t;
 struct pcb 
 {
-	int pid;			// Process pid
-	int esp;			// Process stack pointer
-	int *mem;			// Process memory 'dataStart' pointer
-	long args;			// Retains all arguments passed from a system call
+	unsigned int pid;			// Process pid
+	unsigned int esp;			// Process stack pointer
+	unsigned int *mem;			// Process memory 'dataStart' pointer
+	unsigned int args;			// Retains all arguments passed from a system call
 	pcb_t *next;			// Link to the next pcb block, two queues exist in the os, ready and stop
 };
 
-pcb_t proc_table[MAX_PROC];
-pcb_t *stop_q;
+pcb_t proc_table[MAX_PROC];		// List of process control blocks
+pcb_t *stop_q;				// Stop queue for pcb
 
 typedef struct context_frame context_frame_t;
 struct context_frame 
 {
-	unsigned int   edi;		//
-	unsigned int   esi;		//
+	unsigned int   edi;		
+	unsigned int   esi;		
 	unsigned int   ebp;		// Process frame pointer
 	unsigned int   esp;		// Process stack pointer
-	unsigned int   ebx;		//
-	unsigned int   edx;		// Process data register
-	unsigned int   ecx;		//
+	unsigned int   ebx;		
+	unsigned int   edx;		// Process data register (keeps args from syscall())
+	unsigned int   ecx;		
 	unsigned int   eax;		// Process return value register
 	unsigned int   iret_eip;	// Process instruction pointer
 	unsigned int   iret_cs;		// Process code segment start

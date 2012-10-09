@@ -32,9 +32,9 @@ void dispatch()
 
 		switch(request) {
 			case CREATE:	
-				// Retrieve args passed from system call
+				// Retrieve args passed from syscall()
 				ap = (va_list)p->args;
-				funcptr = (void*) (va_arg(ap, int));
+				funcptr = va_arg(ap, void*);
 				stack = va_arg(ap, int);
 
 				// Create new process and put process on ready queue

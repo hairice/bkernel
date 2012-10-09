@@ -16,8 +16,7 @@ void _ISREntryPoint(void);
 static unsigned int k_stack;
 static unsigned int ESP;
 static unsigned int rc;
-long args;
-
+static unsigned int args;
 
 /*
 * contextswitch
@@ -34,6 +33,7 @@ int contextswitch( pcb_t *p )
 	ESP = p->esp;	
 
 	// Context switch between process and kernel
+	// Retrieve syscall() arguments by register from 'eax' and 'edx'
 	__asm __volatile( " \
      		pushf  \n\
      		pusha  \n\
@@ -58,6 +58,7 @@ int contextswitch( pcb_t *p )
 	// Save process esp and passed args
 	p->esp = ESP;
 	p->args = args;
+
 	return rc;
 }
 

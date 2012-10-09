@@ -15,6 +15,7 @@ void root()
 	syscreate(&producer, PROC_STACK);
 	syscreate(&consumer, PROC_STACK);
 
+	// Eventual loop after producer and consumer exits
 	for(;;) 
 		sysyield();
 }

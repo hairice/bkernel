@@ -22,6 +22,8 @@ int syscall (int call, ...) {
     	va_list	ap;
 
 	va_start(ap, call);
+
+	// Pass syscall() args by register, 'edx'
 	__asm __volatile( " \
 		movl %0, %%eax \n\
 		movl %1, %%edx \n\
