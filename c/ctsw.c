@@ -12,7 +12,7 @@
 */
 
 
-void _ISREntryPoint();
+void _ISREntryPoint(void);
 static unsigned int k_stack;
 static unsigned int ESP;
 static unsigned int rc;
@@ -25,6 +25,8 @@ long args;
 * @desc:	Entrant/exit point between kernel and application
 *
 * @param:	p	Process pcb block to context switch into
+*
+* @output:	rc	System call request id
 */
 int contextswitch( pcb_t *p ) 
 {

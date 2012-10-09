@@ -7,7 +7,6 @@
 #define STACK_PAD 0x10
 
 extern pcb_t *stop_q;
-
 static int pid = 0;
 
 /*
@@ -16,21 +15,25 @@ static int pid = 0;
 * @desc:	Create process and put process on the ready queue
 *
 * @param:	func		Process function
-		stack		Process stack size
+*		stack		Process stack size
+*
+* @output:	FALSE		Unable to create a new process
+*		TRUE		Created new process and pushed to ready queue
 */
-int create(void (*func)(), int stack) 
+int create(void (*func)(void), int stack) 
 {
 	int *mem;
 	context_frame_t *frame;
 	pcb_t *p = NULL;
-	
-	if(!stop_q) return -1;
+
+	// Remove head of stop queue	
+	if(!stop_q) return FALSE;
 	p=stop_q;
 	stop_q=stop_q->next;	
 
 	// Alloc Memory for Process Stack
 	mem = kmalloc(stack); 
-	if(!mem) return -1;
+	if(!mem) return FALSE;
 
 	p->mem = mem;
 
@@ -39,8 +42,8 @@ int create(void (*func)(), int stack)
 
 	// Set process context frame and pcb 
 	frame->iret_cs = getCS();
-	frame->iret_eip = func;
-    	frame->esp = (int)(frame);
+	frame->iret_eip = (unsigned int) func;
+    	frame->esp = (unsigned int)(frame);
 	frame->ebp = frame->esp;
 	frame->eflags = 0;
 	p->esp = frame->esp;
@@ -49,5 +52,5 @@ int create(void (*func)(), int stack)
 
 	// Add proc to ready queue
 	ready(p);	
-	return 1;
+	return TRUE;
 }

@@ -15,6 +15,8 @@
 * @param:	call		System call request id
 *		funcptr		Process function
 *		stack		Process stack size
+*
+* @output:	TRUE
 */
 int syscall (int call, ...) {
     	va_list	ap;
@@ -29,7 +31,7 @@ int syscall (int call, ...) {
 		: "r"(call), "r"(ap), "i" (KERNEL_INT)
 	);
 
-	return 0;
+	return TRUE;
 }
 
 /*
@@ -39,8 +41,10 @@ int syscall (int call, ...) {
 *
 * @param:	funcptr		Process function
 *		stack		Process stack size
+*
+* @output:	TRUE
 */
-int syscreate(void (*func)(), int stack)
+int syscreate(void (*func)(void), int stack)
 {
 	return (syscall(CREATE, func, stack));
 }

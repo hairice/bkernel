@@ -26,11 +26,11 @@ void root()
 */
 void producer ()
 {
-	int i=0;
+	int i;
 
 	// Assignment 1: 	Cycle 12 iterations 
 	//			print "Happy ", sysyield()	
-	for(i; i<12; i++)
+	for(i=0; i<12; i++)
 	{
 		kprintf("Happy ");
 		sysyield();
@@ -46,11 +46,11 @@ void producer ()
 */
 void consumer ()
 {
-	int i=0;
+	int i;
 
 	// Assignment 1: 	Cycle 15 iterations 
 	//			print "New Year", sysyield()	
-	for(i; i<15; i++) 
+	for(i=0; i<15; i++) 
 	{
 		kprintf("New Year\n");
 		sysyield();

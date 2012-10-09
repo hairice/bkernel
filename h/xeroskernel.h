@@ -29,13 +29,14 @@ typedef	char		Bool;		/* Boolean type			*/
 #define CREATE     	2
 
 
+
 #ifndef TEST_MODE
 // Uncomment line to execute 2 memory managment test cases and 2 process management test cases
-//#define TEST_MODE
+#define TEST_MODE
 
 #ifndef MEM_TEST
 // Uncomment to enable memory managment test cases print out
-//#define MEM_TEST
+#define MEM_TEST
 #endif
 
 #ifndef PROC_TEST
@@ -44,7 +45,6 @@ typedef	char		Bool;		/* Boolean type			*/
 #endif
 
 #endif
-
 
 typedef struct memHeader memHeader_t;
 struct memHeader 
@@ -113,12 +113,13 @@ extern void ready(pcb_t *p);
 extern void stop(pcb_t *p);
 extern int count(void);
 
+extern void contextinit(void);
 extern int contextswitch(pcb_t *p);
-extern int create(void (*func)(), int stack); 
+extern int create(void (*func)(void), int stack); 
 
 // System Calls
 extern int syscall(int call, ...);
-extern int syscreate(void (*func)(), int stack);
+extern int syscreate(void (*func)(void), int stack);
 extern void sysyield(void);
 extern void sysstop(void);
 

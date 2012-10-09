@@ -42,7 +42,7 @@ void initproc( void )				/* The beginning */
 	for(i=0 ; i<MAX_PROC ; i++) 
 		stop(&proc_table[i]);
 
-#ifdef TEST_MODE	// By default test_mode is turned off
+#ifdef TEST_MODE	// By default test_mode is off
 	// Execute test cases
 	testdriver();
 #else

@@ -16,7 +16,7 @@ pcb_t *ready_q;
 */
 void dispatch() 
 {
-	int i, request,stack=0;
+	int request,stack=0;
 	pcb_t *p=NULL;
     	va_list ap;
 	void (*funcptr)(void);
@@ -34,7 +34,7 @@ void dispatch()
 			case CREATE:	
 				// Retrieve args passed from system call
 				ap = (va_list)p->args;
-				funcptr = (va_arg(ap, int));
+				funcptr = (void*) (va_arg(ap, int));
 				stack = va_arg(ap, int);
 
 				// Create new process and put process on ready queue
@@ -59,6 +59,8 @@ void dispatch()
 * next
 *
 * @desc: 	Pop the head of ready queue
+*
+* @output:	p	Current head of the ready queue
 */
 pcb_t* next ()
 {

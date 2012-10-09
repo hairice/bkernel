@@ -10,7 +10,6 @@
 #define SANITY_CHECK	0xff
 
 extern long freemem;
-
 memHeader_t *memSlot;
 
 /*
@@ -23,15 +22,14 @@ void kmeminit(void)
 	// Set up two free blocks
 	// 1. Between freemem+hdr and HOLESTART
 	// 2. Between HOLEEND-hdr and MAX_ADDR
-	memHeader_t *tmp;
 	memSlot = (memHeader_t *) ((freemem + (int)PARAGRAPH_SIZE) & PARAGRAPH_MASK);
 	memSlot->size = HOLESTART - (int)(&(memSlot->dataStart));
-	memSlot->sanityCheck = SANITY_CHECK;
+	memSlot->sanityCheck = (char*)SANITY_CHECK;
 	memSlot->prev = NULL;
 	memSlot->next = (memHeader_t *) HOLEEND;
 
 	memSlot->next->size = (int)0x400000 - HOLEEND - (int)PARAGRAPH_SIZE;
-	memSlot->next->sanityCheck = SANITY_CHECK;
+	memSlot->next->sanityCheck = (char*)SANITY_CHECK;
 	memSlot->next->prev = memSlot;
 	memSlot->next->next = NULL;
 
@@ -48,6 +46,8 @@ void kmeminit(void)
 * @desc:	Allocate unallocated memory space and return the start of the free memory space
 *
 * @param:	size		Amount of memory space to allocate
+*
+* @output:	dataStart	Start address of the data portion for an allocated memory block
 */
 void *kmalloc(int size)
 {
@@ -55,7 +55,7 @@ void *kmalloc(int size)
 	memHeader_t *allocMemSlot;	// Holds the returned memory block
 	memHeader_t *tmp;		
 
-	if(size <= 16) return NULL;
+	if(size <= 0) return NULL;
 
 	// Calculate allocate bytes
 	amnt = (size / (int)PARAGRAPH_SIZE) + ((size % (int)PARAGRAPH_SIZE) ? 1 : 0);
@@ -85,7 +85,7 @@ void *kmalloc(int size)
 
 	// Set Alloc Memory Block
 	allocMemSlot->size = amnt - sizeof(memHeader_t);
-	allocMemSlot->sanityCheck = SANITY_CHECK;
+	allocMemSlot->sanityCheck = (char*)SANITY_CHECK;
 	allocMemSlot->next = NULL;
 	allocMemSlot->prev = NULL;
 
@@ -98,7 +98,6 @@ void *kmalloc(int size)
 	return (int) &(allocMemSlot->dataStart);
 }
 
-
 /*
 * kfree
 *
@@ -109,7 +108,7 @@ void *kmalloc(int size)
 void kfree(void *ptr)
 {
 	if(ptr == NULL) return;
-	int memAddr = (int*) ptr, diff; 
+	int memAddr = (int)((int*)ptr), diff; 
 	memHeader_t *allocSlot = NULL;
 	memHeader_t *tmpMemSlot = memSlot;
 	memHeader_t *tmp = NULL;
@@ -118,7 +117,7 @@ void kfree(void *ptr)
 	// smaller than the first memory block's 'dataStart',
 	// in between HOLESTART and HOLEEND+hdr
 	// bigger than (max_addr - 16), return
-	if(memAddr < (freemem + ((int)PARAGRAPH_SIZE * 2) & PARAGRAPH_MASK) ||
+	if(memAddr < ((freemem + ((int)PARAGRAPH_SIZE * 2)) & PARAGRAPH_MASK) ||
 	memAddr > (int) 0x400000 ||
 	(memAddr > HOLESTART && memAddr < (HOLEEND + sizeof(memHeader_t))))
 		return;
@@ -126,7 +125,7 @@ void kfree(void *ptr)
 		allocSlot = (memHeader_t *) (memAddr - sizeof(memHeader_t));
 
 	// Sanity check
-	if(allocSlot->sanityCheck != SANITY_CHECK) return;
+	if(allocSlot->sanityCheck != (char*)SANITY_CHECK) return;
 
 	// Find closiest block to allocated memory block
 	// Check the allocated block is not a header block
@@ -219,6 +218,8 @@ void kmemprint ()
 * kmemhdsize
 *
 * @desc:	Gets the size of the head free memory blocks
+*
+* @output:	size		Size of first unallocated memory block
 */
 int kmemhdsize (void)
 {
@@ -230,6 +231,8 @@ int kmemhdsize (void)
 * kmemtotalsize
 *
 * @desc:	Gets the size of the head free memory blocks
+*
+* @output:	total_size	Total size of unallocated memory space
 */
 int kmemtotalsize (void)
 {
