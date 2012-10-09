@@ -54,13 +54,3 @@ void initproc( void )				/* The beginning */
         /* This code should never be reached after you are done */
 	for(;;); /* loop forever */
 }
-
-/*
-* sleep
-*
-* @desc:	Hang application for x seconds
-*/
-void sleep (int sec)
-{
-
-}

@@ -132,4 +132,4 @@ extern void consumer(void);
 extern void testdriver(void);
 extern void testroot(void);
 extern void testproc(void);
-extern void testresult(void);
+//extern void testresult(void);

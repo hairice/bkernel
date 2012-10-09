@@ -4,7 +4,8 @@
 #include <xeroskernel.h>
 
 int exit_proc=0;
-int result[4];
+int exit_cnt=1;
+//int result[4];
 
 
 /*
@@ -20,44 +21,35 @@ void testroot(void)
 	// Test Case 3: Able to allocate the max number of processes and push to ready queue 
 	//		while able to context switch between the root and child processes
 	//		given that this process is the only process creation point in the code
+	kprintf("Begin Test Case 3 ... \n");
+	kprintf("Add the following pid to the ready queue\n");
+	kprintf("ready_q: ");
 	while(cnt > 0)
 	{
 		syscreate(&testproc, PROC_STACK);
 		cnt=MAX_PROC-count()-1;
+		kprintf("%d ", count());
 	}
+	kprintf("\n");
 
 	if(count() == MAX_PROC-1)
-	{
-		result[2]=1;
-		kprintf("TC3 [Pass]: Pushed 31 pcb blocks onto ready queue\n");
-	}
+		kprintf("TC3 Pass: 31 testprocs have been added to ready_q\n");
 	else
-	{
-		result[2]=0;
-		kprintf("TC3 [Fail]: Pushed less than 31 pcb block onto ready queue\n");
-	}
+		kprintf("TC3 Fail: less than 31 testproces have been added to ready_q\n");
 
 	// Test Case 4: Able to reclaim the process blocks and push onto the stop queue,
 	//		while able to context switch between the root and child processes,
 	//		given that this process is the only process creation point in the code
 	exit_proc=1;
-	cnt = MAX_PROC-count()-1;
-	while(cnt < MAX_PROC-1)
-	{
-		sysyield();
-		cnt=MAX_PROC-count()-1;
-	}
+	kprintf("\nBegin Test Case 4 ... \n");
+	kprintf("Add the following pid to the stop queue\n");
+	kprintf("stop_q: ");
+	sysyield();
 
-	if(cnt == MAX_PROC-1)	
-	{
-		result[3]=1;
-		kprintf("TC4 [Pass]: Restored 31 pcb blocks onto stop queue\n");
-	}
+	if(count() == 0)	
+		kprintf("\nTC4 Pass: 31 tesprocs have been added to stop_q\n");
 	else
-	{
-		result[3]=1;
-		kprintf("TC4 [Fail]: Restored less than 31 pcb block onto stop queue\n");
-	}
+		kprintf("\nTC4 Fail: less than 31 testproces have been added to stop_q\n");
 
 	sysstop();
 }
@@ -74,7 +66,8 @@ void testproc(void)
 		if(exit_proc) break;
 		sysyield();
 	}
-
+	kprintf("%d ", exit_cnt);
+	exit_cnt++;
 	sysstop();
 }
 
@@ -85,49 +78,77 @@ void testproc(void)
 */
 void testdriver(void) 
 {
+#ifdef	MEM_TEST
 	int *blka, *blkb, *blkc, *blkd;
 	int total_mem=0;
 
-	
-#ifdef	MEM_TEST
 	total_mem = kmemtotalsize();
 	// Test Case 1: 
 	// Attempt to allocate memory that is bigger than any available space
+	kprintf("Begin Test Case 1 ... \n");
+	kprintf("Malloc memory that is within any block memory size\n");
+	kprintf("kmalloc:\t\t%d\t", kmemhdsize()/2);
 	blka = kmalloc(kmemhdsize()/2);
+	if(blka)
+		kprintf("success\n");
+	else
+		kprintf("failed, invalid mem_sz\n");
+
+	kprintf("kmalloc:\t\t%d\t", kmemhdsize()/2);
 	blkb = kmalloc(kmemhdsize()/2);
+	if(blkb)
+		kprintf("success\n");
+	else
+		kprintf("failed, invalid mem_sz\n");
+
+	kprintf("kmalloc:\t\t%d\t", kmemhdsize()/2);
 	blkc = kmalloc(kmemhdsize()/2);
+	if(blkc)
+		kprintf("success\n");
+	else
+		kprintf("failed, invalid mem_sz\n");
+
+	kprintf("kmalloc:\t\t%d\t", kmemhdsize()*100);
 	blkd = kmalloc(kmemhdsize()*100);
+	if(blkd)
+		kprintf("success\n");
+	else
+		kprintf("failed, invalid mem_sz\n");
 
 	if(!blkd) 
-	{
-		result[0]=1;
-		kprintf("TC1 [Pass]: Able to degrade gracefully when attempting to allocate more memory than available\n");
-	}
+		kprintf("TC1 Pass: All valid memory sizes have been allocated\n");
 	else
-	{
-		result[0]=0;
-		kprintf("TC1 [Fail]: Allocated memory in space that is larger than any available space in memory\n");
-	}
+		kprintf("TC1 Fail: An invalid memory size has been allocated\n");
+
+	kprintf("\n");
 
 	// Test Case 2: 
 	// Free all allocated memory and does not free any memory that is NULL
+	kprintf("Begin Test Case 2 ... \n");
+	kprintf("Free all allocated memory at following addr\n");
+	kprintf("kfree:\t\t\t%d\n", blkc);
 	kfree(blkc);
+	kprintf("kfree:\t\t\t%d\n", blka);
 	kfree(blka);
+	kprintf("kfree:\t\t\t%d\n", blkb);
 	kfree(blkb);
+	kprintf("kfree:\t\t\t%d\n", blkd);
 	kfree(blkd);
+
+	kprintf("mem size on startup:\t%d\n", total_mem);
+	kprintf("mem size after kfree:\t%d\n", kmemtotalsize());
 
 	// Compare total free memory space
 	if(kmemtotalsize() == total_mem) 
-	{
-		result[1]=1;
-		kprintf("TC2 [Pass]: Able to degrade gracefully when attempting to allocate more memory than available\n");
-	}
+		kprintf("TC2 Pass: All allocated memory have been returned\n");
 	else
 	{
-		result[1]=0;
-		kprintf("TC2 [Fail]: Allocated memory in space that is larger than any available space in memory\n");
+		if(kmemtotalsize() > total_mem)
+			kprintf("TC2 Fail: Invalid memory has been added to memory space\n");
+		else
+			kprintf("TC2 Fail: Memory leak has occurred\n");
 	}
-	total_mem = kmemtotalsize();
+	kprintf("\n");
 #endif
 
 #ifdef	PROC_TEST
@@ -136,7 +157,7 @@ void testdriver(void)
 	dispatch();
 #endif	
 
-	testresult();
+//	testresult();
 }
 
 
@@ -145,6 +166,7 @@ void testdriver(void)
 *
 * @desc:	Print out test result summary
 */
+/*
 void testresult(void)
 {
 	int i;
@@ -166,4 +188,4 @@ void testresult(void)
 		else
 			kprintf("Fail\n");
 	}
-}
+}*/

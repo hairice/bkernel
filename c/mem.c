@@ -35,7 +35,7 @@ void kmeminit(void)
 
 #ifdef	TEST_MODE
 #ifdef 	MEM_TEST
-	kmemprint();
+//	kmemprint();
 #endif
 #endif
 }
@@ -91,7 +91,7 @@ void *kmalloc(int size)
 
 #ifdef	TEST_MODE
 #ifdef 	MEM_TEST
-	kmemprint();
+//	kmemprint();
 #endif
 #endif
 
@@ -191,7 +191,7 @@ void kfree(void *ptr)
 
 #ifdef	TEST_MODE
 #ifdef 	MEM_TEST
-	kmemprint();
+//	kmemprint();
 #endif
 #endif
 }
