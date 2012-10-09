@@ -3,10 +3,8 @@
 
 #include <xeroskernel.h>
 
-int exit_proc=0;
-int exit_cnt=1;
-//int result[4];
-
+int exit_proc=0;	// testproc trigger to sysstop()
+int exit_cnt=1;		// number of testprocs that have exited
 
 /*
 * testroot
@@ -156,36 +154,4 @@ void testdriver(void)
 	contextinit();
 	dispatch();
 #endif	
-
-//	testresult();
 }
-
-
-/*
-* testresult
-*
-* @desc:	Print out test result summary
-*/
-/*
-void testresult(void)
-{
-	int i;
-
-	kprintf("\n----------------------------------------------------\n");
-	kprintf("XEROS Test Summary \n");
-	kprintf("----------------------------------------------------\n");
-	for(i=0; i<4 ; i++) 
-	{
-		kprintf("Test Case [%d]\t\t", i+1);
-		
-		if(i<2)
-			kprintf("MEM_TEST\t\t");
-		else
-			kprintf("PROC_TEST\t\t");
-
-		if(result[i])
-			kprintf("Pass\n");
-		else
-			kprintf("Fail\n");
-	}
-}*/

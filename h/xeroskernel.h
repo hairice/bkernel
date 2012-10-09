@@ -30,13 +30,20 @@ typedef	char		Bool;		/* Boolean type			*/
 
 
 
+#ifndef MEM_DEBUG
+// Uncomment line to enable memory debug prints
+//#define MEM_DEBUG
+#endif
+
 #ifndef TEST_MODE
 // Uncomment line to execute 2 memory managment test cases and 2 process management test cases
-#define TEST_MODE
+//#define TEST_MODE
 
+// The 4 test cases have been divided into two separate macros, as this is a workaround for the limited amount of
+// console viewing space when executing in bochs
 #ifndef MEM_TEST
 // Uncomment to enable memory managment test cases print out
-#define MEM_TEST
+//#define MEM_TEST
 #endif
 
 #ifndef PROC_TEST
@@ -132,4 +139,3 @@ extern void consumer(void);
 extern void testdriver(void);
 extern void testroot(void);
 extern void testproc(void);
-//extern void testresult(void);

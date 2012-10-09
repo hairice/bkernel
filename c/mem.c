@@ -33,10 +33,8 @@ void kmeminit(void)
 	memSlot->next->prev = memSlot;
 	memSlot->next->next = NULL;
 
-#ifdef	TEST_MODE
-#ifdef 	MEM_TEST
-//	kmemprint();
-#endif
+#ifdef	MEM_DEBUG
+	kmemprint();
 #endif
 }
 
@@ -89,10 +87,8 @@ void *kmalloc(int size)
 	allocMemSlot->next = NULL;
 	allocMemSlot->prev = NULL;
 
-#ifdef	TEST_MODE
-#ifdef 	MEM_TEST
-//	kmemprint();
-#endif
+#ifdef	MEM_DEBUG
+	kmemprint();
 #endif
 
 	return (int) &(allocMemSlot->dataStart);
@@ -189,10 +185,8 @@ void kfree(void *ptr)
 		tmpMemSlot = tmpMemSlot->next;
 	}
 
-#ifdef	TEST_MODE
-#ifdef 	MEM_TEST
-//	kmemprint();
-#endif
+#ifdef	MEM_DEBUG
+	kmemprint();
 #endif
 }
 
@@ -203,13 +197,16 @@ void kfree(void *ptr)
 */
 void kmemprint ()
 {
+	int i=1;
 	memHeader_t *tmp = memSlot;
+
 	kprintf("\n");
 	while(tmp)
 	{
-		kprintf("mem:%d\t", tmp);
-		kprintf("mem->size:%d\n", tmp->size);
+		kprintf("mem[%i]:%d\t", i, tmp);
+		kprintf("mem[%i]->size:%d\n", i, tmp->size);
 		tmp = tmp->next;		
+		i++;
 	}
 	kprintf("\n");
 }
