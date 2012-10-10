@@ -12,39 +12,44 @@
 */
 
 
-void _ISREntryPoint(void);
-static unsigned int k_stack;
-static unsigned int ESP;
-static unsigned int rc;
-static unsigned int args;
+void _ISREntryPoint(void);		/* kernel interrupt routine */
+
+static unsigned int esp;		/* user stack pointer location */
+static unsigned int k_esp;		/* kernel stack pointer location */
+static unsigned int rc;			/* syscall() call request id */
+static unsigned int args;		/* args passed from syscall() */
 
 /*
 * contextswitch
 *
-* @desc:	Entrant/exit point between kernel and application
+* @desc:	entrant/exit point between kernel and application
 *
-* @param:	p	Process pcb block to context switch into
+* @param:	p	process pcb block to context switch into
 *
-* @output:	rc	System call request id
+* @output:	rc	system call request id
 */
 int contextswitch( pcb_t *p ) 
 {
-	// Save process esp
-	ESP = p->esp;	
+	k_esp=0;
 
-	// Context switch between process and kernel
-	// Retrieve syscall() arguments by register from 'eax' and 'edx'
+	/* save process esp */
+	esp=p->esp;	
+
+	/*
+	* context switch between process and kernel
+	* retrieve syscall() arguments by register from 'eax' and 'edx'
+	*/
 	__asm __volatile( " \
      		pushf  \n\
      		pusha  \n\
-     		movl  %%esp, k_stack     \n\
-     		movl  ESP, %%esp  \n\
+     		movl  %%esp, k_esp     \n\
+     		movl  esp, %%esp  \n\
      		popa  \n\
 		iret \n\
 	_ISREntryPoint:  \n\
     		pusha   \n\
-    		movl  %%esp, ESP \n\
-    		movl  k_stack, %%esp \n\
+    		movl  %%esp, esp \n\
+    		movl  k_esp, %%esp \n\
 		movl %%eax, rc \n\
 		movl %%edx, args \n\
     		popa \n\
@@ -55,8 +60,8 @@ int contextswitch( pcb_t *p )
   		: "%eax"
   		);
  
-	// Save process esp and passed args
-	p->esp = ESP;
+	/* save process esp and passed args */
+	p->esp = esp;
 	p->args = args;
 
 	return rc;
@@ -65,7 +70,7 @@ int contextswitch( pcb_t *p )
 /*
 * contextinit
 *
-* @desc:	Set kernel interrupt event entry in IDT
+* @desc:	set kernel interrupt event entry in IDT
 */
 void contextinit() 
 {

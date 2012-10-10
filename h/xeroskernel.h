@@ -11,7 +11,6 @@ typedef	char		Bool;		/* Boolean type			*/
 
 
 /* Universal return constants */
-
 #define	OK		 1		/* system call ok		*/
 #define	SYSERR		-1		/* system call failed		*/
 #define	EOF		-2		/* End-of-file (usu. from read)	*/
@@ -22,74 +21,77 @@ typedef	char		Bool;		/* Boolean type			*/
 
 #define MAX_PROC	32
 #define KERNEL_INT	64
-#define PROC_STACK	1024*4
+#define PROC_STACK	1024*4		/* set process stack to 4096 */
 
+/* syscall() request id */
 #define STOP        	0
 #define YIELD      	1
 #define CREATE     	2
 
 
-
 #ifndef MEM_DEBUG
-// Uncomment line to enable memory debug prints
-//#define MEM_DEBUG
+/* uncomment line to enable memory debug prints */
+/* #define MEM_DEBUG */
 #endif
 
 #ifndef TEST_MODE
-// Uncomment line to execute 2 memory managment test cases and 2 process management test cases
-//#define TEST_MODE
+/* uncomment line to enable test driver and disable normal os execution */
+/* #define TEST_MODE */
 
-// The 4 test cases have been divided into two separate macros, as this is a workaround for the limited amount of
-// console viewing space when executing in bochs
+/*
+* the 4 test cases have been divided into two separate macros, as this is a workaround 
+* for the limited amount of console viewing space when executing in bochs 
+*/
 #ifndef MEM_TEST
-// Uncomment to enable memory managment test cases print out
-//#define MEM_TEST
+/* uncomment line to enable memory managment test cases */
+/* #define MEM_TEST */
 #endif
 
 #ifndef PROC_TEST
-// Uncomment to enable process managment test cases print out
-//#define PROC_TEST
+/* uncomment line to enable process managment test cases */
+/* #define PROC_TEST */
 #endif
+
 
 #endif
 
 typedef struct memHeader memHeader_t;
 struct memHeader 
 { 
-	unsigned long size; 		// Size of the memory block after the memory header
-	memHeader_t *prev; 		// Link to previous memory block that is lower in address
-	memHeader_t *next;  		// Link to next memory block that is higher in address
-	char *sanityCheck; 		// Corrupt check for memory block
-	unsigned char dataStart[0]; 	// Start of the data portion of a memory block
+	unsigned long size; 		/* size of the memory block after the memory header */
+	memHeader_t *prev; 		/* link to previous memory block that is lower in address */
+	memHeader_t *next;  		/* link to next memory block that is higher in address */
+	char *sanityCheck; 		/* corrupt check for memory block */
+	unsigned char dataStart[0]; 	/* start of the data portion of a memory block */
 }; 
 
 typedef struct pcb pcb_t;
 struct pcb 
 {
-	unsigned int pid;			// Process pid
-	unsigned int esp;			// Process stack pointer
-	unsigned int *mem;			// Process memory 'dataStart' pointer
-	unsigned int args;			// Retains all arguments passed from a system call
-	pcb_t *next;			// Link to the next pcb block, two queues exist in the os, ready and stop
+	unsigned int pid;		/* process pid */
+	unsigned int esp;		/* process stack pointer */
+	unsigned int *mem;		/* process memory 'dataStart' pointer */
+	unsigned int args;		/* retains all arguments passed from a system call */
+	pcb_t *next;			/* link to the next pcb block, two queues exist in the os, ready and stop */
 };
 
-pcb_t proc_table[MAX_PROC];		// List of process control blocks
-pcb_t *stop_q;				// Stop queue for pcb
+pcb_t proc_table[MAX_PROC];		/* list of process control blocks */
+pcb_t *stop_q;				/* stop queue for pcb */
 
 typedef struct context_frame context_frame_t;
 struct context_frame 
 {
 	unsigned int   edi;		
 	unsigned int   esi;		
-	unsigned int   ebp;		// Process frame pointer
-	unsigned int   esp;		// Process stack pointer
+	unsigned int   ebp;		/* process frame pointer */
+	unsigned int   esp;		/* process stack pointer */
 	unsigned int   ebx;		
-	unsigned int   edx;		// Process data register (keeps args from syscall())
+	unsigned int   edx;		/* process data register (keeps args from syscall()) */
 	unsigned int   ecx;		
-	unsigned int   eax;		// Process return value register
-	unsigned int   iret_eip;	// Process instruction pointer
-	unsigned int   iret_cs;		// Process code segment start
-	unsigned int   eflags;		// Process error flags
+	unsigned int   eax;		/* process return value register */
+	unsigned int   iret_eip;	/* process instruction pointer */
+	unsigned int   iret_cs;		/* process code segment start */
+	unsigned int   eflags;		/* process error flags */
 };
 
 /* Functions defined by startup code */
@@ -105,7 +107,7 @@ unsigned char inb(unsigned int);
 
 /* Assignment 1 Functions */
 
-// Memory Managment Unit
+/* memory managment unit */
 extern void kmeminit(void);
 extern void *kmalloc(int size);
 extern void kfree(void *ptr);
@@ -113,7 +115,7 @@ extern void kmemprint(void);
 extern int kmemhdsize(void);
 extern int kmemtotalsize(void);
 
-// Process Management Unit
+/* process management unit */
 extern void dispatch(void);
 extern pcb_t* next(void);
 extern void ready(pcb_t *p);
@@ -124,18 +126,18 @@ extern void contextinit(void);
 extern int contextswitch(pcb_t *p);
 extern int create(void (*func)(void), int stack); 
 
-// System Calls
+/* system calls */
 extern int syscall(int call, ...);
 extern int syscreate(void (*func)(void), int stack);
 extern void sysyield(void);
 extern void sysstop(void);
 
-// User Processes
+/* user processes */
 extern void root(void);
 extern void producer(void);
 extern void consumer(void);
 
-// Test Driver
+/* test driver */
 extern void testdriver(void);
 extern void testroot(void);
 extern void testproc(void);

@@ -28,7 +28,7 @@ extern pcb_t proc_table[MAX_PROC];
 /*
 * initproc
 *
-* @desc: Initializes xeros by starting the memory management unit, dispatcher, and context switcher
+* @desc:	initializes xeros by starting the memory management unit, dispatcher, and context switcher
 */
 void initproc( void )				/* The beginning */
 {
@@ -38,12 +38,11 @@ void initproc( void )				/* The beginning */
         /* Your code goes here */
 	kmeminit();
 
-	// Fill the stop queue
+	/* fill the stop queue */
 	for(i=0 ; i<MAX_PROC ; i++) 
 		stop(&proc_table[i]);
 
-#ifdef TEST_MODE	// By default test_mode is off
-	// Execute test cases
+#ifdef TEST_MODE	/* by default test_mode is off */
 	testdriver();
 #else
 	create(&root, PROC_STACK);

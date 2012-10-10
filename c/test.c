@@ -3,22 +3,24 @@
 
 #include <xeroskernel.h>
 
-int exit_proc=0;	// testproc trigger to sysstop()
-int exit_cnt=1;		// number of testprocs that have exited
+int exit_proc=0;	/* testproc trigger to sysstop() */
+int exit_cnt=1;		/* number of testprocs that have exited */
 
 /*
 * testroot
 *
-* @desc:	Executes the testroot process
-* @note:	This process executes the process management test cases
+* @desc:	executes the testroot process
+* @note:	this process executes the process management test cases
 */	
 void testroot(void)
 {
 	int cnt = MAX_PROC-count()-1;
 
-	// Test Case 3: Able to allocate the max number of processes and push to ready queue 
-	//		while able to context switch between the root and child processes
-	//		given that this process is the only process creation point in the code
+	/*
+	* test case 3: 
+	* able to allocate the max number of processes and push to ready queue, while able to context switch 
+	* between the root and child processes given that this process is the only process creation point in the code
+	*/
 	kprintf("Begin Test Case 3 ... \n");
 	kprintf("Add the following pid to the ready queue\n");
 	kprintf("ready_q: ");
@@ -35,9 +37,11 @@ void testroot(void)
 	else
 		kprintf("TC3 Fail: less than 31 testproces have been added to ready_q\n");
 
-	// Test Case 4: Able to reclaim the process blocks and push onto the stop queue,
-	//		while able to context switch between the root and child processes,
-	//		given that this process is the only process creation point in the code
+	/*
+	* test case 4: 
+	* able to reclaim the process blocks and push onto the stop queue, while able to context switch 
+	* between the root and child processes, given that this process is the only process creation point in the code
+	*/
 	exit_proc=1;
 	kprintf("\nBegin Test Case 4 ... \n");
 	kprintf("Add the following pid to the stop queue\n");
@@ -49,13 +53,14 @@ void testroot(void)
 	else
 		kprintf("\nTC4 Fail: less than 31 testproces have been added to stop_q\n");
 
-	sysstop();
+	for(;;) 
+		sysyield();
 }
 
 /*
 * testproc
 *
-* @desc:	Executes the testproc process
+* @desc:	executes the testproc process
 */
 void testproc(void)
 {
@@ -72,7 +77,7 @@ void testproc(void)
 /*
 * testdriver
 *
-* @desc:	Executes the test root process
+* @desc:	executes the test root process
 */
 void testdriver(void) 
 {
@@ -81,8 +86,10 @@ void testdriver(void)
 	int total_mem=0;
 
 	total_mem = kmemtotalsize();
-	// Test Case 1: 
-	// Attempt to allocate memory that is bigger than any available space
+	/*
+	* test case 1: 
+	* attempt to allocate memory that is bigger than any available space
+	*/
 	kprintf("Begin Test Case 1 ... \n");
 	kprintf("Malloc memory that is within any block memory size\n");
 	kprintf("kmalloc:\t\t%d\t", kmemhdsize()/2);
@@ -120,8 +127,10 @@ void testdriver(void)
 
 	kprintf("\n");
 
-	// Test Case 2: 
-	// Free all allocated memory and does not free any memory that is NULL
+	/*
+	* test case 2: 
+	* free all allocated memory and does not free any memory that is NULL
+	*/
 	kprintf("Begin Test Case 2 ... \n");
 	kprintf("Free all allocated memory at following addr\n");
 	kprintf("kfree:\t\t\t%d\n", blkc);
@@ -136,7 +145,7 @@ void testdriver(void)
 	kprintf("mem size on startup:\t%d\n", total_mem);
 	kprintf("mem size after kfree:\t%d\n", kmemtotalsize());
 
-	// Compare total free memory space
+	/* compare total free memory space */
 	if(kmemtotalsize() == total_mem) 
 		kprintf("TC2 Pass: All allocated memory have been returned\n");
 	else

@@ -6,13 +6,12 @@
 
 /* Your code goes here */
 extern pcb_t *stop_q;
-
 pcb_t *ready_q;
 
 /*
 * dispatch
 *
-* @desc:	Executes the dispatcher
+* @desc:	executes the dispatcher
 */
 void dispatch() 
 {
@@ -21,23 +20,20 @@ void dispatch()
     	va_list ap;
 	void (*funcptr)(void);
 
-	// Start dispatcher
+	/* start dispatcher */
 	for(;;) 
 	{
 		p = next();
-
-		if(!p) break; 	// End of process management test mode
-
 		request = contextswitch(p);
 
 		switch(request) {
 			case CREATE:	
-				// Retrieve args passed from syscall()
+				/* retrieve args passed from syscall() */
 				ap = (va_list)p->args;
 				funcptr = va_arg(ap, void*);
 				stack = va_arg(ap, int);
 
-				// Create new process and put process on ready queue
+				/* create new process and put process on ready queue */
 				if(create(funcptr, stack));
 					ready(p);
 				break;
@@ -47,7 +43,7 @@ void dispatch()
 				break;
 
 			case STOP:
-				// Free allocated memory and put process on stop queue
+				/* free allocated memory and put process on stop queue */
 				stop(p);
 				kfree(p->mem);
 				break;
@@ -58,9 +54,9 @@ void dispatch()
 /*
 * next
 *
-* @desc: 	Pop the head of ready queue
+* @desc: 	pop the head of ready queue
 *
-* @output:	p	Current head of the ready queue
+* @output:	p	current head of the ready queue
 */
 pcb_t* next ()
 {
@@ -72,7 +68,7 @@ pcb_t* next ()
 /*
 * ready
 *
-* @desc:	Push pcb block to the end of ready queue
+* @desc:	push pcb block to the end of ready queue
 */
 void ready(pcb_t *p) 
 {
@@ -96,8 +92,8 @@ void ready(pcb_t *p)
 /*
 * count
 *
-* @desc:	Count the number of pcb in the ready queue
-* @note:	The stop queue count is (MAX_PROC-cnt)
+* @desc:	count the number of pcb in the ready queue
+* @note:	the stop queue count is (MAX_PROC-cnt)
 */
 int count (void)
 {
@@ -116,7 +112,7 @@ int count (void)
 /*
 * stop
 *
-* @desc: 	Add pcb block to the end of stop queue
+* @desc: 	add pcb block to the end of stop queue
 */
 void stop (pcb_t *p)
 {

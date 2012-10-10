@@ -8,14 +8,14 @@
 /*
 * root
 *
-* @desc:	Executes the root process
+* @desc:	executes the root process
 */
 void root()
 {
 	syscreate(&producer, PROC_STACK);
 	syscreate(&consumer, PROC_STACK);
 
-	// Eventual loop after producer and consumer exits
+	/* eventual loop after producer and consumer exits */
 	for(;;) 
 		sysyield();
 }
@@ -23,14 +23,16 @@ void root()
 /*
 * producer
 *
-* @desc:	Executes the producer process
+* @desc:	executes the producer process
 */
 void producer ()
 {
 	int i;
 
-	// Assignment 1: 	Cycle 12 iterations 
-	//			print "Happy ", sysyield()	
+	/*
+	* Assignment 1: 	cycle 12 iterations 
+	*			print "Happy ", sysyield()	
+	*/
 	for(i=0; i<12; i++)
 	{
 		kprintf("Happy ");
@@ -43,14 +45,16 @@ void producer ()
 /*
 * consumer
 *
-* @desc:	Executes the consumer process
+* @desc:	executes the consumer process
 */
 void consumer ()
 {
 	int i;
 
-	// Assignment 1: 	Cycle 15 iterations 
-	//			print "New Year", sysyield()	
+	/*
+	* Assignment 1: 	cycle 15 iterations 
+	*			print "New Year", sysyield()	
+	*/
 	for(i=0; i<15; i++) 
 	{
 		kprintf("New Year\n");
