@@ -1,5 +1,8 @@
 /* syscall.c : syscalls
- */
+* 
+* name:		Jack Wu
+* student id:	17254079
+*/
 
 #include <xeroskernel.h>
 #include <stdarg.h>

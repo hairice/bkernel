@@ -1,4 +1,8 @@
-/* xeroskernel.h - disable, enable, halt, restore, isodd, min, max */
+/* xeroskernel.h - disable, enable, halt, restore, isodd, min, max 
+* 
+* name:		Jack Wu
+* student id:	17254079
+*/
 
 /* Symbolic constants used throughout Xinu */
 

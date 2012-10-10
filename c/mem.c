@@ -1,5 +1,8 @@
-/* mem.c : memory manager
- */
+/* mem.c : 	memory manager
+* 
+* name:		Jack Wu
+* student id:	17254079
+*/
 
 #include <xeroskernel.h>
 

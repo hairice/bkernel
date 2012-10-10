@@ -1,5 +1,8 @@
 /* user.c : User processes
- */
+* 
+* name:		Jack Wu
+* student id:	17254079
+*/
 
 #include <xeroskernel.h>
 

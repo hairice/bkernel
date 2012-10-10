@@ -1,4 +1,8 @@
-/* initialize.c - initproc */
+/* initialize.c - initproc 
+* 
+* name:		Jack Wu
+* student id:	17254079
+*/
 
 #include <i386.h>
 #include <xeroskernel.h>

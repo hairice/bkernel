@@ -1,5 +1,8 @@
 /* create.c : create a process
- */
+* 
+* name:		Jack Wu
+* student id:	17254079
+*/
 
 #include <xeroskernel.h>
 
@@ -39,7 +42,7 @@ int create(void (*func)(void), int stack)
 
 	p->mem = (unsigned int*)mem;
 
-	/* set process context frame STACK_SIZE away from the end of the allocated memory */
+	/* set process context frame STACK_PAD away from the end of the allocated memory */
 	frame = (context_frame_t *) ((int)mem+stack-sizeof(context_frame_t)-(int)STACK_PAD);	
 
 	/* set process context frame and pcb */
