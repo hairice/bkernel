@@ -16,7 +16,7 @@
 void root()
 {
 	syscreate(&producer, PROC_STACK);
-	syscreate(&consumer, PROC_STACK);
+	//syscreate(&consumer, PROC_STACK);
 
 	/* eventual loop after producer and consumer exits */
 	for(;;) 
@@ -36,13 +36,11 @@ void producer ()
 	* Assignment 1: 	cycle 12 iterations 
 	*			print "Happy ", sysyield()	
 	*/
-	for(i=0; i<12; i++)
-	{
-		kprintf("Happy ");
-		sysyield();
-	}
-
-	sysstop();
+	//for(i=0; i<12; i++)
+	//{
+		kprintf("Happy \n");
+	//	sysyield();
+	//}
 }
 
 /*
@@ -63,6 +61,4 @@ void consumer ()
 		kprintf("New Year\n");
 		sysyield();
 	}
-
-	sysstop();
 }

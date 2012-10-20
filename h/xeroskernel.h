@@ -31,7 +31,8 @@ typedef	char		Bool;		/* Boolean type			*/
 #define STOP        	0
 #define YIELD      	1
 #define CREATE     	2
-
+#define GETPID		3
+#define PUTS		4
 
 #ifndef MEM_DEBUG
 /* uncomment line to enable memory debug prints */
@@ -96,6 +97,7 @@ struct context_frame
 	unsigned int   iret_eip;	/* process instruction pointer */
 	unsigned int   iret_cs;		/* process code segment start */
 	unsigned int   eflags;		/* process error flags */
+	unsigned int   ret_func;	/* process implicit function call at the end of the stack */
 };
 
 /* Functions defined by startup code */
@@ -135,6 +137,10 @@ extern int syscall(int call, ...);
 extern int syscreate(void (*func)(void), int stack);
 extern void sysyield(void);
 extern void sysstop(void);
+
+/* auxiliary system calls */
+extern unsigned int sysgetpid(void);
+extern void sysputs( char *str );
 
 /* user processes */
 extern void root(void);

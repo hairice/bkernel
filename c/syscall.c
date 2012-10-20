@@ -34,7 +34,7 @@ int syscall (int call, ...) {
 		:
 		: "r"(call), "r"(ap), "i" (KERNEL_INT)
 	);
-
+	
 	return TRUE;
 }
 
@@ -71,4 +71,24 @@ void sysyield()
 void sysstop()
 {
 	syscall(STOP);
+}
+
+/*
+* sysgetpid
+*
+* @desc:	
+*/
+unsigned int sysgetpid(void)
+{
+	return(syscall(GETPID));
+}
+
+/*
+* sysputs
+*
+* @desc:	signals a synchronous kernel console output message
+*/
+void sysputs( char *str )
+{
+	syscall(PUTS, str);
 }

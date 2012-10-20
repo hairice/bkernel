@@ -18,10 +18,11 @@ pcb_t *ready_q;
 */
 void dispatch() 
 {
-	int request,stack=0;
+	int request,stack=0,i;
 	pcb_t *p=NULL;
     	va_list ap;
 	void (*funcptr)(void);
+	char* str=NULL;
 
 	/* start dispatcher */
 	for(;;) 
@@ -36,9 +37,10 @@ void dispatch()
 				funcptr = va_arg(ap, void*);
 				stack = va_arg(ap, int);
 
-				/* create new process and put process on ready queue */
-				if(create(funcptr, stack));
-					ready(p);
+				/* create new process */
+				create(funcptr, stack);
+
+				ready(p);
 				break;
 
 			case YIELD:
@@ -49,6 +51,18 @@ void dispatch()
 				/* free allocated memory and put process on stop queue */
 				stop(p);
 				kfree(p->mem);
+				break;
+			
+			case GETPID:
+				
+				break;
+
+
+			case PUTS:
+				ap = (va_list)p->args;
+				str = va_arg(ap, char*);
+				kprintf("[kernel]: %s", str);
+				ready(p);				
 				break;
 		}
 	}
