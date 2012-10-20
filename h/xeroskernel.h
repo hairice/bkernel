@@ -35,7 +35,7 @@ typedef	char		Bool;		/* Boolean type			*/
 #define CREATE     	102
 #define GETPID		103
 #define PUTS		104
-
+#define SLEEP		105
 
 #ifndef MEM_DEBUG
 /* uncomment line to enable memory debug prints */
@@ -80,7 +80,7 @@ struct pcb
 	unsigned int esp;		/* process stack pointer */
 	unsigned int *mem;		/* process memory 'dataStart' pointer */
 	unsigned int args;		/* retains all arguments passed from a syscall() */
-	unsigned int sleep;
+	unsigned int delta_slice;
 	unsigned int rc;		/* return code from syscall() */
 	pcb_t *next;			/* link to the next pcb block, two queues exist in the os, ready and stop */
 };
@@ -157,8 +157,11 @@ extern void consumer(void);
 
 
 /* sleep device */
-extern void sleep(void);
-extern void tick(void);
+extern unsigned int sleep_to_slice (unsigned int ms);
+extern void sleep(pcb_t *p);
+extern int sleeper (void);
+extern pcb_t* wake(void);
+extern int tick(void);
 
 
 /* test driver */

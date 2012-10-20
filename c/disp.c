@@ -18,7 +18,7 @@ pcb_t *ready_q;
 */
 void dispatch() 
 {
-	int request,stack=0;
+	int request,stack=0,sleep_ms=0;
 	pcb_t *p=NULL;
     	va_list ap;
 	void (*funcptr)(void);
@@ -31,7 +31,11 @@ void dispatch()
 		request = contextswitch(p);
 
 		switch(request) {
-			case TIMER_INT:
+ 			case TIMER_INT:
+				if(tick()) 
+					if(sleeper() > 0) 
+						ready(wake());
+				
 				ready(p);			
 				end_of_intr();
 				break;
@@ -69,6 +73,15 @@ void dispatch()
 				kprintf("[kernel]: %s", str);
 				ready(p);				
 				break;
+
+			case SLEEP:
+				ap = (va_list)p->args;
+				sleep_ms = va_arg(ap, unsigned int);
+				p->delta_slice = sleep_to_slice(sleep_ms);
+
+				sleep(p);
+				//ready(p);
+				break;
 		}
 	}
 }
@@ -100,6 +113,7 @@ void ready(pcb_t *p)
 	if(!tmp) 
 	{
 		ready_q = p;
+		ready_q->next = NULL;
 		return;
 	}
 
@@ -144,6 +158,7 @@ void stop (pcb_t *p)
 	if(!tmp) 
 	{
 		stop_q = p;
+		stop_q->next = NULL;
 		return;
 	}
 

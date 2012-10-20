@@ -77,7 +77,9 @@ void sysstop()
 /*
 * sysgetpid
 *
-* @desc:	
+* @desc:	returns the current process pid
+* 
+* @output:	
 */
 unsigned int sysgetpid(void)
 {
@@ -88,6 +90,8 @@ unsigned int sysgetpid(void)
 * sysputs
 *
 * @desc:	signals a synchronous kernel console output message
+*
+* @param:	str		string message to display on console
 */
 void sysputs( char *str )
 {
@@ -95,10 +99,15 @@ void sysputs( char *str )
 }
 
 /*
-* sysputs
+* syssleep
 *
-* @desc:	signals a synchronous kernel console output message
+* @desc:	signals the current process to sleep for input milliseconds
+*
+* @param:	milliseconds		time in milliseconds for a process to sleep
+* 
+* @output:
 */
 unsigned int syssleep( unsigned int milliseconds )
 {
+	return syscall(SLEEP, milliseconds);
 }
