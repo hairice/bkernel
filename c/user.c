@@ -15,7 +15,7 @@
 */
 void root()
 {
-	syscreate(&producer, PROC_STACK);
+	//syscreate(&producer, PROC_STACK);
 	//syscreate(&consumer, PROC_STACK);
 
 	/* eventual loop after producer and consumer exits */

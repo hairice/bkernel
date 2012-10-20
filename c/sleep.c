@@ -4,3 +4,13 @@
 #include <xeroskernel.h>
 
 /* Your code goes here */
+void sleep ()
+{
+
+}
+
+
+void tick() 
+{
+
+}

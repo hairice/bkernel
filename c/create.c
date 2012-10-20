@@ -48,13 +48,12 @@ int create(void (*func)(void), int stack)
 	frame = (context_frame_t *) ((int)mem+stack-sizeof(context_frame_t)-(int)STACK_PAD);	
 
 	/* set process context frame and pcb */
-	//frame->ret_func = &sysstop;
 	frame->iret_cs = getCS();
 	frame->iret_eip = (unsigned int) func;
     	frame->esp = (unsigned int)(frame);
 	frame->ebp = frame->esp;
 	frame->eflags = 0;
-	frame->ret_func = &sysstop;
+	frame->iret_func = &sysstop;
 
 	p->esp = frame->esp;
 	p->pid=pid;

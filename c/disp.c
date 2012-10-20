@@ -18,7 +18,7 @@ pcb_t *ready_q;
 */
 void dispatch() 
 {
-	int request,stack=0,i;
+	int request,stack=0;
 	pcb_t *p=NULL;
     	va_list ap;
 	void (*funcptr)(void);
@@ -54,9 +54,9 @@ void dispatch()
 				break;
 			
 			case GETPID:
-				
+				p->rc = p->pid;
+				ready(p);								
 				break;
-
 
 			case PUTS:
 				ap = (va_list)p->args;

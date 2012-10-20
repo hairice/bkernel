@@ -8,7 +8,7 @@
 #include <stdarg.h>
 
 /* Your code goes here */
-
+static unsigned int rc;
 
 /*
 * syscall
@@ -27,15 +27,16 @@ int syscall (int call, ...) {
 
 	/* pass syscall() args by register, 'eax' and 'edx' */
 	__asm __volatile( " \
-		movl %0, %%eax \n\
-		movl %1, %%edx \n\
-		int %2 \n\
+		movl %0, %%eax 	\n\
+		movl %1, %%edx 	\n\
+		int %2		\n\
+		movl %%eax, rc 	\n\
      		"
 		:
 		: "r"(call), "r"(ap), "i" (KERNEL_INT)
 	);
 	
-	return TRUE;
+	return rc;
 }
 
 /*
@@ -80,7 +81,7 @@ void sysstop()
 */
 unsigned int sysgetpid(void)
 {
-	return(syscall(GETPID));
+	return syscall(GETPID);
 }
 
 /*
@@ -91,4 +92,14 @@ unsigned int sysgetpid(void)
 void sysputs( char *str )
 {
 	syscall(PUTS, str);
+}
+
+/*
+* sysputs
+*
+* @desc:	signals a synchronous kernel console output message
+*/
+unsigned int syssleep( unsigned int milliseconds )
+{
+	return syscall(SLEEP);
 }

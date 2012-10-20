@@ -35,28 +35,32 @@ int contextswitch( pcb_t *p )
 {
 	k_esp=0;
 
-	/* save process esp */
+	/* save process esp and return code*/
 	esp=p->esp;	
+	rc=p->rc;
 
 	/*
 	* context switch between process and kernel
 	* retrieve syscall() arguments by register from 'eax' and 'edx'
 	*/
-	__asm __volatile( " \
-     		pushf  \n\
-     		pusha  \n\
-     		movl  %%esp, k_esp     \n\
-     		movl  esp, %%esp  \n\
-     		popa  \n\
-		iret \n\
-	_ISREntryPoint:  \n\
-    		pusha   \n\
-    		movl  %%esp, esp \n\
-    		movl  k_esp, %%esp \n\
-		movl %%eax, rc \n\
-		movl %%edx, args \n\
-    		popa \n\
-    		popf \n\
+	__asm __volatile( " 			\
+		pushf 				\n\
+		pusha 				\n\
+		movl	rc, %%eax    		\n\
+		movl    esp, %%edx    		\n\
+		movl    %%esp, k_esp    	\n\
+		movl    %%edx, %%esp 		\n\
+		movl    %%eax, 28(%%esp) 	\n\
+		popa 				\n\
+		iret 				\n\
+	_ISREntryPoint:  			\n\
+    		pusha   			\n\
+    		movl 	%%esp, esp 		\n\
+    		movl 	k_esp, %%esp 		\n\
+		movl 	%%eax, rc 		\n\
+		movl 	%%edx, args 		\n\
+    		popa 				\n\
+    		popf 				\n\
         	"
   		:
   		: 

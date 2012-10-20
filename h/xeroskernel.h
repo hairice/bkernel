@@ -33,6 +33,7 @@ typedef	char		Bool;		/* Boolean type			*/
 #define CREATE     	2
 #define GETPID		3
 #define PUTS		4
+#define SLEEP		5
 
 #ifndef MEM_DEBUG
 /* uncomment line to enable memory debug prints */
@@ -77,6 +78,7 @@ struct pcb
 	unsigned int esp;		/* process stack pointer */
 	unsigned int *mem;		/* process memory 'dataStart' pointer */
 	unsigned int args;		/* retains all arguments passed from a system call */
+	unsigned int rc;
 	pcb_t *next;			/* link to the next pcb block, two queues exist in the os, ready and stop */
 };
 
@@ -97,7 +99,7 @@ struct context_frame
 	unsigned int   iret_eip;	/* process instruction pointer */
 	unsigned int   iret_cs;		/* process code segment start */
 	unsigned int   eflags;		/* process error flags */
-	unsigned int   ret_func;	/* process implicit function call at the end of the stack */
+	unsigned int   iret_func;	/* process implicit function call at the end of the stack */
 };
 
 /* Functions defined by startup code */
@@ -142,10 +144,18 @@ extern void sysstop(void);
 extern unsigned int sysgetpid(void);
 extern void sysputs( char *str );
 
+extern unsigned int syssleep( unsigned int milliseconds );
+
 /* user processes */
 extern void root(void);
 extern void producer(void);
 extern void consumer(void);
+
+
+/* sleep device */
+extern void sleep(void);
+extern void tick(void);
+
 
 /* test driver */
 extern void testdriver(void);
