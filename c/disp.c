@@ -32,10 +32,10 @@ void dispatch()
 
 		switch(request) {
  			case TIMER_INT:
-				if(tick()) 
-					if(sleeper() > 0) 
-						ready(wake());
-				
+				/* signal sleep device is there's at least 1 sleeping proc */
+				if(sleeper() > 0 && tick())
+					ready(wake());
+
 				ready(p);			
 				end_of_intr();
 				break;
@@ -63,11 +63,13 @@ void dispatch()
 				break;
 			
 			case GETPID:
+				/* sets the proc pid as the proc return code for next ctsw */
 				p->rc = p->pid;
 				ready(p);								
 				break;
 
 			case PUTS:
+				/* synchronous kernel print handler*/
 				ap = (va_list)p->args;
 				str = va_arg(ap, char*);
 				kprintf("[kernel]: %s", str);
@@ -79,9 +81,9 @@ void dispatch()
 				sleep_ms = va_arg(ap, unsigned int);
 				p->delta_slice = sleep_to_slice(sleep_ms);
 
-				sleep(p);
-				//ready(p);
-				break;
+				/* proc requested no sleep or syssleep is blocked for the time requested*/
+				if(!p->delta_slice || !sleep(p))
+					ready(p);
 		}
 	}
 }

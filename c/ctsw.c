@@ -84,6 +84,9 @@ int contextswitch( pcb_t *p )
   				: "%eax", "%ecx", "%edx"
   	);
  
+	/* treat an interrupt similar to a syscall(),
+	*  where the value received from %%ecx is returned to dispatch() 
+	*/
 	if(interrupt) 
 	{
 		p->rc = rc;
@@ -104,8 +107,13 @@ int contextswitch( pcb_t *p )
 */
 void contextinit() 
 {
+	// set idt vector entry point for all syscall()
 	set_evec(KERNEL_INT, _syscall_entry_point);
+
+	// set idet vector entry point for timer interrupt
 	set_evec(IRQBASE, _timer_entry_point);
+
+	// set timer interrupt quantum
 	initPIT(100);
 }
 

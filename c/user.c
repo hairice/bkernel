@@ -27,9 +27,8 @@ void idleproc (void)
 */
 void root()
 {
-
-//	syscreate(&producer, PROC_STACK);
-//	//syscreate(&consumer, PROC_STACK);
+	syscreate(&producer, PROC_STACK);
+	syscreate(&consumer, PROC_STACK);
 
 	/* eventual loop after producer and consumer exits */
 	for(;;);
@@ -48,12 +47,8 @@ void producer ()
 	* Assignment 1: 	cycle 12 iterations 
 	*			print "Happy ", sysyield()	
 	*/
-
-	syssleep(101);
-/*
 	for(i=0; i<12; i++)
 		kprintf("producer\n");
-*/
 }
 
 /*

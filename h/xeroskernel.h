@@ -80,7 +80,10 @@ struct pcb
 	unsigned int esp;		/* process stack pointer */
 	unsigned int *mem;		/* process memory 'dataStart' pointer */
 	unsigned int args;		/* retains all arguments passed from a syscall() */
-	unsigned int delta_slice;
+
+	unsigned int delta_slice;	/* process time slices to sleep for,
+					*  this value is stored as a key in the delta list for sleep queue */
+
 	unsigned int rc;		/* return code from syscall() */
 	pcb_t *next;			/* link to the next pcb block, two queues exist in the os, ready and stop */
 };
@@ -158,10 +161,10 @@ extern void consumer(void);
 
 /* sleep device */
 extern unsigned int sleep_to_slice (unsigned int ms);
-extern void sleep(pcb_t *p);
-extern int sleeper (void);
+extern unsigned int sleep(pcb_t *p);
+extern unsigned int sleeper (void);
 extern pcb_t* wake(void);
-extern int tick(void);
+extern unsigned int tick(void);
 
 
 /* test driver */

@@ -1,5 +1,8 @@
 /* sleep.c : sleep device (assignment 2)
- */
+* 
+* name:		Jack Wu
+* student id:	17254079
+*/
 
 #include <xeroskernel.h>
 
@@ -10,7 +13,13 @@ static unsigned int slice_elapsed = 0;
 /*
 * sleep_to_slice
 *
-* @desc:	
+* @desc:	converts time in millisecond to number of time slices
+*
+* @param:	ms		time in milliseconds
+*
+* @output:	slice		millisecond in milliseconds
+*
+* @note:	the quantum of a time slice is CLOCK_DIVISOR / 10
 */
 unsigned int sleep_to_slice (unsigned int ms)
 {
@@ -21,74 +30,99 @@ unsigned int sleep_to_slice (unsigned int ms)
 /*
 * sleep
 *
-* @desc:	
+* @desc:	puts proc pcb in the sleep delta list
+*
+* @param:	p		proc pcb to place in the sleep queue
+*
+* @output:	cnt		returns the number of time slices a process will sleep
+				0 - a duplicate amount already exist in the sleep queue, process will immediately wake up
+*
+* @note:	the delta list is dependent on the pcb->delta_slice value
 */
-void sleep (pcb_t *p)
+unsigned int sleep (pcb_t *p)
 {
 	pcb_t *tmp = sleep_q;
+	unsigned int cnt=0;
 
 	if(!tmp) 
 	{
 		sleep_q = p;
 		sleep_q->next = NULL;
-		return;
+		return sleep_q->delta_slice;
 	}
 
-	/* add to head */
-	if(p->delta_slice < sleep_q->delta_slice)
+	/* add proc to head */
+	if(p->delta_slice == sleep_q->delta_slice) return 0;
+	else if(p->delta_slice < sleep_q->delta_slice)
 	{
+		cnt += p->delta_slice;
 		sleep_q->delta_slice -= p->delta_slice;
+		cnt += sleep_q->delta_slice;
 		p->next = sleep_q;
 		sleep_q = p;
-		return;
+		return cnt;
 	}
 
 	while(tmp) 
 	{
-		if(tmp->delta_slice < p->delta_slice)
+		cnt += tmp->delta_slice;
+	
+		if(p->delta_slice == tmp->delta_slice) return 0;
+
+		else if(tmp->delta_slice < p->delta_slice)
 		{
 			p->delta_slice -= tmp->delta_slice;
 
-			/* add to body */
+			/* add proc to body */
 			if(tmp->next && tmp->next->delta_slice > p->delta_slice)
 			{
 				tmp->next->delta_slice -= p->delta_slice;
 				p->next = tmp->next;
 				tmp->next = p;
-				return;
+				return cnt;
 			}
-			/* add to tail */
+			/* add proc to tail */
 			else if(!tmp->next)
 			{
 				p->next = NULL;
 				tmp->next = p;
-				return;				
+				return cnt;				
 			}
 		}
-
 		tmp = tmp->next;
 	}
+
+	/* extraneous case, the proc does not get added to sleep queue */
+	return 0;
 }
 
 /*
 * wake
 *
-* @desc:	
+* @desc:	returns the head of the sleep queue
+* 
+* @output:	p	head of sleep queue
+*
+* @note:	the sleep queue is a delta list, hence removing any element from the list is constant time,
+*		hence it does not need to iterate through the list to decrement each element sleep value
 */
 pcb_t* wake ()
 {
     	pcb_t *p = sleep_q;
     	if(p) sleep_q = p->next;
-
 	return p;
 }
 
 /*
 * tick
 *
-* @desc:	
+* @desc:	increment the global tick value, if the global tick value equates to the head queue element sleep value,
+*		return true, 
+*		otherwise return false
+*
+* @output	bool		return true or false to indicate the whether to wake up the head of sleep queue
 */
-int tick() 
+unsigned int tick() 
 {
 	slice_elapsed++;
 	if(slice_elapsed == sleep_q->delta_slice) 
@@ -102,12 +136,14 @@ int tick()
 /*
 * sleeper
 *
-* @desc:	
+* @desc:	returns the number of elements in the sleep queue
+*
+* @output:	cnt		number of elements in sleep queue
 */
-int sleeper ()
+unsigned int sleeper ()
 {
 	pcb_t *tmp = sleep_q;
-	int cnt = 0;
+	unsigned int cnt = 0;
 	while(tmp)
 	{
 		cnt++;
