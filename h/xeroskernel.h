@@ -28,12 +28,14 @@ typedef	char		Bool;		/* Boolean type			*/
 #define PROC_STACK	1024*4		/* set process stack to 4096 */
 
 /* syscall() request id */
-#define STOP        	0
-#define YIELD      	1
-#define CREATE     	2
-#define GETPID		3
-#define PUTS		4
-#define SLEEP		5
+#define TIMER_INT	1
+
+#define STOP        	100
+#define YIELD      	101
+#define CREATE     	102
+#define GETPID		103
+#define PUTS		104
+
 
 #ifndef MEM_DEBUG
 /* uncomment line to enable memory debug prints */
@@ -77,8 +79,9 @@ struct pcb
 	unsigned int pid;		/* process pid */
 	unsigned int esp;		/* process stack pointer */
 	unsigned int *mem;		/* process memory 'dataStart' pointer */
-	unsigned int args;		/* retains all arguments passed from a system call */
-	unsigned int rc;
+	unsigned int args;		/* retains all arguments passed from a syscall() */
+	unsigned int sleep;
+	unsigned int rc;		/* return code from syscall() */
 	pcb_t *next;			/* link to the next pcb block, two queues exist in the os, ready and stop */
 };
 
@@ -94,7 +97,7 @@ struct context_frame
 	unsigned int   esp;		/* process stack pointer */
 	unsigned int   ebx;		
 	unsigned int   edx;		/* process data register (keeps args from syscall()) */
-	unsigned int   ecx;		
+	unsigned int   ecx;		/* process interrupt code */
 	unsigned int   eax;		/* process return value register */
 	unsigned int   iret_eip;	/* process instruction pointer */
 	unsigned int   iret_cs;		/* process code segment start */
@@ -147,6 +150,7 @@ extern void sysputs( char *str );
 extern unsigned int syssleep( unsigned int milliseconds );
 
 /* user processes */
+extern void idleproc (void);
 extern void root(void);
 extern void producer(void);
 extern void consumer(void);

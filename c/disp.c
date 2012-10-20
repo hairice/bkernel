@@ -31,6 +31,11 @@ void dispatch()
 		request = contextswitch(p);
 
 		switch(request) {
+			case TIMER_INT:
+				ready(p);			
+				end_of_intr();
+				break;
+
 			case CREATE:	
 				/* retrieve args passed from syscall() */
 				ap = (va_list)p->args;

@@ -101,5 +101,4 @@ void sysputs( char *str )
 */
 unsigned int syssleep( unsigned int milliseconds )
 {
-	return syscall(SLEEP);
 }

@@ -8,6 +8,18 @@
 
 /* Your code goes here */
 
+
+
+/*
+* root
+*
+* @desc:	executes the root process
+*/
+void idleproc (void)
+{
+	for(;;);
+}
+
 /*
 * root
 *
@@ -15,12 +27,11 @@
 */
 void root()
 {
-	//syscreate(&producer, PROC_STACK);
-	//syscreate(&consumer, PROC_STACK);
+	syscreate(&producer, PROC_STACK);
+	syscreate(&consumer, PROC_STACK);
 
 	/* eventual loop after producer and consumer exits */
-	for(;;) 
-		sysyield();
+	for(;;);
 }
 
 /*
@@ -36,11 +47,8 @@ void producer ()
 	* Assignment 1: 	cycle 12 iterations 
 	*			print "Happy ", sysyield()	
 	*/
-	//for(i=0; i<12; i++)
-	//{
-		kprintf("Happy \n");
-	//	sysyield();
-	//}
+	for(i=0; i<12; i++)
+		kprintf("producer\n");
 }
 
 /*
@@ -57,8 +65,5 @@ void consumer ()
 	*			print "New Year", sysyield()	
 	*/
 	for(i=0; i<15; i++) 
-	{
-		kprintf("New Year\n");
-		sysyield();
-	}
+		kprintf("consumer\n");
 }

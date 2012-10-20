@@ -15,11 +15,17 @@
 */
 
 
-void _ISREntryPoint(void);		/* kernel interrupt routine */
+void _timer_entry_point(void);		/* timer isr */
+void _syscall_entry_point(void);	/* system call isr */
+void _common_entry_point(void);		/* system call and interrupt isr */
 
 static unsigned int esp;		/* user stack pointer location */
 static unsigned int k_esp;		/* kernel stack pointer location */
 static unsigned int rc;			/* syscall() call request id */
+static unsigned int interrupt;		/* interrupt code
+					*  0 - system call
+					*  1 - timer interrupt
+					*/
 static unsigned int args;		/* args passed from syscall() */
 
 /*
@@ -33,8 +39,7 @@ static unsigned int args;		/* args passed from syscall() */
 */
 int contextswitch( pcb_t *p ) 
 {
-	k_esp=0;
-
+	k_esp = 0;
 	/* save process esp and return code*/
 	esp=p->esp;	
 	rc=p->rc;
@@ -43,33 +48,51 @@ int contextswitch( pcb_t *p )
 	* context switch between process and kernel
 	* retrieve syscall() arguments by register from 'eax' and 'edx'
 	*/
-	__asm __volatile( " 			\
-		pushf 				\n\
-		pusha 				\n\
-		movl	rc, %%eax    		\n\
-		movl    esp, %%edx    		\n\
-		movl    %%esp, k_esp    	\n\
-		movl    %%edx, %%esp 		\n\
-		movl    %%eax, 28(%%esp) 	\n\
-		popa 				\n\
-		iret 				\n\
-	_ISREntryPoint:  			\n\
-    		pusha   			\n\
-    		movl 	%%esp, esp 		\n\
-    		movl 	k_esp, %%esp 		\n\
-		movl 	%%eax, rc 		\n\
-		movl 	%%edx, args 		\n\
-    		popa 				\n\
-    		popf 				\n\
-        	"
-  		:
-  		: 
-  		: "%eax"
-  		);
+	__asm __volatile( " 					\
+				pushf 				\n\
+				pusha 				\n\
+				movl	rc, %%eax    		\n\
+				movl    esp, %%edx    		\n\
+				movl    %%esp, k_esp    	\n\
+				movl    %%edx, %%esp 		\n\
+				movl    %%eax, 28(%%esp) 	\n\
+				popa 				\n\
+				iret 				\n\
+	_timer_entry_point:					\n\
+				cli				\n\
+    				pusha   			\n\
+				movl 	$1, %%ecx		\n\
+				jmp	_common_entry_point	\n\
+	_syscall_entry_point:					\n\
+				cli				\n\
+    				pusha   			\n\
+				movl 	$0, %%ecx		\n\
+	_common_entry_point:  					\n\
+    				movl 	%%esp, esp 		\n\
+    				movl 	k_esp, %%esp 		\n\
+				movl 	%%eax, 28(%%esp)	\n\
+				movl	%%ecx, 24(%%esp)	\n\
+				movl	%%edx, 20(%%esp)	\n\
+    				popa 				\n\
+    				popf 				\n\
+				movl 	%%eax, rc 		\n\
+				movl 	%%ecx, interrupt	\n\
+				movl 	%%edx, args 		\n\
+        			"
+  				:
+  				: 
+  				: "%eax", "%ecx", "%edx"
+  	);
  
+	if(interrupt) 
+	{
+		p->rc = rc;
+		rc = interrupt;
+	} 
+	if(args) p->args = args;
+
 	/* save process esp and passed args */
 	p->esp = esp;
-	p->args = args;
 
 	return rc;
 }
@@ -81,6 +104,8 @@ int contextswitch( pcb_t *p )
 */
 void contextinit() 
 {
-	set_evec(KERNEL_INT, _ISREntryPoint);
+	set_evec(KERNEL_INT, _syscall_entry_point);
+	set_evec(IRQBASE, _timer_entry_point);
+	initPIT(100);
 }
 

@@ -42,8 +42,6 @@ int create(void (*func)(void), int stack)
 
 	p->mem = (unsigned int*)mem;
 
-
-	
 	/* set process context frame STACK_PAD away from the end of the allocated memory */
 	frame = (context_frame_t *) ((int)mem+stack-sizeof(context_frame_t)-(int)STACK_PAD);	
 
@@ -52,7 +50,7 @@ int create(void (*func)(void), int stack)
 	frame->iret_eip = (unsigned int) func;
     	frame->esp = (unsigned int)(frame);
 	frame->ebp = frame->esp;
-	frame->eflags = 0;
+	frame->eflags = 0x00003200;
 	frame->iret_func = &sysstop;
 
 	p->esp = frame->esp;
