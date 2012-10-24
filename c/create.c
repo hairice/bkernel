@@ -11,7 +11,7 @@
 				/* of the memory allocation */
 
 extern pcb_t *stop_q;
-static int pid = 0;		/* pid will increment by 1 everytime a new proc is added */
+static int pid = 1;		/* pid will increment by 1 everytime a new proc is added */
 				/* to the ready queue */
 
 /*
@@ -24,6 +24,8 @@ static int pid = 0;		/* pid will increment by 1 everytime a new proc is added */
 *
 * @output:	FALSE		unable to create a new process
 *		TRUE		created new process and pushed to ready queue
+*
+* @note:	pid starts at 1, pid 0 is reserved for the idle proc
 */
 int create(void (*func)(void), int stack) 
 {
@@ -54,8 +56,13 @@ int create(void (*func)(void), int stack)
 	frame->iret_func = &sysstop;
 
 	p->esp = frame->esp;
-	p->pid=pid;
-	pid++;
+
+	if(func == &idleproc) p->pid = IDLE_PROC_PID;
+	else 
+	{
+		p->pid=pid;
+		pid++;
+	}
 	
 	/* add proc to ready queue */
 	ready(p);	

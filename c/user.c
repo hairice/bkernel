@@ -8,14 +8,12 @@
 
 /* Your code goes here */
 
-
-
 /*
-* root
+* idleproc
 *
-* @desc:	executes the root process
+* @desc:	executes the idle process
 */
-void idleproc (void)
+void idleproc ()
 {
 	for(;;);
 }

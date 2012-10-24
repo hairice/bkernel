@@ -28,6 +28,13 @@ void dispatch()
 	for(;;) 
 	{
 		p = next();
+
+		/* execute the idle proc only when there are no other proc in ready_q */
+		if(p->pid == 0 && count() > 0) 
+		{
+			ready(p);
+			continue;
+		}
 		request = contextswitch(p);
 
 		switch(request) {
@@ -170,4 +177,21 @@ void stop (pcb_t *p)
 		tmp = tmp->next;
 	}
 	tmp->next = p;
+}
+
+/*
+* print_ready
+*
+* @desc: 	output all ready queue proc pid to console
+*/
+void print_ready ()
+{
+	pcb_t *tmp = ready_q;
+
+	while(tmp) 
+	{
+		kprintf("%d ", tmp->pid);
+		tmp=tmp->next;
+	}
+	kprintf("\n");
 }

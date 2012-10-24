@@ -48,6 +48,7 @@ void initproc( void )				/* The beginning */
 #ifdef TEST_MODE	/* by default test_mode is off */
 	testdriver();
 #else
+	create(&idleproc, PROC_STACK);
 	create(&root, PROC_STACK);
 	contextinit();
 	dispatch();

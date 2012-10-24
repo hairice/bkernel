@@ -37,6 +37,10 @@ typedef	char		Bool;		/* Boolean type			*/
 #define PUTS		104
 #define SLEEP		105
 
+
+#define IDLE_PROC_PID	0
+
+
 #ifndef MEM_DEBUG
 /* uncomment line to enable memory debug prints */
 /* #define MEM_DEBUG */
@@ -135,6 +139,7 @@ extern pcb_t* next(void);
 extern void ready(pcb_t *p);
 extern void stop(pcb_t *p);
 extern int count(void);
+void print_ready_q (void);
 
 extern void contextinit(void);
 extern int contextswitch(pcb_t *p);
