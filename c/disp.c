@@ -19,7 +19,7 @@ pcb_t *block_q;
 */
 void dispatch() 
 {
-	unsigned int request,pid;
+	unsigned int request;
 	pcb_t *p=NULL;
     	va_list ap;
 
@@ -34,7 +34,8 @@ void dispatch()
 	unsigned int sleep_ms=0;
 
 	/* ipc arg(s) */
-	pcb_t *proc=NULL;
+	unsigned int endpt_pid;
+	pcb_t *endpt_p=NULL;
 	void *buffer;
 	int buffer_len;
 	
@@ -112,38 +113,59 @@ void dispatch()
 		
 			case SEND:
 				ap = (va_list)p->args;
-				pid = va_arg(ap, unsigned int);
+				endpt_pid = va_arg(ap, unsigned int);
 				buffer = va_arg(ap, void*);
 				buffer_len = va_arg(ap, int);
 			
-				proc = unblock(pid);
-				if(proc)
+				/* search for ipc_receiver in block_q */
+				endpt_p = unblock(p->pid, endpt_pid, RECEIVER);
+				if(endpt_p)
 				{
-					ready(p);
-					ready(proc);
+					/* ipc_snd */
 					//send(p, proc);
+							
+					ready(p);
+					ready(endpt_p);
 				}
 				else
 				{
+					/* preserve all args from syscall() */
+					p->comm.role = SENDER;
+					p->comm.endpt_pid = endpt_pid;
+					p->comm.buffer = buffer;	
+					p->comm.buffer_len = buffer_len;
+
+					/* receiver not found, snd_proc is now blocked */
 					block(p);
 				}
+
 				break;
 				
 			case RECV:
 				ap = (va_list)p->args;
-				pid = va_arg(ap, unsigned int);
+				endpt_pid = va_arg(ap, unsigned int);
 				buffer = va_arg(ap, void*);
 				buffer_len = va_arg(ap, int);
 			
-				proc = unblock(pid);
-				if(proc)
+				/* search for ipc_receiver in block_q */
+				endpt_p = unblock(p->pid, endpt_pid, SENDER);
+				if(endpt_p)
 				{
+					/* ipc_rcv */
+					//recv(p, endpt_p);
+	
 					ready(p);
-					ready(proc);
-					//recv(p, proc);
+					ready(endpt_p);
 				}
 				else
 				{
+					/* preserve all args from syscall() */
+					p->comm.role = RECEIVER;
+					p->comm.endpt_pid = endpt_pid;
+					p->comm.buffer = buffer;	
+					p->comm.buffer_len = buffer_len;
+
+					/* sender not found, snd_proc is now blocked */
 					block(p);
 				}
 
@@ -196,6 +218,7 @@ void ready(pcb_t *p)
 * count
 *
 * @desc:	count the number of pcb in the ready queue
+*
 * @note:	the stop queue count is (MAX_PROC-cnt)
 */
 int count (void)
@@ -277,15 +300,20 @@ void block(pcb_t *p)
 * @param:	pid		pid of the proc pcb to retrieve from the block_q
 *
 * @output:	p		proc pcb for the matching input pid
+*		role		ipc counterpart desired role (sender/receiver)
 *
 * @note:	ipc_senders calls this function to find the matching ipc_receiver, and vice versa
 */
-pcb_t* unblock(unsigned int pid)
+pcb_t* unblock(unsigned int pid, unsigned int endpt_pid, unsigned int role)
 {
 	pcb_t *tmp=NULL, *p=NULL;
 
-	/* unblock proc found at the head of the block_q */
-	if(block_q->pid == pid)
+	/* a proc is unblocked if the following conditions are met
+	*  1. the proc's pid is the desired endpoint pid
+	*  2. the proc's desired endpoint pid is current pid being serviced by the dispatcher
+	*  3. the proc has the correct role (sender/receiver)
+	*/	
+	if(block_q->pid == endpt_pid && block_q->comm.endpt_pid == pid && block_q->comm.role == role)
 	{
 		p = block_q;
 		block_q = block_q->next;
@@ -297,10 +325,9 @@ pcb_t* unblock(unsigned int pid)
 	*/
 	tmp = block_q;
 	while(tmp && tmp->next) 
-	{
-			
-		/* unblock proc found in the body of the block_q */
-		if(tmp->next->pid == pid)
+	{			
+		/* stated conditions have been met, the proc is released from block_q */
+		if(tmp->next->pid == endpt_pid && tmp->next->comm.endpt_pid == pid && tmp->next->comm.role == role)
 		{
 			p = tmp->next;
 			tmp->next = tmp->next->next;

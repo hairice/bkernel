@@ -47,10 +47,19 @@ typedef	char		Bool;		/* boolean type				*/
 #define RECV		107
 
 
-/* user process macros */
+/* hardware timer constant */
+#define CLOCK_DIVISOR	100
+
+
+/* user process constants */
 #define IDLE_PROC_PID	0
 #define MAX_PROC	32
-#define PROC_STACK	1024*4		/* set process stack to 4096 */
+#define PROC_STACK	1024*4		/* set process stack to 4096	*/
+
+
+/* ipc role constants */
+#define SENDER 		1	
+#define RECEIVER 	2
 
 
 /* ====================== */
@@ -65,6 +74,16 @@ struct memHeader
 	unsigned char dataStart[0]; 	/* start of the data portion of a memory block 			*/
 }; 
 
+
+typedef struct ipc ipc_t;		
+struct ipc
+{
+	unsigned int role;		/* specify proc as sender/receiver 		*/
+	unsigned int endpt_pid;		/* pid of the other sending/receiving proc 	*/
+	void *buffer;			
+	int buffer_len;			
+};
+
 typedef struct pcb pcb_t;
 struct pcb 
 {
@@ -76,10 +95,11 @@ struct pcb
 	unsigned int delta_slice;	/* process time slices to sleep for,
 					*  this value is stored as a key in the delta list for sleep queue 		*/
 
-//	unsigned int ipc_proc_pid;	
-//	void *ipc_buffer;
-//	int ipc_buffer_len;
-
+	ipc_t comm;			/* ipc data members
+					*  note: this member is only used when a proc is blocked on a syssend()/sysrecv(), 
+					*  and the values are compared with in unblock() to ensure the proc is the desired ipc counterpart
+					*/
+	
 	unsigned int rc;		/* return code from syscall() 							*/
 	pcb_t *next;			/* link to the next pcb block, two queues exist in the os, ready and stop 	*/
 };
@@ -135,13 +155,13 @@ extern int kmemtotalsize(void);		/* get total size from all free mem blocks 	*/
 
 /* process management unit */
 extern void dispatch(void);
-extern pcb_t* next(void);			/* get read_q head proc pcb 			*/
-extern void ready(pcb_t *p);			/* put proc pcb in the ready_q 			*/
-extern void stop(pcb_t *p);			/* put proc pcb in the stop_q 			*/
-extern void block(pcb_t *p);			/* put proc pcb in the block_q 			*/
-extern pcb_t* unblock(unsigned int pid);	/* get proc pcb in the block_q 			*/
+extern pcb_t* next(void);								/* get read_q head proc pcb 		*/
+extern void ready(pcb_t *p);								/* put proc pcb in the ready_q 		*/
+extern void stop(pcb_t *p);								/* put proc pcb in the stop_q 		*/
+extern void block(pcb_t *p);								/* put proc pcb in the block_q 		*/
+extern pcb_t* unblock(unsigned int pid, unsigned int endpt_pid, unsigned int role);	/* get proc pcb in the block_q 		*/
 extern unsigned int blocker(void);
-extern int count(void);				/* get number of proc pcb in the ready_q 	*/
+extern int count(void);									/* get number of proc pcb in the ready_q */
 void puts_ready_q(void);
 void puts_block_q(void);
 
@@ -178,6 +198,7 @@ extern unsigned int sleep(pcb_t *p);
 extern pcb_t* wake(void);				/* get head proc pcb in the sleep_q 				*/
 extern unsigned int sleeper (void);			/* count number of proc pcb in the sleep_q 			*/
 extern unsigned int sleep_to_slice (unsigned int ms);	/* convert ms to number of slices, ms / (CLOCK_DIVISOR/10) 	*/
+extern void puts_sleep_q(void);
 
 
 /* hardware timer */

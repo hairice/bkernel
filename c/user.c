@@ -8,6 +8,7 @@
 
 /* Your code goes here */
 
+
 /*
 * idleproc
 *
@@ -28,6 +29,7 @@ void root()
 	syscreate(&producer, PROC_STACK);
 	syscreate(&consumer, PROC_STACK);
 
+	/* eventual loop for root */	
 	for(;;);
 }
 
@@ -38,11 +40,9 @@ void root()
 */
 void producer ()
 {
-	unsigned char *buffer = "This is a producer message";	
-	kprintf("%s\n", buffer);
+	unsigned char *snd_buffer = "2000";	
 
-	syssend(8, buffer, 22);
-	kprintf("producer back\n");
+	syssend(3, snd_buffer, 4);
 
 	for(;;);
 }
@@ -54,13 +54,12 @@ void producer ()
 */
 void consumer ()
 {
-	unsigned char *buffer = "This is a consumer message";
-	kprintf("%s\n", buffer);
-	
-	syssend(7, buffer, 22);
-	kprintf("consumer back\n");
+	unsigned char *rcv_buffer[4];	
+
+	sysrecv(2, &rcv_buffer, 4);
 
 	for(;;);
 }
+
 
 
