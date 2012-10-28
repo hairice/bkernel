@@ -38,6 +38,8 @@ void dispatch()
 	pcb_t *endpt_p=NULL;
 	void *buffer;
 	int buffer_len;
+
+	char *tmp;
 	
 
 	/* start dispatcher */
@@ -117,24 +119,24 @@ void dispatch()
 				buffer = va_arg(ap, void*);
 				buffer_len = va_arg(ap, int);
 			
+				/* preserve all args from syscall() */
+				p->comm.role = SENDER;
+				p->comm.endpt_pid = endpt_pid;
+				p->comm.buffer = buffer;	
+				p->comm.buffer_len = buffer_len;
+
 				/* search for ipc_receiver in block_q */
 				endpt_p = unblock(p->pid, endpt_pid, RECEIVER);
 				if(endpt_p)
 				{
 					/* ipc_snd */
-					//send(p, proc);
+					send(p, endpt_p);
 							
 					ready(p);
 					ready(endpt_p);
 				}
 				else
 				{
-					/* preserve all args from syscall() */
-					p->comm.role = SENDER;
-					p->comm.endpt_pid = endpt_pid;
-					p->comm.buffer = buffer;	
-					p->comm.buffer_len = buffer_len;
-
 					/* receiver not found, snd_proc is now blocked */
 					block(p);
 				}
@@ -146,25 +148,25 @@ void dispatch()
 				endpt_pid = va_arg(ap, unsigned int);
 				buffer = va_arg(ap, void*);
 				buffer_len = va_arg(ap, int);
+
+				/* preserve all args from syscall() */
+				p->comm.role = RECEIVER;
+				p->comm.endpt_pid = endpt_pid;
+				p->comm.buffer = buffer;	
+				p->comm.buffer_len = buffer_len;
 			
 				/* search for ipc_receiver in block_q */
 				endpt_p = unblock(p->pid, endpt_pid, SENDER);
 				if(endpt_p)
 				{
 					/* ipc_rcv */
-					//recv(p, endpt_p);
-	
+					recv(endpt_p, p);
+					
 					ready(p);
 					ready(endpt_p);
 				}
 				else
 				{
-					/* preserve all args from syscall() */
-					p->comm.role = RECEIVER;
-					p->comm.endpt_pid = endpt_pid;
-					p->comm.buffer = buffer;	
-					p->comm.buffer_len = buffer_len;
-
 					/* sender not found, snd_proc is now blocked */
 					block(p);
 				}
