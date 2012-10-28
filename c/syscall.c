@@ -51,7 +51,7 @@ int syscall (int call, ...) {
 */
 int syscreate(void (*func)(void), int stack)
 {
-	return (syscall(CREATE, func, stack));
+	return syscall(CREATE, func, stack);
 }
 
 /*
@@ -110,4 +110,28 @@ void sysputs( char *str )
 unsigned int syssleep( unsigned int milliseconds )
 {
 	return syscall(SLEEP, milliseconds);
+}
+
+/*
+* sysputs
+*
+* @desc:	signals a synchronous kernel console output message
+*
+* @param:	str		string message to display on console
+*/
+extern int syssend(unsigned int dest_pid, void *buffer, int buffer_len)
+{
+	return syscall(SEND, dest_pid, buffer, buffer_len);
+}
+
+/*
+* sysputs
+*
+* @desc:	signals a synchronous kernel console output message
+*
+* @param:	str		string message to display on console
+*/
+extern int sysrecv(unsigned int *from_pid, void *buffer, int buffer_len)
+{
+	return syscall(RECV, from_pid, buffer, buffer_len);
 }

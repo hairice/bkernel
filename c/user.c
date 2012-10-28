@@ -28,7 +28,6 @@ void root()
 	syscreate(&producer, PROC_STACK);
 	syscreate(&consumer, PROC_STACK);
 
-	/* eventual loop after producer and consumer exits */
 	for(;;);
 }
 
@@ -39,14 +38,13 @@ void root()
 */
 void producer ()
 {
-	int i;
+	unsigned char *buffer = "This is a producer message";	
+	kprintf("%s\n", buffer);
 
-	/*
-	* Assignment 1: 	cycle 12 iterations 
-	*			print "Happy ", sysyield()	
-	*/
-	for(i=0; i<12; i++)
-		kprintf("producer\n");
+	syssend(8, buffer, 22);
+	kprintf("producer back\n");
+
+	for(;;);
 }
 
 /*
@@ -56,12 +54,13 @@ void producer ()
 */
 void consumer ()
 {
-	int i;
+	unsigned char *buffer = "This is a consumer message";
+	kprintf("%s\n", buffer);
+	
+	syssend(7, buffer, 22);
+	kprintf("consumer back\n");
 
-	/*
-	* Assignment 1: 	cycle 15 iterations 
-	*			print "New Year", sysyield()	
-	*/
-	for(i=0; i<15; i++) 
-		kprintf("consumer\n");
+	for(;;);
 }
+
+
