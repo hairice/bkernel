@@ -114,6 +114,6 @@ void contextinit()
 	set_evec(IRQBASE, _timer_entry_point);
 
 	// set timer interrupt quantum
-	initPIT(100);
+	initPIT(CLOCK_DIVISOR);
 }
 
