@@ -140,7 +140,7 @@ unsigned int tick()
 *
 * @output:	cnt		number of elements in sleep queue
 */
-unsigned int sleeper ()
+unsigned int sleeper()
 {
 	pcb_t *tmp = sleep_q;
 	unsigned int cnt = 0;
@@ -150,4 +150,21 @@ unsigned int sleeper ()
 		tmp = tmp->next;
 	}
 	return cnt;
+}
+
+/*
+* puts_sleep_q
+*
+* @desc:	output all sleep queue proc pid with its respective delta_slice to console
+*/
+void puts_sleep_q()
+{
+	pcb_t *tmp = sleep_q;
+
+	while(tmp)
+	{
+		kprintf("%d(%d) ", tmp->pid, tmp->delta_slice);
+		tmp = tmp->next;
+	}
+	kprintf("\n");
 }
