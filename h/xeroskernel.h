@@ -52,7 +52,7 @@ typedef	char		Bool;		/* boolean type				*/
 
 
 /* user process constants */
-#define IDLE_PROC_PID	0
+#define IDLE_PROC_PID	32
 #define MAX_PROC	32
 #define PROC_STACK	1024*4		/* set process stack to 4096	*/
 
