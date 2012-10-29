@@ -30,7 +30,7 @@ int send(pcb_t* snd_p, pcb_t* rcv_p)
 		rcv_buffer[i] = snd_buffer[i];
 	}
 
-	return (i+1);
+	return i;
 }
 
 /*
@@ -57,6 +57,6 @@ int recv(pcb_t* snd_p, pcb_t* rcv_p)
 		rcv_buffer[i] = snd_buffer[i];
 	}
 
-	return (i+1);
+	return i;
 }
 

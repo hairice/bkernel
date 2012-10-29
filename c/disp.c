@@ -130,7 +130,8 @@ void dispatch()
 				if(endpt_p)
 				{
 					/* ipc_snd */
-					send(p, endpt_p);
+					p->rc = send(p, endpt_p);
+					endpt_p->rc = p->rc;					
 							
 					ready(p);
 					ready(endpt_p);
@@ -160,8 +161,9 @@ void dispatch()
 				if(endpt_p)
 				{
 					/* ipc_rcv */
-					recv(endpt_p, p);
-					
+					p->rc = recv(endpt_p, p);
+					endpt_p->rc = p->rc;					
+
 					ready(p);
 					ready(endpt_p);
 				}
