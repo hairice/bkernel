@@ -158,8 +158,12 @@ void dispatch()
 			
 				/* search for ipc_receiver in block_q */
 				endpt_p = unblock(p->pid, endpt_pid, SENDER);
+		
 				if(endpt_p)
 				{
+					/* when the receiver wants to receive from pid 0, update to the actual sender pid */
+					if(!endpt_pid) p->comm.endpt_pid = endpt_p->pid;
+
 					/* ipc_rcv */
 					p->rc = recv(endpt_p, p);
 					endpt_p->rc = p->rc;					
@@ -316,8 +320,14 @@ pcb_t* unblock(unsigned int pid, unsigned int endpt_pid, unsigned int role)
 	*  1. the proc's pid is the desired endpoint pid
 	*  2. the proc's desired endpoint pid is current pid being serviced by the dispatcher
 	*  3. the proc has the correct role (sender/receiver)
+	*
+	*  a proc can also be blocked if the following conditions are met
+	*  1. the desired endpoint pid is 0
+	*  2. the role is SENDER
+	*  3. the proc's role is SENDER
 	*/	
-	if(block_q->pid == endpt_pid && block_q->comm.endpt_pid == pid && block_q->comm.role == role)
+	if((block_q->pid == endpt_pid && block_q->comm.endpt_pid == pid && block_q->comm.role == role) || 
+	(!endpt_pid && role == SENDER && role == block_q->comm.role && block_q->comm.endpt_pid == pid))
 	{
 		p = block_q;
 		block_q = block_q->next;
@@ -331,7 +341,8 @@ pcb_t* unblock(unsigned int pid, unsigned int endpt_pid, unsigned int role)
 	while(tmp && tmp->next) 
 	{			
 		/* stated conditions have been met, the proc is released from block_q */
-		if(tmp->next->pid == endpt_pid && tmp->next->comm.endpt_pid == pid && tmp->next->comm.role == role)
+		if((tmp->next->pid == endpt_pid && tmp->next->comm.endpt_pid == pid && tmp->next->comm.role == role) || 
+		(!endpt_pid && role == SENDER && role == tmp->next->comm.role && tmp->next->comm.endpt_pid == pid))
 		{
 			p = tmp->next;
 			tmp->next = tmp->next->next;
