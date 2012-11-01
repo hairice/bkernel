@@ -47,6 +47,15 @@ typedef	char		Bool;		/* boolean type				*/
 #define RECV		107
 
 
+/* process states */
+#define RUNNING_STATE		0
+#define READY_STATE		1
+#define SLEEP_STATE		2
+#define BLOCK_ON_SEND_STATE	3
+#define BLOCK_ON_RECV_STATE	4
+#define STOP_STATE		5
+
+
 /* hardware timer constant */
 #define CLOCK_DIVISOR	100
 
@@ -61,6 +70,7 @@ typedef	char		Bool;		/* boolean type				*/
 /* ipc role constants */
 #define SENDER 		1	
 #define RECEIVER 	2
+
 
 
 /* ====================== */
