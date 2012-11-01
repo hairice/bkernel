@@ -37,6 +37,7 @@ void dispatch()
 
 	/* ipc arg(s) */
 	unsigned int pid;
+	unsigned int *pid_ptr;
 	pcb_t *proc=NULL;
 	void *buffer;
 	int buffer_len;
@@ -138,15 +139,12 @@ void dispatch()
 				mem = kmalloc(sizeof(ipc_t));
 
 				comm = (ipc_t *) ((int)mem); 
-				comm->pid = pid;
 				comm->buffer = buffer;
 				comm->buffer_len = buffer_len;
 				p->ptr = comm;
 
 				/* search for ipc_receiver in block_q */
 				proc = unblock(p->blocked_receivers, pid);
-
-
 				if(proc)
 				{
 					/* set return value as the number of bytes sent */
@@ -163,12 +161,10 @@ void dispatch()
 					proc->state = READY_STATE;	
 					ready(p);
 					ready(proc);
-
 				}
 				else
 				{
 					/* receiver not found, snd_proc is now blocked */
-					
 					proc = get_proc(pid);
 					if(proc) 
 					{
@@ -181,24 +177,23 @@ void dispatch()
 				
 			case RECV:
 				ap = (va_list)p->args;
-				pid = va_arg(ap, unsigned int);
+				pid_ptr = va_arg(ap, unsigned int*);
 				buffer = va_arg(ap, void*);
 				buffer_len = va_arg(ap, int);
 
 				/* hold the ipc() args in the generic ptr in pcb */
 				mem = kmalloc(sizeof(ipc_t));
 				comm = (ipc_t *) ((int)mem); 
-				comm->pid = pid;
 				comm->buffer = buffer;
 				comm->buffer_len = buffer_len;
 				p->ptr = comm;
 
 				/* search for ipc_receiver in block_q */
-				proc = unblock(p->blocked_senders, pid);
+				proc = unblock(p->blocked_senders, *pid_ptr);
 				if(proc)
 				{
 					/* when the receiver wants to receive from pid 0, update to the actual sender pid */
-					//if(!endpt_pid) p->comm.endpt_pid = endpt_p->pid;
+					if(!(*pid_ptr)) *pid_ptr = proc->pid;
 
 					/* set return value as the number of bytes sent */
 					p->rc = recv(proc, p);
@@ -218,7 +213,7 @@ void dispatch()
 				else
 				{
 					/* sender not found, snd_proc is now blocked */
-					proc = get_proc(pid);
+					proc = get_proc(*pid_ptr);
 					if(proc) 
 					{
 						block(&(proc->blocked_receivers), p);

@@ -85,9 +85,8 @@ struct memHeader
 typedef struct ipc ipc_t;		
 struct ipc
 {
-	unsigned int pid;		/* pid of the other sending/receiving proc 	*/
-	void *buffer;			
-	int buffer_len;			
+	void *buffer;			/* holds the data that will be transmitted to/from between proc */
+	int buffer_len;			/* the length of data transfer acceptance at one end of ipc 	*/
 };
 
 typedef struct pcb pcb_t;
