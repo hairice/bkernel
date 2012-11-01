@@ -21,12 +21,14 @@
 int send(pcb_t* snd_p, pcb_t* rcv_p)
 {
 	int i;	
-	char *snd_buffer = (char *) snd_p->comm.buffer;
-	char *rcv_buffer = (char *) rcv_p->comm.buffer;
+	ipc_t* snd = (ipc_t *) snd_p->ptr;
+	ipc_t* rcv = (ipc_t *) rcv_p->ptr;
+	char *snd_buffer = (char *) snd->buffer;
+	char *rcv_buffer = (char *) rcv->buffer;
 
-	for(i=0 ; i<rcv_p->comm.buffer_len ; i++)
+	for(i=0 ; i<rcv->buffer_len ; i++)
 	{
-		if(i > (snd_p->comm.buffer_len-1)) break;
+		if(i > (snd->buffer_len-1)) break;
 		rcv_buffer[i] = snd_buffer[i];
 	}
 
@@ -48,12 +50,14 @@ int send(pcb_t* snd_p, pcb_t* rcv_p)
 int recv(pcb_t* snd_p, pcb_t* rcv_p)
 {
 	int i;	
-	char *snd_buffer = (char *) snd_p->comm.buffer;
-	char *rcv_buffer = (char *) rcv_p->comm.buffer;
+	ipc_t* snd = (ipc_t *) snd_p->ptr;
+	ipc_t* rcv = (ipc_t *) rcv_p->ptr;
+	char *snd_buffer = (char *) snd->buffer;
+	char *rcv_buffer = (char *) rcv->buffer;
 
-	for(i=0 ; i<rcv_p->comm.buffer_len ; i++)
+	for(i=0 ; i<rcv->buffer_len ; i++)
 	{
-		if(i > (snd_p->comm.buffer_len-1)) break;
+		if(i > (snd->buffer_len-1)) break;
 		rcv_buffer[i] = snd_buffer[i];
 	}
 

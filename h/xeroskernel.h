@@ -67,10 +67,6 @@ typedef	char		Bool;		/* boolean type				*/
 #define PROC_STACK	1024*4		/* set process stack to 4096	*/
 
 
-/* ipc role constants */
-#define SENDER 		1	
-#define RECEIVER 	2
-
 
 
 /* ====================== */
@@ -89,7 +85,6 @@ struct memHeader
 typedef struct ipc ipc_t;		
 struct ipc
 {
-	unsigned int role;		/* specify proc as sender/receiver 		*/
 	unsigned int pid;		/* pid of the other sending/receiving proc 	*/
 	void *buffer;			
 	int buffer_len;			
@@ -107,17 +102,11 @@ struct pcb
 	unsigned int delta_slice;	/* process time slices to sleep for,
 					*  this value is stored as a key in the delta list for sleep queue 		*/
 
-	ipc_t comm;			/* ipc data members
-					*  note: this member is only used when a proc is blocked on a syssend()/sysrecv(), 
-					*  and the values are compared with in unblock() to ensure the proc is the desired ipc counterpart
-					*/
+	void *ptr;			/* generic pointer, as of a2, this pointer is used to reference the ipc data 	*/
+	unsigned int rc;		/* return code from syscall() 							*/
 
 	pcb_t *blocked_senders;		/* queue of blocked senders for a proc */
-	pcb_t *blocked_receivers;	/* queue of blocked receivers for a proc */
-
-	void *ptr;			/* generic pointer, as of a2, this pointer is used to reference the ipc data */
-	
-	unsigned int rc;		/* return code from syscall() 							*/
+	pcb_t *blocked_receivers;	/* queue of blocked receivers for a proc */	
 	pcb_t *next;			/* link to the next pcb block, two queues exist in the os, ready and stop 	*/
 };
 

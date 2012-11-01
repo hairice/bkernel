@@ -40,9 +40,10 @@ void dispatch()
 	pcb_t *proc=NULL;
 	void *buffer;
 	int buffer_len;
+	ipc_t *comm;		/* used to temporarily hold the ipc args */
+	int *mem;
+	int *mem2;
 
-	char *tmp;
-	
 
 	/* start dispatcher */
 	for(;;) 
@@ -134,25 +135,36 @@ void dispatch()
 				buffer = va_arg(ap, void*);
 				buffer_len = va_arg(ap, int);
 			
-				/* preserve all args from syscall() */
-				p->comm.role = SENDER;
-				p->comm.pid = pid;
-				p->comm.buffer = buffer;	
-				p->comm.buffer_len = buffer_len;
+				/* hold the ipc() args in the generic ptr in pcb */
+				mem = kmalloc(sizeof(ipc_t));
 
+				comm = (ipc_t *) ((int)mem); 
+				comm->pid = pid;
+				comm->buffer = buffer;
+				comm->buffer_len = buffer_len;
+				p->ptr = comm;
 
 				/* search for ipc_receiver in block_q */
 				proc = unblock(p->blocked_receivers, pid);
+
+
 				if(proc)
 				{
-					/* ipc_snd */
+					/* set return value as the number of bytes sent */
 					p->rc = send(p, proc);
-					proc->rc = p->rc;					
+					proc->rc = p->rc;	
 
+					/* free allocated mem for ipc args for both sender and receiver */
+					kfree(mem);
+					mem = (int *) proc->ptr;
+					kfree(mem);
+
+					/* set proc as ready and put back on ready_q */			
 					p->state = READY_STATE;
 					proc->state = READY_STATE;	
 					ready(p);
 					ready(proc);
+
 				}
 				else
 				{
@@ -189,11 +201,13 @@ void dispatch()
 				buffer = va_arg(ap, void*);
 				buffer_len = va_arg(ap, int);
 
-				/* preserve all args from syscall() */
-				p->comm.role = RECEIVER;
-				p->comm.pid = pid;
-				p->comm.buffer = buffer;	
-				p->comm.buffer_len = buffer_len;
+				/* hold the ipc() args in the generic ptr in pcb */
+				mem = kmalloc(sizeof(ipc_t));
+				comm = (ipc_t *) ((int)mem); 
+				comm->pid = pid;
+				comm->buffer = buffer;
+				comm->buffer_len = buffer_len;
+				p->ptr = comm;
 
 				/* search for ipc_receiver in block_q */
 				proc = unblock(p->blocked_senders, pid);
@@ -202,10 +216,16 @@ void dispatch()
 					/* when the receiver wants to receive from pid 0, update to the actual sender pid */
 					//if(!endpt_pid) p->comm.endpt_pid = endpt_p->pid;
 
-					/* ipc_rcv */
+					/* set return value as the number of bytes sent */
 					p->rc = recv(proc, p);
 					proc->rc = p->rc;					
 
+					/* free allocated mem for ipc args for both sender and receiver */
+					kfree(mem);
+					mem = (int *) proc->ptr;
+					kfree(mem);
+
+					/* set proc as ready and put back on ready_q */		
 					p->state = READY_STATE;
 					proc->state = READY_STATE;
 					ready(p);
