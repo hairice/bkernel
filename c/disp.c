@@ -42,7 +42,6 @@ void dispatch()
 	int buffer_len;
 	ipc_t *comm;		/* used to temporarily hold the ipc args */
 	int *mem;
-	int *mem2;
 
 
 	/* start dispatcher */
@@ -173,22 +172,7 @@ void dispatch()
 					proc = get_proc(pid);
 					if(proc) 
 					{
-						//block(proc->blocked_senders, p);
-						pcb_t *tmp = proc->blocked_senders;
-						p->next = NULL;
-						if(!tmp) 
-						{
-							proc->blocked_senders = p;
-							proc->blocked_senders->next = NULL;
-						}
-
-						while(tmp) 
-						{
-							if(!(tmp->next)) break;
-							tmp = tmp->next;
-						}
-						tmp->next = p;
-
+						block(&(proc->blocked_senders), p);
 						p->state = BLOCK_ON_SEND_STATE;
 					}
 				}
@@ -237,21 +221,7 @@ void dispatch()
 					proc = get_proc(pid);
 					if(proc) 
 					{
-						//block(proc->blocked_receivers, p);
-						pcb_t *tmp = proc->blocked_receivers;
-						p->next = NULL;
-						if(!tmp) 
-						{
-							proc->blocked_receivers = p;
-							proc->blocked_receivers->next = NULL;
-						}
-
-						while(tmp) 
-						{
-							if(!(tmp->next)) break;
-							tmp = tmp->next;
-						}
-						tmp->next = p;
+						block(&(proc->blocked_receivers), p);
 						p->state = BLOCK_ON_RECV_STATE;
 					}
 				}
@@ -378,21 +348,14 @@ void stop (pcb_t *p)
 *		1. ipc_send();
 *		2. ipc_recv();
 */
-void block(pcb_t *q, pcb_t *p)
+void block(pcb_t **q, pcb_t *p)
 {
-	kprintf("q: %d\n", q);
-	q = 444;
-	kprintf("q: %d\n", q);
+	pcb_t *tmp = *q;
 
-/*
-	pcb_t *tmp = q;
-
-	if(!q) 
+	p->next = NULL;
+	if(!(*q)) 
 	{
-		kprintf("q_addr1: %d\n", q);
-		q = p;
-		kprintf("q_addr2: %d\n", q);
-		q->next = NULL;
+		*q = p;
 		return;
 	}
 
@@ -402,7 +365,6 @@ void block(pcb_t *q, pcb_t *p)
 		tmp = tmp->next;
 	}
 	tmp->next = p;
-*/
 }
 
 /*

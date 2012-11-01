@@ -164,7 +164,7 @@ extern void dispatch(void);
 extern pcb_t* next(void);								/* get read_q head proc pcb 		*/
 extern void ready(pcb_t *p);								/* put proc pcb in the ready_q 		*/
 extern void stop(pcb_t *p);								/* put proc pcb in the stop_q 		*/
-extern void block(pcb_t *q, pcb_t *p);								/* put proc pcb in the block_q 		*/
+extern void block(pcb_t **q, pcb_t *p);								/* put proc pcb in the block_q 		*/
 extern pcb_t* unblock(pcb_t *q, unsigned int pid);					/* get proc pcb in the block_q 		*/
 extern unsigned int blocker(void);
 extern int count(void);									/* get number of proc pcb in the ready_q */
