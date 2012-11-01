@@ -56,6 +56,8 @@ void dispatch()
 			ready(p);
 			continue;
 		}
+		
+		p->state = RUNNING_STATE;
 		request = contextswitch(p);
 
 		// service syscall/interrupt requests
@@ -65,6 +67,7 @@ void dispatch()
 				if(sleeper() > 0 && tick())
 					ready(wake());
 
+				p->state = READY_STATE;				
 				ready(p);			
 				end_of_intr();
 				break;
@@ -78,15 +81,18 @@ void dispatch()
 				/* create new process */
 				create(funcptr, stack);
 
+				p->state = READY_STATE;				
 				ready(p);
 				break;
 
 			case YIELD:
+				p->state = READY_STATE;				
 				ready(p);
 				break;
 
 			case STOP:
 				/* free allocated memory and put process on stop queue */
+				p->state = STOP_STATE;
 				stop(p);
 				kfree(p->mem);
 				break;
@@ -94,6 +100,7 @@ void dispatch()
 			case GETPID:
 				/* sets the proc pid as the proc return code for next ctsw */
 				p->rc = p->pid;
+				p->state = READY_STATE;				
 				ready(p);								
 				break;
 
@@ -102,6 +109,7 @@ void dispatch()
 				ap = (va_list)p->args;
 				str = va_arg(ap, char*);
 				kprintf("[kernel]: %s", str);
+				p->state = READY_STATE;				
 				ready(p);				
 				break;
 
@@ -112,7 +120,12 @@ void dispatch()
 
 				/* proc requested no sleep or syssleep is blocked for the time requested*/
 				if(!p->delta_slice || !sleep(p))
+				{
+					p->state = READY_STATE;				
 					ready(p);
+				}
+				else
+					p->state = SLEEP_STATE;
 
 				break;
 		

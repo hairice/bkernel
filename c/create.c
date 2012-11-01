@@ -65,6 +65,7 @@ int create(void (*func)(void), int stack)
 	}
 	
 	/* add proc to ready queue */
+	p->state = READY_STATE;				
 	ready(p);	
 	return TRUE;
 }

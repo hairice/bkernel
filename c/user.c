@@ -40,8 +40,9 @@ void root()
 */
 void producer ()
 {
-	unsigned char *snd_buffer = "2440";	
-	int byte = syssend(3, snd_buffer, 4);
+	unsigned int receiver = 3;
+	unsigned char *snd_buffer = "3000";	
+	int byte = syssend(receiver, snd_buffer, 4);
 	kprintf("sent: %d bytes\n", byte);
 
 	for(;;);
@@ -54,14 +55,18 @@ void producer ()
 */
 void consumer ()
 {
-	int i,byte;
+	unsigned int n,byte;
+	unsigned int *sender = &n;
 	unsigned char rcv_buffer[4];	
 
 	byte = sysrecv(0, rcv_buffer, 4);
 	kprintf("recv: %d bytes\n", byte);
 
-	i = atoi(rcv_buffer);
-	kprintf("i: %d\n", i);
+	n = atoi(rcv_buffer);
+	kprintf("n: %d\n", n);
+	
+	syssleep(n);
+	kprintf("consumer wake\n");
 
 	for(;;);
 }

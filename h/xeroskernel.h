@@ -99,6 +99,7 @@ typedef struct pcb pcb_t;
 struct pcb 
 {
 	unsigned int pid;		/* process pid 									*/
+	unsigned int state;		/* process state currently in the system					*/
 	unsigned int esp;		/* process stack pointer 							*/
 	unsigned int *mem;		/* process memory 'dataStart' pointer 						*/
 	unsigned int args;		/* retains all arguments passed from a syscall() 				*/
