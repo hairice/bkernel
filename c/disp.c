@@ -9,8 +9,11 @@
 
 /* Your code goes here */
 extern pcb_t *stop_q;
+extern pcb_t proc_table[MAX_PROC];
+
 pcb_t *ready_q;
 pcb_t *block_q;
+
 
 /*
 * dispatch
@@ -158,7 +161,7 @@ void dispatch()
 			
 				/* search for ipc_receiver in block_q */
 				endpt_p = unblock(p->pid, endpt_pid, SENDER);
-		
+
 				if(endpt_p)
 				{
 					/* when the receiver wants to receive from pid 0, update to the actual sender pid */
@@ -180,6 +183,25 @@ void dispatch()
 				break;
 		}
 	}
+}
+
+/*
+* get_proc
+*
+* @desc: 	get proc with pid
+*
+* @param:	pid	proc pid
+*
+* @output:	p	proc with input pid
+*/
+pcb_t* get_proc(int pid)
+{
+	int i;
+
+	for(i=0 ; i < MAX_PROC ; i++)
+		if(proc_table[i].pid == pid) return &proc_table[i];
+
+	return NULL;
 }
 
 /*
