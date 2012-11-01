@@ -100,6 +100,11 @@ struct pcb
 					*  note: this member is only used when a proc is blocked on a syssend()/sysrecv(), 
 					*  and the values are compared with in unblock() to ensure the proc is the desired ipc counterpart
 					*/
+
+	pcb_t *blocked_senders;		/* queue of blocked senders for a proc */
+	pcb_t *blocked_receivers;	/* queue of blocked receivers for a proc */
+
+	void *ptr;			/* generic pointer, as of a2, this pointer is used to reference the ipc data */
 	
 	unsigned int rc;		/* return code from syscall() 							*/
 	pcb_t *next;			/* link to the next pcb block, two queues exist in the os, ready and stop 	*/
@@ -214,3 +219,7 @@ extern int recv(pcb_t* snd_proc, pcb_t* rcv_proc);
 extern void testdriver(void);
 extern void testroot(void);
 extern void testproc(void);
+
+
+
+extern pcb_t* get_proc(int pid);
