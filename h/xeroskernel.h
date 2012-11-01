@@ -90,7 +90,7 @@ typedef struct ipc ipc_t;
 struct ipc
 {
 	unsigned int role;		/* specify proc as sender/receiver 		*/
-	unsigned int endpt_pid;		/* pid of the other sending/receiving proc 	*/
+	unsigned int pid;		/* pid of the other sending/receiving proc 	*/
 	void *buffer;			
 	int buffer_len;			
 };
@@ -175,8 +175,8 @@ extern void dispatch(void);
 extern pcb_t* next(void);								/* get read_q head proc pcb 		*/
 extern void ready(pcb_t *p);								/* put proc pcb in the ready_q 		*/
 extern void stop(pcb_t *p);								/* put proc pcb in the stop_q 		*/
-extern void block(pcb_t *p);								/* put proc pcb in the block_q 		*/
-extern pcb_t* unblock(unsigned int pid, unsigned int endpt_pid, unsigned int role);	/* get proc pcb in the block_q 		*/
+extern void block(pcb_t *q, pcb_t *p);								/* put proc pcb in the block_q 		*/
+extern pcb_t* unblock(pcb_t *q, unsigned int pid);					/* get proc pcb in the block_q 		*/
 extern unsigned int blocker(void);
 extern int count(void);									/* get number of proc pcb in the ready_q */
 void puts_ready_q(void);

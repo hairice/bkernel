@@ -12,7 +12,6 @@ extern pcb_t *stop_q;
 extern pcb_t proc_table[MAX_PROC];
 
 pcb_t *ready_q;
-pcb_t *block_q;
 
 
 /*
@@ -37,8 +36,8 @@ void dispatch()
 	unsigned int sleep_ms=0;
 
 	/* ipc arg(s) */
-	unsigned int endpt_pid;
-	pcb_t *endpt_p=NULL;
+	unsigned int pid;
+	pcb_t *proc=NULL;
 	void *buffer;
 	int buffer_len;
 
@@ -51,7 +50,7 @@ void dispatch()
 		p = next();
 
 		/* execute the idle proc only when there are no other proc in ready_q */
-		if(p->pid == 0 && count() > 0) 
+		if(p->pid == IDLE_PROC_PID && count() > 0) 
 		{
 			ready(p);
 			continue;
@@ -131,66 +130,110 @@ void dispatch()
 		
 			case SEND:
 				ap = (va_list)p->args;
-				endpt_pid = va_arg(ap, unsigned int);
+				pid = va_arg(ap, unsigned int);
 				buffer = va_arg(ap, void*);
 				buffer_len = va_arg(ap, int);
 			
 				/* preserve all args from syscall() */
 				p->comm.role = SENDER;
-				p->comm.endpt_pid = endpt_pid;
+				p->comm.pid = pid;
 				p->comm.buffer = buffer;	
 				p->comm.buffer_len = buffer_len;
 
+
 				/* search for ipc_receiver in block_q */
-				endpt_p = unblock(p->pid, endpt_pid, RECEIVER);
-				if(endpt_p)
+				proc = unblock(p->blocked_receivers, pid);
+				if(proc)
 				{
 					/* ipc_snd */
-					p->rc = send(p, endpt_p);
-					endpt_p->rc = p->rc;					
-							
+					p->rc = send(p, proc);
+					proc->rc = p->rc;					
+
+					p->state = READY_STATE;
+					proc->state = READY_STATE;	
 					ready(p);
-					ready(endpt_p);
+					ready(proc);
 				}
 				else
 				{
 					/* receiver not found, snd_proc is now blocked */
-					block(p);
-				}
+					
+					proc = get_proc(pid);
+					if(proc) 
+					{
+						//block(proc->blocked_senders, p);
+						pcb_t *tmp = proc->blocked_senders;
+						p->next = NULL;
+						if(!tmp) 
+						{
+							proc->blocked_senders = p;
+							proc->blocked_senders->next = NULL;
+						}
 
+						while(tmp) 
+						{
+							if(!(tmp->next)) break;
+							tmp = tmp->next;
+						}
+						tmp->next = p;
+
+						p->state = BLOCK_ON_SEND_STATE;
+					}
+				}
+				
 				break;
 				
 			case RECV:
 				ap = (va_list)p->args;
-				endpt_pid = va_arg(ap, unsigned int);
+				pid = va_arg(ap, unsigned int);
 				buffer = va_arg(ap, void*);
 				buffer_len = va_arg(ap, int);
 
 				/* preserve all args from syscall() */
 				p->comm.role = RECEIVER;
-				p->comm.endpt_pid = endpt_pid;
+				p->comm.pid = pid;
 				p->comm.buffer = buffer;	
 				p->comm.buffer_len = buffer_len;
-			
-				/* search for ipc_receiver in block_q */
-				endpt_p = unblock(p->pid, endpt_pid, SENDER);
 
-				if(endpt_p)
+				/* search for ipc_receiver in block_q */
+				proc = unblock(p->blocked_senders, pid);
+				if(proc)
 				{
 					/* when the receiver wants to receive from pid 0, update to the actual sender pid */
-					if(!endpt_pid) p->comm.endpt_pid = endpt_p->pid;
+					//if(!endpt_pid) p->comm.endpt_pid = endpt_p->pid;
 
 					/* ipc_rcv */
-					p->rc = recv(endpt_p, p);
-					endpt_p->rc = p->rc;					
+					p->rc = recv(proc, p);
+					proc->rc = p->rc;					
 
+					p->state = READY_STATE;
+					proc->state = READY_STATE;
 					ready(p);
-					ready(endpt_p);
+					ready(proc);
 				}
 				else
 				{
 					/* sender not found, snd_proc is now blocked */
-					block(p);
+					proc = get_proc(pid);
+					if(proc) 
+					{
+						//block(proc->blocked_receivers, p);
+						pcb_t *tmp = proc->blocked_receivers;
+						p->next = NULL;
+						if(!tmp) 
+						{
+							proc->blocked_receivers = p;
+							proc->blocked_receivers->next = NULL;
+						}
+
+						while(tmp) 
+						{
+							if(!(tmp->next)) break;
+							tmp = tmp->next;
+						}
+						tmp->next = p;
+						p->state = BLOCK_ON_RECV_STATE;
+					}
 				}
 
 				break;
@@ -212,7 +255,10 @@ pcb_t* get_proc(int pid)
 	int i;
 
 	for(i=0 ; i < MAX_PROC ; i++)
-		if(proc_table[i].pid == pid) return &proc_table[i];
+	{
+		if(proc_table[i].pid == pid)
+			return &(proc_table[i]);
+	}
 
 	return NULL;
 }
@@ -312,16 +358,21 @@ void stop (pcb_t *p)
 *		1. ipc_send();
 *		2. ipc_recv();
 */
-void block(pcb_t *p)
+void block(pcb_t *q, pcb_t *p)
 {
-	pcb_t *tmp = block_q;
+	kprintf("q: %d\n", q);
+	q = 444;
+	kprintf("q: %d\n", q);
 
-	p->next=NULL;
-	if(!tmp) 
+/*
+	pcb_t *tmp = q;
+
+	if(!q) 
 	{
-		block_q = p;
-		block_q->next = NULL;
-		blocker();
+		kprintf("q_addr1: %d\n", q);
+		q = p;
+		kprintf("q_addr2: %d\n", q);
+		q->next = NULL;
 		return;
 	}
 
@@ -331,8 +382,7 @@ void block(pcb_t *p)
 		tmp = tmp->next;
 	}
 	tmp->next = p;
-
-	blocker();
+*/
 }
 
 /*
@@ -347,7 +397,7 @@ void block(pcb_t *p)
 *
 * @note:	ipc_senders calls this function to find the matching ipc_receiver, and vice versa
 */
-pcb_t* unblock(unsigned int pid, unsigned int endpt_pid, unsigned int role)
+pcb_t* unblock(pcb_t *q, unsigned int pid)
 {
 	pcb_t *tmp=NULL, *p=NULL;
 
@@ -361,23 +411,22 @@ pcb_t* unblock(unsigned int pid, unsigned int endpt_pid, unsigned int role)
 	*  2. the role is SENDER
 	*  3. the proc's role is SENDER
 	*/	
-	if((block_q->pid == endpt_pid && block_q->comm.endpt_pid == pid && block_q->comm.role == role) || 
-	(!endpt_pid && role == SENDER && role == block_q->comm.role && block_q->comm.endpt_pid == pid))
+	if(!q) return NULL;
+	if(q->pid == pid)
 	{
-		p = block_q;
-		block_q = block_q->next;
+		p = q;
+		q = q->next;
 		return p;
 	}
 
 	/* find matching ipc proc in body of block_q, 
 	*  at this point, the algorithm assumes the block_q has at least 2 proc
 	*/
-	tmp = block_q;
+	tmp = q;
 	while(tmp && tmp->next) 
 	{			
 		/* stated conditions have been met, the proc is released from block_q */
-		if((tmp->next->pid == endpt_pid && tmp->next->comm.endpt_pid == pid && tmp->next->comm.role == role) || 
-		(!endpt_pid && role == SENDER && role == tmp->next->comm.role && tmp->next->comm.endpt_pid == pid))
+		if(tmp->next->pid == pid)
 		{
 			p = tmp->next;
 			tmp->next = tmp->next->next;
@@ -399,6 +448,7 @@ pcb_t* unblock(unsigned int pid, unsigned int endpt_pid, unsigned int role)
 */
 unsigned int blocker()
 {
+/*
 	unsigned int cnt=0;
 	pcb_t *p=block_q;
 
@@ -409,6 +459,7 @@ unsigned int blocker()
 	}
 
 	return cnt;
+*/
 }
 
 /*
@@ -418,6 +469,7 @@ unsigned int blocker()
 */
 void puts_ready_q()
 {
+
 	pcb_t *tmp = ready_q;
 
 	while(tmp) 
@@ -435,7 +487,8 @@ void puts_ready_q()
 */
 void puts_block_q()
 {
-	pcb_t *tmp = block_q;
+/*
+//	pcb_t *tmp = block_q;
 
 	while(tmp) 
 	{
@@ -443,4 +496,5 @@ void puts_block_q()
 		tmp=tmp->next;
 	}
 	kprintf("\n");
+*/
 }

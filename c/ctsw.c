@@ -96,7 +96,6 @@ int contextswitch( pcb_t *p )
 
 	/* save process esp and passed args */
 	p->esp = esp;
-
 	return rc;
 }
 

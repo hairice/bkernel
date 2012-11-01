@@ -34,13 +34,13 @@ int create(void (*func)(void), int stack)
 	pcb_t *p = NULL;
 
 	/* remove head of stop queue */
-	if(!stop_q) return FALSE;
+	if(!stop_q) return -1;
 	p=stop_q;
 	stop_q=stop_q->next;	
 
 	/* alloc memory for process stack */
 	mem = kmalloc(stack); 
-	if(!mem) return FALSE;
+	if(!mem) return -1;
 
 	p->mem = (unsigned int*)mem;
 
@@ -65,7 +65,11 @@ int create(void (*func)(void), int stack)
 	}
 	
 	/* add proc to ready queue */
-	p->state = READY_STATE;				
+	p->state = READY_STATE;	
+	p->blocked_senders=NULL;			
+	p->blocked_receivers=NULL;
+	p->ptr=NULL;
+
 	ready(p);	
-	return TRUE;
+	return p->pid;
 }
