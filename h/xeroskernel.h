@@ -61,6 +61,7 @@ typedef	char		Bool;		/* boolean type				*/
 
 
 /* user process constants */
+#define INVALID_PID	-1
 #define RESERVED_PID	0
 #define IDLE_PROC_PID	32
 #define MAX_PROC	32
@@ -160,15 +161,15 @@ extern int kmemtotalsize(void);		/* get total size from all free mem blocks 	*/
 
 /* process management unit */
 extern void dispatch(void);
-extern pcb_t* next(void);								/* get read_q head proc pcb 		*/
-extern void ready(pcb_t *p);								/* put proc pcb in the ready_q 		*/
-extern void stop(pcb_t *p);								/* put proc pcb in the stop_q 		*/
-extern void block(pcb_t **q, pcb_t *p);								/* put proc pcb in the block_q 		*/
-extern pcb_t* unblock(pcb_t *q, unsigned int pid);					/* get proc pcb in the block_q 		*/
-extern unsigned int blocker(void);
-extern int count(void);									/* get number of proc pcb in the ready_q */
+extern pcb_t* next(void);				/* get read_q head proc pcb 				*/
+extern void ready(pcb_t *p);				/* put proc pcb in the ready_q 				*/
+extern void stop(pcb_t *p);				/* put proc pcb in the stop_q 				*/
+extern void block(pcb_t **q, pcb_t *p);			/* put proc pcb in the block_q 				*/
+extern pcb_t* unblock(pcb_t *q, unsigned int pid);	/* get proc pcb in the block_q 				*/
+extern Bool deadlock(pcb_t *q, pcb_t *p);		/* deadlock detection for ipc send/receive 		*/
+extern void release(pcb_t **q);				/* releases blocked sender/receiver back into ready_q 	*/
+extern int count(void);					/* get number of proc pcb in the ready_q 		*/
 void puts_ready_q(void);
-void puts_block_q(void);
 
 extern void contextinit(void);
 extern int contextswitch(pcb_t *p);

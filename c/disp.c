@@ -37,11 +37,11 @@ void dispatch()
 
 	/* ipc arg(s) */
 	unsigned int pid;
-	unsigned int *pid_ptr;
+	unsigned int *pid_ptr;	/* used for from_id for sysrecv() 		*/
 	pcb_t *proc=NULL;
 	void *buffer;
 	int buffer_len;
-	ipc_t *comm;		/* used to temporarily hold the ipc args */
+	ipc_t *comm;		/* used to temporarily hold the ipc args 	*/
 	int *mem;
 
 
@@ -91,6 +91,10 @@ void dispatch()
 				break;
 
 			case STOP:
+				/* release all tasks blocked by current proc */
+				release(&(p->blocked_senders));
+				release(&(p->blocked_receivers));
+
 				/* free allocated memory and put process on stop queue */
 				p->state = STOP_STATE;
 				stop(p);
@@ -168,8 +172,26 @@ void dispatch()
 					proc = get_proc(pid);
 					if(proc) 
 					{
-						block(&(proc->blocked_senders), p);
-						p->state = BLOCK_ON_SEND_STATE;
+						/* deadlock detection for ipc blocked send/receive queues */
+						/* when a deadlock is detected, only the current proc is put back on the ready_q */
+						if(deadlock(p->blocked_senders, proc))
+						{
+							kfree(mem);
+							p->state = READY_STATE;
+							ready(p);
+						}
+						else
+						{
+							block(&(proc->blocked_senders), p);
+							p->state = BLOCK_ON_SEND_STATE;
+						}
+					}
+					else
+					{
+						/* receiver does not exist, current proc is returned to ready_q */
+						kfree(mem);
+						p->state = READY_STATE;
+						ready(p);
 					}
 				}
 				
@@ -216,8 +238,26 @@ void dispatch()
 					proc = get_proc(*pid_ptr);
 					if(proc) 
 					{
-						block(&(proc->blocked_receivers), p);
-						p->state = BLOCK_ON_RECV_STATE;
+						/* deadlock detection for ipc blocked send/receive queues */
+						/* when a deadlock is detected, only the current proc is put back on the ready_q */
+						if(deadlock(p->blocked_receivers, proc))
+						{
+							kfree(mem);
+							p->state = READY_STATE;
+							ready(p);
+						}
+						else
+						{
+							block(&(proc->blocked_receivers), p);
+							p->state = BLOCK_ON_RECV_STATE;
+						}
+					}
+					else
+					{
+						/* sender does not exist, current proc is returned to ready_q */
+						kfree(mem);
+						p->state = READY_STATE;
+						ready(p);
 					}
 				}
 
@@ -319,6 +359,7 @@ void stop (pcb_t *p)
 	pcb_t *tmp = stop_q;
 
 	p->next=NULL;
+	p->pid=INVALID_PID;
 	if(!tmp) 
 	{
 		stop_q = p;
@@ -417,26 +458,47 @@ pcb_t* unblock(pcb_t *q, unsigned int pid)
 }
 
 /*
-* blocker
+* deadlock
 *
-* @desc: 	count number of proc pcb in the block_q
+* @desc: 	checks for deadlock scenario in ipc communication
 *
-* @output:	cnt		number of proc pcb in the block_q
+* @param:	q		queue for checking if certain proc exists
+*		p		targetted proc for deadlock checking
+*
+* @output:	Bool		proc pcb for the matching input pid
+*
+* @note:	for deadlock to occur, proc1 would be on the same blocked queue of proc2, as proc2 is of proc1
 */
-unsigned int blocker()
+Bool deadlock(pcb_t *q, pcb_t *p)
 {
-/*
-	unsigned int cnt=0;
-	pcb_t *p=block_q;
-
-	while(p)
+	while(q)
 	{
-		cnt++;
-		p=p->next;
+		if(q->pid == p->pid) return TRUE;
+		q=q->next;
 	}
 
-	return cnt;
+	return FALSE;
+}
+
+/*
+* release
+*
+* @desc: 	place procs in a queue back into the ready_q
+*
+* @param:	q		queues of proc to be released back into ready_q
 */
+void release(pcb_t **q)
+{
+	pcb_t *tmp1 = *q, *tmp2;
+
+	while(tmp1)
+	{
+		tmp2 = tmp1->next;
+		ready(tmp1);
+		tmp1 = tmp2;
+	}
+
+	*q = NULL;
 }
 
 /*
@@ -455,23 +517,4 @@ void puts_ready_q()
 		tmp=tmp->next;
 	}
 	kprintf("\n");
-}
-
-/*
-* puts_block_q
-*
-* @desc: 	output all block queue proc pid to console
-*/
-void puts_block_q()
-{
-/*
-//	pcb_t *tmp = block_q;
-
-	while(tmp) 
-	{
-		kprintf("%d ", tmp->pid);
-		tmp=tmp->next;
-	}
-	kprintf("\n");
-*/
 }
