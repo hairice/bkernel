@@ -8,8 +8,6 @@
 
 /* Your code goes here */
 
-void t1(void);
-
 /*
 * idleproc
 *
@@ -41,8 +39,7 @@ void root()
 */
 void producer ()
 {
-
-	unsigned int receiver=3;
+	unsigned int receiver=4;
 	unsigned char *snd_buffer = "2000";	
 	int byte;
 
@@ -61,7 +58,7 @@ void producer ()
 */
 void consumer ()
 {
-	unsigned int n=2,byte;
+	unsigned int n=3,byte;
 	unsigned int *sender = &n;
 	unsigned char rcv_buffer[4];	
 
@@ -74,7 +71,7 @@ void consumer ()
 	kprintf("consumer sleep(%d)\n", n);
 	syssleep(n);
 	kprintf("consumer wake\n");
-	
+
 	for(;;);
 }
 

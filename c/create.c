@@ -11,8 +11,11 @@
 				/* of the memory allocation */
 
 extern pcb_t *stop_q;
-static int pid = 1;		/* pid will increment by 1 everytime a new proc is added */
-				/* to the ready queue */
+extern pcb_t proc_table[MAX_PROC];
+
+static int min_pid = MIN_PID;
+static int max_pid = MIN_PID;
+static int next_pid = MIN_PID+1;
 
 /*
 * create
@@ -29,9 +32,11 @@ static int pid = 1;		/* pid will increment by 1 everytime a new proc is added */
 */
 int create(void (*func)(void), int stack) 
 {
-	int *mem;
+	int *mem,pid;
 	context_frame_t *frame;
 	pcb_t *p = NULL;
+
+
 
 	/* remove head of stop queue */
 	if(!stop_q) return -1;
@@ -60,8 +65,12 @@ int create(void (*func)(void), int stack)
 	if(func == &idleproc) p->pid = IDLE_PROC_PID;
 	else 
 	{
-		p->pid=pid;
-		pid++;
+		/* find unused pid */
+		pid = find_pid();
+		if(pid == SYSERR)
+			return SYSERR;
+		else				
+			p->pid = pid;
 	}
 	
 	/* add proc to ready queue */
@@ -73,3 +82,150 @@ int create(void (*func)(void), int stack)
 	ready(p);	
 	return p->pid;
 }
+
+/*
+* find_pid
+*
+* @desc:	create process and put process on the ready queue
+*
+* @output:	pid		unused pid in the range of (MIN_PID+1, MAX_PID-1)
+*/
+unsigned int find_pid ()
+{
+	unsigned int pid=next_pid,i,tmp;
+	Bool pid_found = FALSE;
+
+	/* skip over max_pid, this forces 'pid' to be possibly in the upper free region, or be wrapped around to the lower free region */
+	if(pid == max_pid)
+		pid = max_pid + 1;
+	
+	/* wrap pid value around to the lower bound */
+	if(pid == MAX_PID)
+	{
+		pid = MIN_PID + 1;
+
+		/* set pid to MIN_PID + 1, assumes the min_pid is at MIN_PID */
+		if(pid == min_pid)
+			pid = min_pid + 1;	
+
+		/* set pid to MIN_PID + 2, assumes the max_pid is at MIN_PID+1 */
+		if(pid == max_pid)	
+			pid = max_pid +1;
+	}
+	/* get unused pid in the upper free region */
+	if(pid > max_pid && pid < MAX_PID)
+	{
+		next_pid = pid+1;
+		max_pid = pid;
+		return pid;
+	}
+	/* get unused pid in the lower free region */
+	else if(pid < min_pid && pid > MIN_PID)
+	{
+		next_pid = pid+1;
+		min_pid = pid;		
+	
+		if(next_pid+1 == max_pid)
+			next_pid = max_pid;
+
+		return pid;
+	}
+
+	/* search for the smallest value in the range (min_pid, max_pid) that is unused */
+	for(pid ; pid<max_pid ; pid++)
+	{
+		for(i=0 ; i<MAX_PROC ; i++)
+		{
+			if(proc_table[i].pid == pid)
+				break;
+
+			if(i == MAX_PROC-1) 
+				pid_found = TRUE;
+		}
+
+		if(pid_found)
+		{
+			next_pid = pid+1;
+			break;
+		}
+	}
+
+	/* at this point, (next_pid-1) is the return value */
+	/* since unused pid was found within the range (min_pid, max_pid), move next_pid to the next available spot that is < max_pid */
+	if(pid_found)
+	{
+		for(pid=next_pid ; pid<max_pid ; pid++)	
+		{
+			for(i=0 ; i<MAX_PROC ; i++)
+			{
+				if(proc_table[i].pid == pid) continue;
+
+				/* found an unused pid in the range [next_pid+1, max_pid) */
+				if(i == MAX_PROC-1) 
+				{
+					tmp = next_pid-1;
+					next_pid = pid;
+					return tmp;
+				}
+			}	
+		}
+		
+		/* no more available pid in range [next_pid+1, max_pid), set next_pid to max_pid */
+		tmp = next_pid-1;
+		next_pid = pid;
+		return tmp;
+	}
+
+	/* no more avaiable pid, this return statement should not be reached given the size of the proc_table and max_pid */
+	return SYSERR;
+}
+
+/*
+* set_max_pid
+*
+* @desc:	set the upper bound in pid value for the proc_table
+*/
+void set_max_pid()
+{
+	int i=0;
+
+	max_pid = proc_table[0].pid;
+
+	/* skip over idle_proc_pid */
+	while(max_pid == IDLE_PROC_PID)
+	{
+		i++;
+		max_pid = proc_table[i].pid;
+	}
+	
+	for(i ; i<MAX_PROC ; i++)
+	{
+		//if(proc_table[i].pid == IDLE_PROC_PID) continue;
+		if(proc_table[i].pid > max_pid)
+			max_pid = proc_table[i].pid;
+	}
+}
+
+/*
+* set_min_pid
+*
+* @desc:	set the lower bound in pid value for the proc_table
+*/
+void set_min_pid()
+{
+	int i;
+
+	min_pid = proc_table[0].pid;
+	for(i=1 ; i<MAX_PROC ; i++)
+	{
+		if(proc_table[i].pid == IDLE_PROC_PID) continue;
+		if(proc_table[i].pid == INVALID_PID) continue;
+		if(proc_table[i].pid < min_pid)
+			min_pid = proc_table[i].pid;
+	}
+
+	if(min_pid == INVALID_PID)
+		min_pid = MIN_PID;	
+}
+
+

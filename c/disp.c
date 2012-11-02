@@ -79,7 +79,7 @@ void dispatch()
 				stack = va_arg(ap, int);
 
 				/* create new process */
-				create(funcptr, stack);
+				p->rc = create(funcptr, stack);
 
 				p->state = READY_STATE;				
 				ready(p);
@@ -98,6 +98,11 @@ void dispatch()
 				/* free allocated memory and put process on stop queue */
 				p->state = STOP_STATE;
 				stop(p);
+
+				/* update max and min pid values in proc_table */
+				set_max_pid();	
+				set_min_pid();
+
 				kfree(p->mem);
 				break;
 			
@@ -221,7 +226,6 @@ void dispatch()
 
 				buffer = va_arg(ap, void*);
 				buffer_len = va_arg(ap, int);
-
 
 
 				/* hold the ipc() args in the generic ptr in pcb */

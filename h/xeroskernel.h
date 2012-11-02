@@ -27,16 +27,18 @@ typedef	char		Bool;		/* boolean type				*/
 
 
 /* ipc return constants */
-#define INVALID_PID	-1		/* invalid pid of sender/receiver 	*/
-#define INVALID_DEST	-1		/* invalid pid of sender/receiver 	*/
+#define ERR_PID		-1		/* invalid pid of sender/receiver 	*/
+#define ERR_DEST	-1		/* invalid pid of sender/receiver 	*/
 #define LOOPBACK	-2		/* sysend to the pid itself		*/
-#define INVALID_ERR	-3		/* any other ipc errors 		*/
+#define ERR_IPC		-3		/* any other ipc errors 		*/
 
 
-/* system call request id */
+/* interrupt descriptor table entry */
 #define TIMER_INT	1
 #define KERNEL_INT	64
 
+
+/* system call request id */
 #define STOP        	100
 #define YIELD      	101
 #define CREATE     	102
@@ -61,11 +63,14 @@ typedef	char		Bool;		/* boolean type				*/
 
 
 /* user process constants */
-#define INVALID_PID	-1
-#define RESERVED_PID	0
-#define IDLE_PROC_PID	32
 #define MAX_PROC	32
-#define PROC_STACK	1024*4		/* set process stack to 4096	*/
+#define INVALID_PID	1
+#define MIN_PID		1
+#define MAX_PID		65536
+
+#define RESERVED_PID	0
+#define IDLE_PROC_PID	65536		/* this pid is also used as the pid bound 	*/
+#define PROC_STACK	1024*4		/* set process stack to 4096			*/
 
 
 
@@ -174,6 +179,9 @@ void puts_ready_q(void);
 extern void contextinit(void);
 extern int contextswitch(pcb_t *p);
 extern int create(void (*func)(void), int stack); 
+extern unsigned int find_pid(void);
+extern void set_max_pid(void);
+extern void set_min_pid(void);
 
 
 /* system calls */
