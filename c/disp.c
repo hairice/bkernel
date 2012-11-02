@@ -136,8 +136,18 @@ void dispatch()
 			case SEND:
 				ap = (va_list)p->args;
 				pid = va_arg(ap, unsigned int);
+
+				/* when proc sends to itself, add current proc to ready_q */
+				if(p->pid == pid)
+				{
+					proc->state = READY_STATE;	
+					ready(p);
+					break;
+				}
+
 				buffer = va_arg(ap, void*);
 				buffer_len = va_arg(ap, int);
+
 			
 				/* hold the ipc() args in the generic ptr in pcb */
 				mem = kmalloc(sizeof(ipc_t));
@@ -200,8 +210,19 @@ void dispatch()
 			case RECV:
 				ap = (va_list)p->args;
 				pid_ptr = va_arg(ap, unsigned int*);
+
+				/* when proc sends to itself, add current proc to ready_q */
+				if(p->pid == *pid_ptr)
+				{
+					proc->state = READY_STATE;	
+					ready(p);
+					break;
+				}
+
 				buffer = va_arg(ap, void*);
 				buffer_len = va_arg(ap, int);
+
+
 
 				/* hold the ipc() args in the generic ptr in pcb */
 				mem = kmalloc(sizeof(ipc_t));
