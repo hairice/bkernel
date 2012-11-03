@@ -74,6 +74,42 @@ typedef	char		Bool;		/* boolean type				*/
 
 
 
+/* ========= */
+/* test mode */
+#ifndef SEND_TEST
+/* uncomment line to enable test driver and disable normal os execution */
+#define SEND_TEST
+
+#ifndef SEND_POSITIVE_TEST
+/* uncomment line to enable memory managment test cases */
+#define SEND_POSITIVE_TEST 
+#endif
+
+#ifndef SEND_NEGATIVE_TEST
+/* uncomment line to enable process managment test cases */
+/* #define SEND_NEGATIVE_TEST */
+#endif
+#endif
+
+
+#ifndef RECV_POSITIVE_TEST
+/* uncomment line to enable memory managment test cases */
+/* #define RECV_POSITIVE_TEST */
+#endif
+
+#ifndef RECV_NEGATIVE_TEST
+/* uncomment line to enable process managment test cases */
+/* #define RECV_NEGATIVE_TEST */
+#endif
+
+#ifndef TIME_SHARE_TEST
+/* uncomment line to enable process managment test cases */
+/* #define TIME_SHARE_TEST */
+#endif
+
+
+
+
 
 /* ====================== */
 /* system data structures */
@@ -171,11 +207,13 @@ extern pcb_t* next(void);				/* get read_q head proc pcb 				*/
 extern void ready(pcb_t *p);				/* put proc pcb in the ready_q 				*/
 extern void stop(pcb_t *p);				/* put proc pcb in the stop_q 				*/
 extern void block(pcb_t **q, pcb_t *p);			/* put proc pcb in the block_q 				*/
-extern pcb_t* unblock(pcb_t *q, unsigned int pid);	/* get proc pcb in the block_q 				*/
+extern pcb_t* unblock(pcb_t **q, unsigned int pid);	/* get proc pcb in the block_q 				*/
 extern Bool deadlock(pcb_t *q, pcb_t *p);		/* deadlock detection for ipc send/receive 		*/
 extern void release(pcb_t **q);				/* releases blocked sender/receiver back into ready_q 	*/
+extern pcb_t* get_proc(int pid);
 extern int count(void);					/* get number of proc pcb in the ready_q 		*/
 void puts_ready_q(void);
+void puts_blocked_q(void);
 
 extern void contextinit(void);
 extern int contextswitch(pcb_t *p);
@@ -224,11 +262,4 @@ extern unsigned int tick(void);
 extern int send(pcb_t* snd_proc, pcb_t* rcv_proc);
 extern int recv(pcb_t* snd_proc, pcb_t* rcv_proc);
 
-/* test driver */
-extern void testdriver(void);
-extern void testroot(void);
-extern void testproc(void);
-
-
-
-extern pcb_t* get_proc(int pid);
+extern void st_root(void);

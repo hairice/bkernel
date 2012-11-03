@@ -67,6 +67,7 @@ int create(void (*func)(void), int stack)
 	{
 		/* find unused pid */
 		pid = find_pid();
+
 		if(pid == SYSERR)
 			return SYSERR;
 		else				

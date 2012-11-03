@@ -105,6 +105,8 @@ unsigned int sleep (pcb_t *p)
 */
 void wake ()
 {
+	if(!sleep_q) return;	
+
 	/* put sleep_q head back in ready_q */
     	pcb_t *p = sleep_q;
    	sleep_q = sleep_q->next;
@@ -117,9 +119,10 @@ void wake ()
 		{
 			p = sleep_q;
 			sleep_q = sleep_q->next;
+
 			ready(p);
 		}
-		else
+		else			
 			break;
 	}
 }
@@ -172,6 +175,7 @@ void puts_sleep_q()
 {
 	pcb_t *tmp = sleep_q;
 
+	kprintf("sleep_q: ");
 	while(tmp)
 	{
 		kprintf("%d(%d) ", tmp->pid, tmp->delta_slice);

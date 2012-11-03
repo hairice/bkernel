@@ -68,7 +68,8 @@ void dispatch()
 					wake();
 
 				p->state = READY_STATE;				
-				ready(p);			
+				ready(p);		
+	
 				end_of_intr();
 				break;
 
@@ -152,8 +153,7 @@ void dispatch()
 
 				buffer = va_arg(ap, void*);
 				buffer_len = va_arg(ap, int);
-
-			
+		
 				/* hold the ipc() args in the generic ptr in pcb */
 				mem = kmalloc(sizeof(ipc_t));
 
@@ -164,7 +164,7 @@ void dispatch()
 				p->ptr = comm;
 
 				/* search for ipc_receiver in block_q */
-				proc = unblock(p->blocked_receivers, pid);
+				proc = unblock(&(p->blocked_receivers), pid);
 				if(proc)
 				{
 					/* set return value as the number of bytes sent */
@@ -259,9 +259,10 @@ void dispatch()
 				comm->buffer = buffer;
 				comm->buffer_len = buffer_len;
 				p->ptr = comm;
+				
 
 				/* search for ipc_receiver in block_q */
-				proc = unblock(p->blocked_senders, *pid_ptr);
+				proc = unblock(&(p->blocked_senders), *pid_ptr);		
 				if(proc)
 				{
 					/* when the receiver wants to receive from pid 0, update to the actual sender pid */
@@ -275,7 +276,7 @@ void dispatch()
 					kfree(mem);
 					mem = (int *) proc->ptr;
 					kfree(mem);
-
+				
 					/* set proc as ready and put back on ready_q */		
 					p->state = READY_STATE;
 					proc->state = READY_STATE;
@@ -472,9 +473,9 @@ void block(pcb_t **q, pcb_t *p)
 *
 * @note:	ipc_senders calls this function to find the matching ipc_receiver, and vice versa
 */
-pcb_t* unblock(pcb_t *q, unsigned int pid)
+pcb_t* unblock(pcb_t **q, unsigned int pid)
 {
-	pcb_t *tmp=NULL, *p=NULL;
+	pcb_t *tmp=*q, *p=NULL;
 
 	/* a proc is unblocked if the following conditions are met
 	*  1. the proc's pid is the desired endpoint pid
@@ -486,18 +487,18 @@ pcb_t* unblock(pcb_t *q, unsigned int pid)
 	*  2. the role is SENDER
 	*  3. the proc's role is SENDER
 	*/	
-	if(!q) return NULL;
-	if(q->pid == pid || !pid)
+
+	if(!(*q)) return NULL;
+	if((*q)->pid == pid || !pid)
 	{
-		p = q;
-		q = q->next;
+		p = *q;
+		*q = (*q)->next;
 		return p;
 	}
 
 	/* find matching ipc proc in body of block_q, 
 	*  at this point, the algorithm assumes the block_q has at least 2 proc
 	*/
-	tmp = q;
 	while(tmp && tmp->next) 
 	{			
 		/* stated conditions have been met, the proc is released from block_q */
@@ -540,7 +541,7 @@ Bool deadlock(pcb_t *q, pcb_t *p)
 /*
 * release
 *
-* @desc: 	place procs in a queue back into the ready_q
+* @desc: 	place all procs in a queue back into the ready_q
 *
 * @param:	q		queues of proc to be released back into ready_q
 */
@@ -565,13 +566,50 @@ void release(pcb_t **q)
 */
 void puts_ready_q()
 {
-
 	pcb_t *tmp = ready_q;
 
+	kprintf("ready_q: ");
 	while(tmp) 
 	{
 		kprintf("%d ", tmp->pid);
 		tmp=tmp->next;
 	}
 	kprintf("\n");
+}
+
+void puts_blocked_q()
+{
+	int i;
+	pcb_t *tmp;
+
+	for(i=0; i<MAX_PROC; i++)
+	{
+		if(proc_table[i].pid == INVALID_PID) continue;		
+		if(proc_table[i].pid == IDLE_PROC_PID) continue;
+		
+		tmp = proc_table[i].blocked_senders;
+		if(tmp)
+		{
+			kprintf("pid %d blocked_sender:\t", proc_table[i].pid);
+			while(tmp)
+			{
+				kprintf("%d ", tmp->pid);
+				tmp=tmp->next;
+			}
+			kprintf("\n");
+		}
+
+		tmp = proc_table[i].blocked_receivers;
+		if(tmp)
+		{
+			tmp = proc_table[i].blocked_receivers;
+			kprintf("pid %d blocked_receiver:\t", proc_table[i].pid);
+			while(tmp)
+			{
+				kprintf("%d ", tmp->pid);
+				tmp=tmp->next;
+			}
+			kprintf("\n");
+		}
+	}
 }
