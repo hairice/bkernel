@@ -65,7 +65,7 @@ void dispatch()
  			case TIMER_INT:
 				/* signal sleep device is there's at least 1 sleeping proc */
 				if(sleeper() > 0 && tick())
-					ready(wake());
+					wake();
 
 				p->state = READY_STATE;				
 				ready(p);			

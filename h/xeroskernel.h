@@ -209,7 +209,7 @@ extern void consumer(void);
 
 /* sleep device */
 extern unsigned int sleep(pcb_t *p);	
-extern pcb_t* wake(void);				/* get head proc pcb in the sleep_q 				*/
+extern void wake(void);				/* get head proc pcb in the sleep_q 				*/
 extern unsigned int sleeper (void);			/* count number of proc pcb in the sleep_q 			*/
 extern unsigned int sleep_to_slice (unsigned int ms);	/* convert ms to number of slices, ms / (CLOCK_DIVISOR/10) 	*/
 extern void puts_sleep_q(void);

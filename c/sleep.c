@@ -52,8 +52,7 @@ unsigned int sleep (pcb_t *p)
 	}
 
 	/* add proc to head */
-	if(p->delta_slice == sleep_q->delta_slice) return 0;
-	else if(p->delta_slice < sleep_q->delta_slice)
+	if(p->delta_slice < sleep_q->delta_slice)
 	{
 		cnt += p->delta_slice;
 		sleep_q->delta_slice -= p->delta_slice;
@@ -67,12 +66,10 @@ unsigned int sleep (pcb_t *p)
 	{
 		cnt += tmp->delta_slice;
 	
-		if(p->delta_slice == tmp->delta_slice) return 0;
-
-		else if(tmp->delta_slice < p->delta_slice)
+		if(tmp->delta_slice <= p->delta_slice)
 		{
 			p->delta_slice -= tmp->delta_slice;
-
+		
 			/* add proc to body */
 			if(tmp->next && tmp->next->delta_slice > p->delta_slice)
 			{
@@ -89,6 +86,7 @@ unsigned int sleep (pcb_t *p)
 				return cnt;				
 			}
 		}
+
 		tmp = tmp->next;
 	}
 
@@ -106,11 +104,25 @@ unsigned int sleep (pcb_t *p)
 * @note:	the sleep queue is a delta list, hence removing any element from the list is constant time,
 *		hence it does not need to iterate through the list to decrement each element sleep value
 */
-pcb_t* wake ()
+void wake ()
 {
+	/* put sleep_q head back in ready_q */
     	pcb_t *p = sleep_q;
-    	if(p) sleep_q = p->next;
-	return p;
+   	sleep_q = sleep_q->next;
+	ready(p);
+
+	/* put back any proc whose delta_slice is 0 and trails the head */
+	while(sleep_q)
+	{
+		if(!(sleep_q->delta_slice))	
+		{
+			p = sleep_q;
+			sleep_q = sleep_q->next;
+			ready(p);
+		}
+		else
+			break;
+	}
 }
 
 /*

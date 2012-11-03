@@ -8,6 +8,7 @@
 
 /* Your code goes here */
 
+
 /*
 * idleproc
 *
@@ -43,7 +44,7 @@ void producer ()
 	unsigned char *snd_buffer = "2000";	
 	int byte;
 
-	syssleep(1500);
+	syssleep(2000);
 	kprintf("producer wake\n");
 	byte = syssend(receiver, snd_buffer, 4);	
 	kprintf("sent: %d bytes\n", byte);
@@ -74,4 +75,3 @@ void consumer ()
 
 	for(;;);
 }
-
