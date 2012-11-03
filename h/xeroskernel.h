@@ -68,7 +68,7 @@ typedef	char		Bool;		/* boolean type				*/
 #define MIN_PID		1
 #define MAX_PID		65536
 
-#define RESERVED_PID	0
+#define RECEIVE_ANY_PID	0
 #define IDLE_PROC_PID	65536		/* this pid is also used as the pid bound 	*/
 #define PROC_STACK	1024*4		/* set process stack to 4096			*/
 
@@ -91,6 +91,7 @@ struct memHeader
 typedef struct ipc ipc_t;		
 struct ipc
 {
+	unsigned int *pid_ptr;		/* desired pid to send/receive in ipc communication */
 	void *buffer;			/* holds the data that will be transmitted to/from between proc */
 	int buffer_len;			/* the length of data transfer acceptance at one end of ipc 	*/
 };

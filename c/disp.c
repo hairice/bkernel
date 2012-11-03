@@ -158,6 +158,7 @@ void dispatch()
 				mem = kmalloc(sizeof(ipc_t));
 
 				comm = (ipc_t *) ((int)mem); 
+				comm->pid_ptr = &pid;
 				comm->buffer = buffer;
 				comm->buffer_len = buffer_len;
 				p->ptr = comm;
@@ -187,6 +188,30 @@ void dispatch()
 					proc = get_proc(pid);
 					if(proc) 
 					{
+						/* check for receive any */
+						comm = (ipc_t*) proc->ptr;
+						if(proc->ptr && *(comm->pid_ptr) == RECEIVE_ANY_PID && proc->state == BLOCK_ON_RECV_STATE)
+						{
+							/* set return value as the number of bytes sent */
+							p->rc = send(p, proc);
+							proc->rc = p->rc;
+
+							/* update sender pid for the receiver */
+							*(comm->pid_ptr) = p->pid;
+
+							/* set proc as ready and put back on ready_q */			
+							p->state = READY_STATE;
+							proc->state = READY_STATE;	
+							ready(p);
+							ready(proc);
+
+							/* free allocated mem for ipc args for both sender and receiver */
+							kfree(mem);
+							mem = (int *) proc->ptr;
+							kfree(mem);
+							break;
+						}
+
 						/* deadlock detection for ipc blocked send/receive queues */
 						/* when a deadlock is detected, only the current proc is put back on the ready_q */
 						if(deadlock(p->blocked_senders, proc))
@@ -227,10 +252,10 @@ void dispatch()
 				buffer = va_arg(ap, void*);
 				buffer_len = va_arg(ap, int);
 
-
 				/* hold the ipc() args in the generic ptr in pcb */
 				mem = kmalloc(sizeof(ipc_t));
 				comm = (ipc_t *) ((int)mem); 
+				comm->pid_ptr = pid_ptr;
 				comm->buffer = buffer;
 				comm->buffer_len = buffer_len;
 				p->ptr = comm;
@@ -259,6 +284,13 @@ void dispatch()
 				}
 				else
 				{
+					/* place receive_any receiver in block state, this process now is no longer attached to any queues */
+					if(!(*pid_ptr))
+					{
+						p->state = BLOCK_ON_RECV_STATE;
+						break;
+					}
+
 					/* sender not found, snd_proc is now blocked */
 					proc = get_proc(*pid_ptr);
 					if(proc) 
@@ -455,7 +487,7 @@ pcb_t* unblock(pcb_t *q, unsigned int pid)
 	*  3. the proc's role is SENDER
 	*/	
 	if(!q) return NULL;
-	if(q->pid == pid)
+	if(q->pid == pid || !pid)
 	{
 		p = q;
 		q = q->next;
@@ -469,7 +501,7 @@ pcb_t* unblock(pcb_t *q, unsigned int pid)
 	while(tmp && tmp->next) 
 	{			
 		/* stated conditions have been met, the proc is released from block_q */
-		if(tmp->next->pid == pid)
+		if(tmp->next->pid == pid || !pid)
 		{
 			p = tmp->next;
 			tmp->next = tmp->next->next;

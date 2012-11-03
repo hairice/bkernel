@@ -35,7 +35,6 @@ unsigned int sleep_to_slice (unsigned int ms)
 * @param:	p		proc pcb to place in the sleep queue
 *
 * @output:	cnt		returns the number of time slices a process will sleep
-*				0 - a duplicate amount already exist in the sleep queue, process will immediately wake up
 *
 * @note:	the delta list is dependent on the pcb->delta_slice value
 */
@@ -63,7 +62,7 @@ unsigned int sleep (pcb_t *p)
 	}
 
 	while(tmp) 
-	{
+	{	
 		cnt += tmp->delta_slice;
 	
 		if(tmp->delta_slice <= p->delta_slice)

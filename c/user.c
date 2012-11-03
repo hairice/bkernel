@@ -59,7 +59,7 @@ void producer ()
 */
 void consumer ()
 {
-	unsigned int n=3,byte;
+	unsigned int n=0,byte;
 	unsigned int *sender = &n;
 	unsigned char rcv_buffer[4];	
 
