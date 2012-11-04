@@ -26,8 +26,50 @@ void idleproc ()
 */
 void root()
 {
-	syscreate(&producer, PROC_STACK);
-	syscreate(&consumer, PROC_STACK);
+	int pid[4], n=2000, byte,i;
+	char buffer[5], console[50];
+
+	pid[0]=syscreate(&proc1, PROC_STACK);
+	//kprintf("created proc pid=%d\n", pid[0]);
+
+	pid[1]=syscreate(&proc2, PROC_STACK);
+	//kprintf("created proc pid=%d\n", pid[1]);
+
+	pid[2]=syscreate(&proc3, PROC_STACK);
+	//kprintf("created proc pid=%d\n", pid[2]);
+
+	pid[3]=syscreate(&proc4, PROC_STACK);
+	//kprintf("created proc pid=%d\n", pid[3]);
+
+	syssleep(4000);
+
+
+	n=10000;
+	sprintf(buffer, "%d", n);
+
+	sprintf(console, "send proc pid=%d to sleep for %d ms\n", pid[2], n);
+	sysputs(&console);
+
+	syssend(pid[2], buffer, strlen(buffer));
+
+	n=7000;
+	sprintf(buffer, "%d", n);
+	sprintf(console, "send proc pid=%d to sleep for %d ms\n", pid[1], n);
+	sysputs(&console);
+	syssend(pid[1], buffer, strlen(buffer));
+
+	n=20000;
+	sprintf(buffer, "%d", n);
+	sprintf(console, "send proc pid=%d to sleep for %d ms\n", pid[0], n);
+	sysputs(&console);
+	syssend(pid[0], buffer, strlen(buffer));
+
+	n=27000;
+	sprintf(buffer, "%d", n);
+	sprintf(console, "send proc pid=%d to sleep for %d ms\n", pid[3], n);
+	sysputs(&console);
+	syssend(pid[3], buffer, strlen(buffer));
+
 
 	/* eventual loop for root */	
 	for(;;);
@@ -38,18 +80,27 @@ void root()
 *
 * @desc:	executes the producer process
 */
-void producer ()
+void proc1 ()
 {
-	unsigned int receiver=4;
-	unsigned char *snd_buffer = "2000";	
-	int byte;
+	unsigned int byte=5,dst=0,n;
+	unsigned int *ptr = &dst;
+	unsigned char buffer[5];
+	char *console[50];	
 
-	syssleep(2000);
-	kprintf("producer wake\n");
-	byte = syssend(receiver, snd_buffer, 4);	
-	kprintf("sent: %d bytes\n", byte);
+	//kprintf("proc1 alive!\n");
+	syssleep(5000);
+	sprintf(console, "proc1 wake!\n");
+	sysputs(console);
 
-	for(;;);
+	byte = sysrecv(ptr, buffer, byte);
+	n=atoi(buffer);
+
+	sprintf(console, "proc1 received msg, sleep=%d ms\n", n);
+	sysputs(console);
+
+	syssleep(n);
+	sprintf(console, "proc1 wake again! exiting\n");
+	sysputs(console);
 }
 
 /*
@@ -57,21 +108,81 @@ void producer ()
 *
 * @desc:	executes the consumer process
 */
-void consumer ()
+void proc2 ()
 {
-	unsigned int n=0,byte;
-	unsigned int *sender = &n;
-	unsigned char rcv_buffer[4];	
+	unsigned int byte=4,dst=0,n;
+	unsigned int *ptr = &dst;
+	unsigned char buffer[5];	
+	char *console[50];	
 
-	syssleep(2000);
-	kprintf("consumer wake\n");
-	byte = sysrecv(sender, rcv_buffer, 4);
-	kprintf("consumer recv: %d bytes from pid %d\n", byte, *sender);
 
-	n = atoi(rcv_buffer);
-	kprintf("consumer sleep(%d)\n", n);
+	//kprintf("proc2 alive!\n");
+	syssleep(5000);
+	sprintf(console, "proc2 wake!\n");
+	sysputs(console);
+
+	byte = sysrecv(ptr, buffer, byte);
+	n=atoi(buffer);
+
+	sprintf(console, "proc2 received msg, sleep=%d ms\n", n);
+	sysputs(console);
+
 	syssleep(n);
-	kprintf("consumer wake\n");
+	sprintf(console, "proc2 wake again! exiting\n");
+	sysputs(console);
+}
 
-	for(;;);
+/*
+* consumer
+*
+* @desc:	executes the consumer process
+*/
+void proc3 ()
+{
+	unsigned int byte=5,dst=0,n;
+	unsigned int *ptr = &dst;
+	unsigned char buffer[5];	
+	char *console[50];	
+
+	//kprintf("proc3 alive!\n");
+	syssleep(5000);
+	sprintf(console, "proc3 wake!\n");
+	sysputs(console);
+
+	byte = sysrecv(ptr, buffer, byte);
+	n=atoi(buffer);
+
+	sprintf(console, "proc3 received msg, sleep=%d ms\n", n);
+	sysputs(console);
+
+	syssleep(n);
+	sprintf(console, "proc3 wake again! exiting\n");
+	sysputs(console);
+}
+
+/*
+* consumer
+*
+* @desc:	executes the consumer process
+*/
+void proc4 ()
+{
+	unsigned int byte=5,dst=0,n;
+	unsigned int *ptr = &dst;
+	unsigned char buffer[5];	
+	char *console[50];	
+
+	//kprintf("proc4 alive!\n");
+	syssleep(5000);
+	sprintf(console, "proc4 wake!\n");
+	sysputs(console);
+
+	byte = sysrecv(ptr, buffer, byte);
+	n=atoi(buffer);
+	sprintf(console, "proc4 received msg, sleep=%d ms\n", n);
+	sysputs(console);
+
+	syssleep(n);
+	sprintf(console, "proc4 wake again! exiting\n");
+	sysputs(console);
 }
