@@ -113,7 +113,3 @@ void timetest_proc3(void)
 	}
 #endif
 }
-
-
-
-

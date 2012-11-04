@@ -227,6 +227,7 @@ void dispatch()
 						if(deadlock(p->blocked_senders, proc))
 						{
 							kfree(mem);
+							p->rc = ERR_IPC;
 							p->state = READY_STATE;
 							ready(p);
 						}
@@ -240,6 +241,7 @@ void dispatch()
 					{
 						/* receiver does not exist, current proc is returned to ready_q */
 						kfree(mem);
+						p->rc = ERR_PID;
 						p->state = READY_STATE;
 						ready(p);
 					}
@@ -321,6 +323,7 @@ void dispatch()
 						if(deadlock(p->blocked_receivers, proc))
 						{
 							kfree(mem);
+							p->rc = ERR_IPC;
 							p->state = READY_STATE;
 							ready(p);
 						}
@@ -334,6 +337,7 @@ void dispatch()
 					{
 						/* sender does not exist, current proc is returned to ready_q */
 						kfree(mem);
+						p->rc = ERR_PID;
 						p->state = READY_STATE;
 						ready(p);
 					}

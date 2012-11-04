@@ -28,7 +28,6 @@ typedef	char		Bool;		/* boolean type				*/
 
 /* ipc return constants */
 #define ERR_PID		-1		/* invalid pid of sender/receiver 	*/
-#define ERR_DEST	-1		/* invalid pid of sender/receiver 	*/
 #define ERR_LOOPBACK	-2		/* sysend to the pid itself		*/
 #define ERR_IPC		-3		/* any other ipc errors 		*/
 
@@ -83,32 +82,37 @@ typedef	char		Bool;		/* boolean type				*/
 #ifndef SEND_POSITIVE_TEST
 /* uncomment line to enable memory managment test cases */
 /* #define SEND_POSITIVE_TEST */
+#endif
 
-#elif defined SEND_NEGATIVE_TEST
+#ifndef SEND_NEGATIVE_TEST
 /* uncomment line to enable process managment test cases */
 /* #define SEND_NEGATIVE_TEST */
 #endif
+
 #endif
 
 
 
 #ifndef RECV_TEST
 /* uncomment line to enable test driver and disable normal os execution */
-// #define RECV_TEST 
+/* #define RECV_TEST */
+
 #ifndef RECV_POSITIVE_TEST
 /* uncomment line to enable memory managment test cases */
-//#define RECV_POSITIVE_TEST
+/* #define RECV_POSITIVE_TEST */
+#endif
 
-#elif defined RECV_NEGATIVE_TEST
+#ifndef RECV_NEGATIVE_TEST
 /* uncomment line to enable process managment test cases */
 /* #define RECV_NEGATIVE_TEST */
 #endif
+
 #endif
 
 
 #ifndef TIME_TEST
 /* uncomment line to enable process managment test cases */
-#define TIME_TEST 
+/* #define TIME_TEST */
 #endif
 
 

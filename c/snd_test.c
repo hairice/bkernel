@@ -126,6 +126,3 @@ void sndtest_proc3(void)
 
 	for(;;);
 }
-
-
-
