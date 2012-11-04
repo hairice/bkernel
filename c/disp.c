@@ -118,7 +118,7 @@ void dispatch()
 				/* synchronous kernel print handler*/
 				ap = (va_list)p->args;
 				str = va_arg(ap, char*);
-				kprintf("[kernel]: %s", str);
+				kprintf("[k]: %s", str);
 				p->state = READY_STATE;				
 				ready(p);				
 				break;
@@ -173,6 +173,8 @@ void dispatch()
 				comm->buffer_len = buffer_len;
 				p->ptr = comm;
 
+				puts_blocked_q();
+
 				/* search for ipc_receiver in block_q */
 				proc = unblock(&(p->blocked_receivers), pid);
 				if(proc)
@@ -182,9 +184,9 @@ void dispatch()
 					proc->rc = p->rc;	
 
 					/* free allocated mem for ipc args for both sender and receiver */
-					kfree(mem);
-					mem = (int *) proc->ptr;
-					kfree(mem);
+					//kfree(mem);
+					//mem = (int *) proc->ptr;
+					//kfree(mem);
 
 					/* set proc as ready and put back on ready_q */			
 					p->state = READY_STATE;
@@ -196,6 +198,7 @@ void dispatch()
 				{
 					/* receiver not found, snd_proc is now blocked */
 					proc = get_proc(pid);
+
 					if(proc) 
 					{
 						/* check for receive any */
@@ -216,9 +219,9 @@ void dispatch()
 							ready(proc);
 
 							/* free allocated mem for ipc args for both sender and receiver */
-							kfree(mem);
-							mem = (int *) proc->ptr;
-							kfree(mem);
+							//kfree(mem);
+							//mem = (int *) proc->ptr;
+							//kfree(mem);
 							break;
 						}
 
@@ -636,4 +639,25 @@ void puts_blocked_q()
 			kprintf("\n");
 		}
 	}
+}
+
+
+void puts_receive_any ()
+{
+	int i;
+	pcb_t *tmp;
+	ipc_t *comm;
+
+	kprintf("receive_any: ");
+	for(i=0; i<MAX_PROC; i++)
+	{
+		if(proc_table[i].pid == INVALID_PID) continue;		
+		if(proc_table[i].pid == IDLE_PROC_PID) continue;
+		if(!(proc_table[i].ptr)) continue;
+	
+		comm = (ipc_t *) proc_table[i].ptr;
+		if(*(comm->pid_ptr) == RECEIVE_ANY_PID && proc_table[i].state == BLOCK_ON_RECV_STATE)
+			kprintf("%d ", proc_table[i].pid);
+	}
+	kprintf("\n");
 }
