@@ -49,11 +49,11 @@ void initproc( void )				/* The beginning */
 	create(&idleproc, PROC_STACK);
 
 #ifdef SEND_TEST	
-	create(&snd_root, PROC_STACK);
+	create(&sndtest_root, PROC_STACK);
 #elif defined RECV_TEST
-	create(&rcv_root, PROC_STACK);
+	create(&rcvtest_root, PROC_STACK);
 #elif defined TIME_TEST
-	create(&time_root, PROC_STACK);
+	create(&timetest_root, PROC_STACK);
 #else 
 	create(&root, PROC_STACK);
 #endif

@@ -78,33 +78,37 @@ typedef	char		Bool;		/* boolean type				*/
 /* test mode */
 #ifndef SEND_TEST
 /* uncomment line to enable test driver and disable normal os execution */
-#define SEND_TEST
+/* #define SEND_TEST */
 
 #ifndef SEND_POSITIVE_TEST
 /* uncomment line to enable memory managment test cases */
 /* #define SEND_POSITIVE_TEST */
-#endif
 
-#ifndef SEND_NEGATIVE_TEST
+#elif defined SEND_NEGATIVE_TEST
 /* uncomment line to enable process managment test cases */
 /* #define SEND_NEGATIVE_TEST */
 #endif
 #endif
 
 
+
+#ifndef RECV_TEST
+/* uncomment line to enable test driver and disable normal os execution */
+// #define RECV_TEST 
 #ifndef RECV_POSITIVE_TEST
 /* uncomment line to enable memory managment test cases */
-/* #define RECV_POSITIVE_TEST */
-#endif
+//#define RECV_POSITIVE_TEST
 
-#ifndef RECV_NEGATIVE_TEST
+#elif defined RECV_NEGATIVE_TEST
 /* uncomment line to enable process managment test cases */
 /* #define RECV_NEGATIVE_TEST */
 #endif
+#endif
 
-#ifndef TIME_SHARE_TEST
+
+#ifndef TIME_TEST
 /* uncomment line to enable process managment test cases */
-/* #define TIME_SHARE_TEST */
+#define TIME_TEST 
 #endif
 
 
@@ -262,6 +266,6 @@ extern unsigned int tick(void);
 extern int send(pcb_t* snd_proc, pcb_t* rcv_proc);
 extern int recv(pcb_t* snd_proc, pcb_t* rcv_proc);
 
-extern void snd_root(void);
-extern void rcv_root(void);
-extern void time_root(void);
+extern void sndtest_root(void);
+extern void rcvtest_root(void);
+extern void timetest_root(void);
