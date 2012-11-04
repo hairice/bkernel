@@ -20,16 +20,17 @@
 */
 int send(pcb_t* snd_p, pcb_t* rcv_p)
 {
-	int i;	
+	int i=0;	
 	ipc_t* snd = (ipc_t *) snd_p->ptr;
 	ipc_t* rcv = (ipc_t *) rcv_p->ptr;
 	char *snd_buffer = (char *) snd->buffer;
 	char *rcv_buffer = (char *) rcv->buffer;
 
+
+	sprintf(rcv_buffer, "%s", snd_buffer);
 	for(i=0 ; i<rcv->buffer_len ; i++)
 	{
 		if(i > (snd->buffer_len-1)) break;
-		rcv_buffer[i] = snd_buffer[i];
 	}
 
 	return i;
@@ -55,10 +56,10 @@ int recv(pcb_t* snd_p, pcb_t* rcv_p)
 	char *snd_buffer = (char *) snd->buffer;
 	char *rcv_buffer = (char *) rcv->buffer;
 
+	sprintf(rcv_buffer, "%s", snd_buffer);
 	for(i=0 ; i<rcv->buffer_len ; i++)
 	{
 		if(i > (snd->buffer_len-1)) break;
-		rcv_buffer[i] = snd_buffer[i];
 	}
 
 	return i;
