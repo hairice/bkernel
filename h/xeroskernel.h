@@ -29,7 +29,7 @@ typedef	char		Bool;		/* boolean type				*/
 /* ipc return constants */
 #define ERR_PID		-1		/* invalid pid of sender/receiver 	*/
 #define ERR_DEST	-1		/* invalid pid of sender/receiver 	*/
-#define LOOPBACK	-2		/* sysend to the pid itself		*/
+#define ERR_LOOPBACK	-2		/* sysend to the pid itself		*/
 #define ERR_IPC		-3		/* any other ipc errors 		*/
 
 
@@ -82,7 +82,7 @@ typedef	char		Bool;		/* boolean type				*/
 
 #ifndef SEND_POSITIVE_TEST
 /* uncomment line to enable memory managment test cases */
-#define SEND_POSITIVE_TEST 
+/* #define SEND_POSITIVE_TEST */
 #endif
 
 #ifndef SEND_NEGATIVE_TEST
@@ -262,4 +262,6 @@ extern unsigned int tick(void);
 extern int send(pcb_t* snd_proc, pcb_t* rcv_proc);
 extern int recv(pcb_t* snd_proc, pcb_t* rcv_proc);
 
-extern void st_root(void);
+extern void snd_root(void);
+extern void rcv_root(void);
+extern void time_root(void);

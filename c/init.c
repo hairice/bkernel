@@ -40,19 +40,24 @@ void initproc( void )				/* The beginning */
 	kprintf( "\n\nCPSC 415, 2012W1 \n32 Bit Xeros 1.1\nLocated at: %x to %x\n", &entry, &end ); 
         /* Your code goes here */
 	kmeminit();
+	contextinit();
 
 	/* fill the stop queue */
 	for(i=0 ; i<MAX_PROC ; i++) 
 		stop(&proc_table[i]);
 
-#ifdef TEST_MODE	/* by default test_mode is off */
-	testdriver();
-#else
 	create(&idleproc, PROC_STACK);
+
+#ifdef SEND_TEST	
+	create(&snd_root, PROC_STACK);
+#elif defined RECV_TEST
+	create(&rcv_root, PROC_STACK);
+#elif defined TIME_TEST
+	create(&time_root, PROC_STACK);
+#else 
 	create(&root, PROC_STACK);
-	contextinit();
-	dispatch();
 #endif
+	dispatch();
 
         /* This code should never be reached after you are done */
 	for(;;); /* loop forever */
