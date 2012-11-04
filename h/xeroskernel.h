@@ -222,6 +222,7 @@ extern pcb_t* get_proc(int pid);
 extern int count(void);					/* get number of proc pcb in the ready_q 		*/
 void puts_ready_q(void);
 void puts_blocked_q(void);
+void puts_receive_any (void);
 
 extern void contextinit(void);
 extern int contextswitch(pcb_t *p);
@@ -250,8 +251,10 @@ extern void sysputs(char *str);
 /* user processes */
 extern void idleproc (void);
 extern void root(void);
-extern void producer(void);
-extern void consumer(void);
+extern void proc1(void);
+extern void proc2(void);
+extern void proc3(void);
+extern void proc4(void);
 
 
 /* sleep device */
