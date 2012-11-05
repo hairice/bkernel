@@ -26,7 +26,8 @@ void idleproc ()
 */
 void root()
 {
-	int pid[4], n=2000, byte,i;
+	int pid[4], n=2000, byte=5,i;
+	unsigned int *ptr;
 	char buffer[5], console[50];
 
 	pid[0]=syscreate(&proc1, PROC_STACK);
@@ -49,7 +50,6 @@ void root()
 
 	sprintf(console, "send proc pid=%d to sleep for %d ms\n", pid[2], n);
 	sysputs(&console);
-
 	syssend(pid[2], buffer, strlen(buffer));
 
 	n=7000;
@@ -70,7 +70,16 @@ void root()
 	sysputs(&console);
 	syssend(pid[3], buffer, strlen(buffer));
 
-
+	ptr = &(pid[3]);
+	byte = sysrecv(ptr, buffer, byte);
+	sprintf(console, "root received msg from pid=%d byte=%d\n", pid[3], byte);
+	sysputs(&console);
+	
+	n=1000;
+	sprintf(buffer, "%d", n);
+	byte = syssend(pid[2], buffer, strlen(buffer));
+	sprintf(console, "send proc pid=%d to sleep for %d ms, ret=%d\n", pid[3], n, byte);
+	sysputs(&console);
 	/* eventual loop for root */	
 	for(;;);
 }
@@ -95,7 +104,7 @@ void proc1 ()
 	byte = sysrecv(ptr, buffer, byte);
 	n=atoi(buffer);
 
-	sprintf(console, "proc1 received msg, sleep=%d ms\n", n);
+	sprintf(console, "proc1 received msg byte=%d, sleep=%d ms\n", byte, n);
 	sysputs(console);
 
 	syssleep(n);
@@ -123,8 +132,7 @@ void proc2 ()
 
 	byte = sysrecv(ptr, buffer, byte);
 	n=atoi(buffer);
-
-	sprintf(console, "proc2 received msg, sleep=%d ms\n", n);
+	sprintf(console, "proc2 received msg byte=%d, sleep=%d ms\n", byte, n);
 	sysputs(console);
 
 	syssleep(n);
@@ -151,8 +159,7 @@ void proc3 ()
 
 	byte = sysrecv(ptr, buffer, byte);
 	n=atoi(buffer);
-
-	sprintf(console, "proc3 received msg, sleep=%d ms\n", n);
+	sprintf(console, "proc3 received msg byte=%d, sleep=%d ms\n", byte, n);
 	sysputs(console);
 
 	syssleep(n);
@@ -179,10 +186,11 @@ void proc4 ()
 
 	byte = sysrecv(ptr, buffer, byte);
 	n=atoi(buffer);
-	sprintf(console, "proc4 received msg, sleep=%d ms\n", n);
+	sprintf(console, "proc4 received msg byte=%d, sleep=%d ms\n", byte, n);
 	sysputs(console);
 
 	syssleep(n);
 	sprintf(console, "proc4 wake again! exiting\n");
 	sysputs(console);
 }
+

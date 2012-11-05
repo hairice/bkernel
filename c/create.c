@@ -245,5 +245,3 @@ void set_min_pid()
 	if(min_pid == INVALID_PID)
 		min_pid = MIN_PID;	
 }
-
-

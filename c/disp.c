@@ -199,7 +199,6 @@ void dispatch()
 				{
 					/* receiver not found, snd_proc is now blocked */
 					proc = get_proc(pid);
-
 					if(proc) 
 					{
 						/* check for receive any */
@@ -579,6 +578,7 @@ void release(pcb_t **q)
 	while(tmp1)
 	{
 		tmp2 = tmp1->next;
+		tmp1->rc = ERR_IPC;
 		ready(tmp1);
 		tmp1 = tmp2;
 	}

@@ -143,4 +143,3 @@ void contextinit()
 	// set timer interrupt quantum
 	initPIT(CLOCK_DIVISOR);
 }
-
