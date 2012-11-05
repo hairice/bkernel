@@ -7,15 +7,15 @@
 #include <xeroskernel.h>
 
 /* Your code goes here. */
-#define STACK_PAD 0x10		/* amount of space the context_frame is shifted from the end */
-				/* of the memory allocation */
+#define STACK_PAD 0x10		/* amount of space the context_frame is shifted from the end 	*/
+				/* of the memory allocation 					*/
 
 extern pcb_t *stop_q;
 extern pcb_t proc_table[MAX_PROC];
 
-static int min_pid = MIN_PID;
-static int max_pid = MIN_PID;
-static int next_pid = MIN_PID+1;
+static int min_pid = MIN_PID;		/* lower bound of used pid region 						*/
+static int max_pid = MIN_PID;		/* upper bound of used pid region 						*/
+static int next_pid = MIN_PID+1;	/* reference to the next pid, the next pid may/may not be an available pid 	*/
 
 /*
 * create
@@ -36,7 +36,8 @@ int create(void (*func)(void), int stack)
 	context_frame_t *frame;
 	pcb_t *p = NULL;
 
-
+	/* add new proc if provided func is not null or stack_size is at least MIN_STACK */
+	if(!func || stack < MIN_STACK) return SYSERR;
 
 	/* remove head of stop queue */
 	if(!stop_q) return -1;

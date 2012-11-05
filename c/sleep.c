@@ -8,7 +8,7 @@
 
 /* Your code goes here */
 pcb_t *sleep_q;
-static unsigned int slice_elapsed = 0;
+static unsigned int slice_elapsed = 0;	/* delta slice for the timer hardware */
 
 /*
 * sleep_to_slice
@@ -42,6 +42,9 @@ unsigned int sleep (pcb_t *p)
 {
 	pcb_t *tmp = sleep_q;
 	unsigned int cnt=0;
+
+	/* null proc passed */
+	if(!p) return 0;
 
 	if(!tmp) 
 	{

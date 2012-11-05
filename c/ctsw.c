@@ -15,18 +15,18 @@
 */
 
 
-void _timer_entry_point(void);		/* timer isr */
-void _syscall_entry_point(void);	/* system call isr */
-void _common_entry_point(void);		/* system call and interrupt isr */
+void _timer_entry_point(void);		/* timer isr 				*/
+void _syscall_entry_point(void);	/* system call isr 			*/
+void _common_entry_point(void);		/* system call and interrupt isr 	*/
 
-static unsigned int esp;		/* user stack pointer location */
-static unsigned int k_esp;		/* kernel stack pointer location */
-static unsigned int rc;			/* syscall() call request id */
+static unsigned int esp;		/* user stack pointer location 		*/
+static unsigned int k_esp;		/* kernel stack pointer location 	*/
+static unsigned int rc;			/* syscall() call request id 		*/
 static unsigned int interrupt;		/* interrupt code
 					*  0 - system call
 					*  1 - timer interrupt
 					*/
-static unsigned int args;		/* args passed from syscall() */
+static unsigned int args;		/* args passed from syscall() 		*/
 
 /*
 * contextswitch

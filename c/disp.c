@@ -80,6 +80,7 @@ void dispatch()
 				stack = va_arg(ap, int);
 
 				/* create new process */
+				/* parameter checking is done inside create() */
 				p->rc = create(funcptr, stack);
 
 				p->state = READY_STATE;				
@@ -118,7 +119,10 @@ void dispatch()
 				/* synchronous kernel print handler*/
 				ap = (va_list)p->args;
 				str = va_arg(ap, char*);
-				kprintf("[k]: %s", str);
+		
+				if(str)
+					kprintf("[k]: %s", str);
+	
 				p->state = READY_STATE;				
 				ready(p);				
 				break;
@@ -155,8 +159,8 @@ void dispatch()
 				buffer = va_arg(ap, void*);
 				buffer_len = va_arg(ap, int);
 
-				/* when an empty buffer_len is passed, add current proc to ready_q */
-				if(!buffer_len)
+				/* when an empty buffer_len or null buffer is passed, add current proc to ready_q */
+				if(!buffer_len || !buffer || !pid)
 				{
 					p->state = READY_STATE;	
 					p->rc = ERR_IPC;
@@ -254,7 +258,7 @@ void dispatch()
 				ap = (va_list)p->args;
 				pid_ptr = va_arg(ap, unsigned int*);
 
-				/* when proc sends to itself, add current proc to ready_q */
+				/* when an empty buffer_len or null buffer is passed, add current proc to ready_q */
 				if(p->pid == *pid_ptr)
 				{
 					p->state = READY_STATE;	
@@ -267,7 +271,7 @@ void dispatch()
 				buffer_len = va_arg(ap, int);
 
 				/* when an empty buffer_len is passed, add current proc to ready_q */
-				if(!buffer_len)
+				if(!buffer_len || !buffer)
 				{
 					p->state = READY_STATE;	
 					p->rc = ERR_IPC;

@@ -70,6 +70,7 @@ typedef	char		Bool;		/* boolean type				*/
 #define RECEIVE_ANY_PID	0		/* ipc_recv call for receiving from any proc 	*/
 #define IDLE_PROC_PID	65536		/* this pid is also used as the pid bound 	*/
 #define PROC_STACK	1024*4		/* set process stack to 4096			*/
+#define MIN_STACK	1024		
 
 
 /* ========= */
