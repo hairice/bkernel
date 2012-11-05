@@ -60,7 +60,7 @@ void dispatch()
 		p->state = RUNNING_STATE;
 		request = contextswitch(p);
 
-		// service syscall/interrupt requests
+		/* service syscall/interrupt requests */
 		switch(request) {
  			case TIMER_INT:
 				/* signal sleep device is there's at least 1 sleeping proc */
@@ -166,14 +166,11 @@ void dispatch()
 
 				/* hold the ipc() args in the generic ptr in pcb */
 				mem = kmalloc(sizeof(ipc_t));
-
 				comm = (ipc_t *) ((int)mem); 
 				comm->pid_ptr = &pid;
 				comm->buffer = buffer;
 				comm->buffer_len = buffer_len;
 				p->ptr = comm;
-
-				puts_blocked_q();
 
 				/* search for ipc_receiver in block_q */
 				proc = unblock(&(p->blocked_receivers), pid);
@@ -236,6 +233,7 @@ void dispatch()
 						}
 						else
 						{
+							/* deadlock detected, current proc is put back to the ready_q */
 							block(&(proc->blocked_senders), p);
 							p->state = BLOCK_ON_SEND_STATE;
 						}
@@ -298,9 +296,9 @@ void dispatch()
 					proc->rc = p->rc;					
 
 					/* free allocated mem for ipc args for both sender and receiver */
-					kfree(mem);
-					mem = (int *) proc->ptr;
-					kfree(mem);
+					//kfree(mem);
+					//mem = (int *) proc->ptr;
+					//kfree(mem);
 				
 					/* set proc as ready and put back on ready_q */		
 					p->state = READY_STATE;
@@ -332,6 +330,7 @@ void dispatch()
 						}
 						else
 						{
+							/* deadlock detected, current proc is put back to the ready_q */
 							block(&(proc->blocked_receivers), p);
 							p->state = BLOCK_ON_RECV_STATE;
 						}
@@ -465,6 +464,9 @@ void stop (pcb_t *p)
 *
 * @desc: 	add pcb block to the end of block queue
 *
+* @param:	p		proc to be added to a blocked queue
+*		q		blocked queue to add a new proc
+*
 * @note:	a proc can be blocked by the following events,
 *		1. ipc_send();
 *		2. ipc_recv();
@@ -494,25 +496,19 @@ void block(pcb_t **q, pcb_t *p)
 * @desc: 	get the proc pcb from the block_q
 *
 * @param:	pid		pid of the proc pcb to retrieve from the block_q
+*		q		blocked queue to search for a particular proc pid
 *
-* @output:	p		proc pcb for the matching input pid
-*		role		ipc counterpart desired role (sender/receiver)
+* @output:	p		proc that has been unblocked from queue
 *
-* @note:	ipc_senders calls this function to find the matching ipc_receiver, and vice versa
+* @note:	ipc_senders call this function to find the matching ipc_receiver, and vice versa
 */
 pcb_t* unblock(pcb_t **q, unsigned int pid)
 {
 	pcb_t *tmp=*q, *p=NULL;
 
 	/* a proc is unblocked if the following conditions are met
-	*  1. the proc's pid is the desired endpoint pid
-	*  2. the proc's desired endpoint pid is current pid being serviced by the dispatcher
-	*  3. the proc has the correct role (sender/receiver)
-	*
-	*  a proc can also be blocked if the following conditions are met
-	*  1. the desired endpoint pid is 0
-	*  2. the role is SENDER
-	*  3. the proc's role is SENDER
+	* 1. the queue proc pid matches to the provided pid
+	* 2. the provided pid is 0 (receive_any)
 	*/	
 
 	if(!(*q)) return NULL;
@@ -604,6 +600,11 @@ void puts_ready_q()
 	kprintf("\n");
 }
 
+/*
+* puts_blocked_q
+*
+* @desc: 	output all blocked queue proc pid to console
+*/
 void puts_blocked_q()
 {
 	int i;
@@ -614,6 +615,7 @@ void puts_blocked_q()
 		if(proc_table[i].pid == INVALID_PID) continue;		
 		if(proc_table[i].pid == IDLE_PROC_PID) continue;
 		
+		/* check proc blocked_senders queue */ 
 		tmp = proc_table[i].blocked_senders;
 		if(tmp)
 		{
@@ -626,6 +628,7 @@ void puts_blocked_q()
 			kprintf("\n");
 		}
 
+		/* check proc blocked_receivers queue */ 
 		tmp = proc_table[i].blocked_receivers;
 		if(tmp)
 		{
@@ -641,7 +644,13 @@ void puts_blocked_q()
 	}
 }
 
-
+/*
+* puts_receive_any
+*
+* @desc: 	output all receive any proc pid with state BLOCK_ON_RECV_STATE to console
+*
+* @note:	a proc who has been blocked on a receive any call does not exist on any particular proc's blocked_receivers queue
+*/
 void puts_receive_any ()
 {
 	int i;
@@ -656,6 +665,8 @@ void puts_receive_any ()
 		if(!(proc_table[i].ptr)) continue;
 	
 		comm = (ipc_t *) proc_table[i].ptr;
+		
+		/* cycle through the process table and look for proc whose dest_proc pid is 0 and whose state is BLOCK_ON_RECV_STATE */
 		if(*(comm->pid_ptr) == RECEIVE_ANY_PID && proc_table[i].state == BLOCK_ON_RECV_STATE)
 			kprintf("%d ", proc_table[i].pid);
 	}

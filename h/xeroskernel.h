@@ -58,52 +58,50 @@ typedef	char		Bool;		/* boolean type				*/
 
 
 /* hardware timer constant */
-#define CLOCK_DIVISOR	100
+#define CLOCK_DIVISOR	100	
 
 
 /* user process constants */
-#define MAX_PROC	32
-#define INVALID_PID	1
-#define MIN_PID		1
+#define MAX_PROC	32		
+#define INVALID_PID	1		/* errorneous return code for create() 		*/
+#define MIN_PID		1		
 #define MAX_PID		65536
 
-#define RECEIVE_ANY_PID	0
+#define RECEIVE_ANY_PID	0		/* ipc_recv call for receiving from any proc 	*/
 #define IDLE_PROC_PID	65536		/* this pid is also used as the pid bound 	*/
 #define PROC_STACK	1024*4		/* set process stack to 4096			*/
-
 
 
 /* ========= */
 /* test mode */
 #ifndef SEND_TEST
-/* uncomment line to enable test driver and disable normal os execution */
+/* uncomment to enable ipc_send tests, once this is uncommented sndtest_root() will be created */
 /* #define SEND_TEST */
 
 #ifndef SEND_POSITIVE_TEST
-/* uncomment line to enable memory managment test cases */
+/* uncomment to enable 2 success ipc_send tests */
 /* #define SEND_POSITIVE_TEST */
 #endif
 
 #ifndef SEND_NEGATIVE_TEST
-/* uncomment line to enable process managment test cases */
+/* uncomment to enable 2 failure ipc_send tests */
 /* #define SEND_NEGATIVE_TEST */
 #endif
 
 #endif
 
 
-
 #ifndef RECV_TEST
-/* uncomment line to enable test driver and disable normal os execution */
+/* uncomment to enable ipc_recv tests, once this is uncommented rcvtest_root() will be created */
 /* #define RECV_TEST */
 
 #ifndef RECV_POSITIVE_TEST
-/* uncomment line to enable memory managment test cases */
+/* uncomment to enable 2 success ipc_recv tests */
 /* #define RECV_POSITIVE_TEST */
 #endif
 
 #ifndef RECV_NEGATIVE_TEST
-/* uncomment line to enable process managment test cases */
+/* uncomment to enable 2 failure ipc_recv tests */
 /* #define RECV_NEGATIVE_TEST */
 #endif
 
@@ -111,12 +109,9 @@ typedef	char		Bool;		/* boolean type				*/
 
 
 #ifndef TIME_TEST
-/* uncomment line to enable process managment test cases */
+/* uncomment to enable time_share tests, once this is uncommented timetest_root() will be created and 1 time_share test will be enabled */
 /* #define TIME_TEST */
 #endif
-
-
-
 
 
 /* ====================== */
@@ -135,7 +130,7 @@ struct memHeader
 typedef struct ipc ipc_t;		
 struct ipc
 {
-	unsigned int *pid_ptr;		/* desired pid to send/receive in ipc communication */
+	unsigned int *pid_ptr;		/* desired pid to send/receive in ipc communication 		*/
 	void *buffer;			/* holds the data that will be transmitted to/from between proc */
 	int buffer_len;			/* the length of data transfer acceptance at one end of ipc 	*/
 };
@@ -218,16 +213,16 @@ extern void block(pcb_t **q, pcb_t *p);			/* put proc pcb in the block_q 				*/
 extern pcb_t* unblock(pcb_t **q, unsigned int pid);	/* get proc pcb in the block_q 				*/
 extern Bool deadlock(pcb_t *q, pcb_t *p);		/* deadlock detection for ipc send/receive 		*/
 extern void release(pcb_t **q);				/* releases blocked sender/receiver back into ready_q 	*/
-extern pcb_t* get_proc(int pid);
+extern pcb_t* get_proc(int pid);			/* get pcb_t from the proc_table of the provided pid 	*/
 extern int count(void);					/* get number of proc pcb in the ready_q 		*/
-void puts_ready_q(void);
+void puts_ready_q(void);				
 void puts_blocked_q(void);
 void puts_receive_any (void);
 
 extern void contextinit(void);
 extern int contextswitch(pcb_t *p);
 extern int create(void (*func)(void), int stack); 
-extern unsigned int find_pid(void);
+extern unsigned int find_pid(void);			/* return next available pid within MIN_PID and MAX_PID	*/
 extern void set_max_pid(void);
 extern void set_min_pid(void);
 
@@ -259,7 +254,7 @@ extern void proc4(void);
 
 /* sleep device */
 extern unsigned int sleep(pcb_t *p);	
-extern void wake(void);				/* get head proc pcb in the sleep_q 				*/
+extern void wake(void);					/* get head proc pcb in the sleep_q 				*/
 extern unsigned int sleeper (void);			/* count number of proc pcb in the sleep_q 			*/
 extern unsigned int sleep_to_slice (unsigned int ms);	/* convert ms to number of slices, ms / (CLOCK_DIVISOR/10) 	*/
 extern void puts_sleep_q(void);
@@ -273,6 +268,8 @@ extern unsigned int tick(void);
 extern int send(pcb_t* snd_proc, pcb_t* rcv_proc);
 extern int recv(pcb_t* snd_proc, pcb_t* rcv_proc);
 
+
+/* test processes */
 extern void sndtest_root(void);
 extern void rcvtest_root(void);
 extern void timetest_root(void);

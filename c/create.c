@@ -90,6 +90,23 @@ int create(void (*func)(void), int stack)
 * @desc:	create process and put process on the ready queue
 *
 * @output:	pid		unused pid in the range of (MIN_PID+1, MAX_PID-1)
+*
+* @note:	this algorithm divides the pid number space into three regions
+*
+*		|___lower_unused_region___|___middle_used_region___|___upper_unused_region___|
+*
+*					  ^			   ^
+*				       min_pid			max_pid
+*
+*		three references are updated when a pid is created (syscreated()) or removed (sysstop()). Hence the min and max bounds 
+*		are constantly changing depending on the process management
+*			1. min_pid
+*			2. max_pid
+*			3. next_pid
+*
+*		the regions "lower_unused" & "upper_unused" will generate pids in constant time, 
+*		when the next_pid reference is between min_pid and max_pid, the algorithm will cycle incrementally to find the smallest avaiable pid 
+*		within the range (min_pid, max_pid)
 */
 unsigned int find_pid ()
 {
@@ -201,7 +218,6 @@ void set_max_pid()
 	
 	for(i ; i<MAX_PROC ; i++)
 	{
-		//if(proc_table[i].pid == IDLE_PROC_PID) continue;
 		if(proc_table[i].pid > max_pid)
 			max_pid = proc_table[i].pid;
 	}

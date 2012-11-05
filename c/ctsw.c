@@ -44,9 +44,35 @@ int contextswitch( pcb_t *p )
 	esp=p->esp;	
 	rc=p->rc;
 
+
 	/*
-	* context switch between process and kernel
-	* retrieve syscall() arguments by register from 'eax' and 'edx'
+	* on leaving the kernel:
+	* after any request has been serviced, it returns back to a process in the following way,
+	* 1. hold return value in eax
+	* 2. save kernel stack
+	* 3. change stack pointer from kernel stack to user stack
+	* 4. put eax value onto kernel stack
+	* 5. pop user stack into registers
+	*/
+	
+	/*
+	* on entering the kernel:
+	* timer interrupts will be handled by the isr _timer_entry_point
+	* - for timer interrupts, 1 has been assigned as the return code
+	* 
+	* system call interrupts will be handled by the isr _syscall_entry_point
+	*
+	* for hardware/software interrupts, interrupts are disabled on entering the kernel, hence this is a non-reentrant kernel
+	*
+	*
+	* when software/hardware interupts are received, all interrupts will then jump and be handled by _common_entry_point, 
+	* where the listed actions will follow
+	* 1. save user stack pointer
+	* 2. change stack pointer from user stack to kernel stack
+	* 3. retrieve request code from user stack
+	* 4. retrieve interrupt code from user stack (only applicable for timer interrupts)
+	* 5. retrieve data arguments from user stack (only applicable for syscall())
+	* 6. pop kernel stack into registers
 	*/
 	__asm __volatile( " 					\
 				pushf 				\n\
@@ -103,6 +129,8 @@ int contextswitch( pcb_t *p )
 * contextinit
 *
 * @desc:	set kernel interrupt event entry in IDT
+*
+* @note:	both software & hardware interrupt entries are set in this function
 */
 void contextinit() 
 {
