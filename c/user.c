@@ -26,20 +26,20 @@ void idleproc ()
 */
 void root()
 {
-	int pid[4], n=2000, byte=5,i;
+	int child_pid[4], n=2000, byte=5,i;
 	unsigned int *ptr;
 	char buffer[5], console[50];
 
-	pid[0]=syscreate(&proc1, PROC_STACK);
+	child_pid[0]=syscreate(&proc1, PROC_STACK);
 	//kprintf("created proc pid=%d\n", pid[0]);
 
-	pid[1]=syscreate(&proc2, PROC_STACK);
+	child_pid[1]=syscreate(&proc2, PROC_STACK);
 	//kprintf("created proc pid=%d\n", pid[1]);
 
-	pid[2]=syscreate(&proc3, PROC_STACK);
+	child_pid[2]=syscreate(&proc3, PROC_STACK);
 	//kprintf("created proc pid=%d\n", pid[2]);
 
-	pid[3]=syscreate(&proc4, PROC_STACK);
+	child_pid[3]=syscreate(&proc4, PROC_STACK);
 	//kprintf("created proc pid=%d\n", pid[3]);
 
 	syssleep(4000);
@@ -48,42 +48,42 @@ void root()
 	/* send the third created process a message to sleep for 10 seconds */
 	n=10000;
 	sprintf(buffer, "%d", n);
-	sprintf(console, "send proc pid=%d to sleep for %d ms\n", pid[2], n);
+	sprintf(console, "send proc pid=%d to sleep for %d ms\n", child_pid[2], n);
 	sysputs(&console);
-	syssend(pid[2], buffer, strlen(buffer));
+	syssend(child_pid[2], buffer, strlen(buffer));
 
 	/* send the fourth created process a message to sleep for 7 seconds */
 	n=7000;
 	sprintf(buffer, "%d", n);
-	sprintf(console, "send proc pid=%d to sleep for %d ms\n", pid[1], n);
+	sprintf(console, "send proc pid=%d to sleep for %d ms\n", child_pid[1], n);
 	sysputs(&console);
-	syssend(pid[1], buffer, strlen(buffer));
+	syssend(child_pid[1], buffer, strlen(buffer));
 
 	/* send the third created process a message to sleep for 20 seconds */
 	n=20000;
 	sprintf(buffer, "%d", n);
-	sprintf(console, "send proc pid=%d to sleep for %d ms\n", pid[0], n);
+	sprintf(console, "send proc pid=%d to sleep for %d ms\n", child_pid[0], n);
 	sysputs(&console);
-	syssend(pid[0], buffer, strlen(buffer));
+	syssend(child_pid[0], buffer, strlen(buffer));
 
 	/* send the third created process a message to sleep for 27 seconds */
 	n=27000;
 	sprintf(buffer, "%d", n);
-	sprintf(console, "send proc pid=%d to sleep for %d ms\n", pid[3], n);
+	sprintf(console, "send proc pid=%d to sleep for %d ms\n", child_pid[3], n);
 	sysputs(&console);
-	syssend(pid[3], buffer, strlen(buffer));
+	syssend(child_pid[3], buffer, strlen(buffer));
 
 	/* attempt to receive a message from the fourth created process */
-	ptr = &(pid[3]);
+	ptr = &(child_pid[3]);
 	byte = sysrecv(ptr, buffer, byte);
-	sprintf(console, "root received msg from pid=%d byte=%d\n", pid[3], byte);
+	sprintf(console, "root received msg from pid=%d byte=%d\n", child_pid[3], byte);
 	sysputs(&console);
 	
 	/* attempt to send a message to the third created process */
 	n=1000;
 	sprintf(buffer, "%d", n);
-	byte = syssend(pid[2], buffer, strlen(buffer));
-	sprintf(console, "send proc pid=%d to sleep for %d ms, ret=%d\n", pid[3], n, byte);
+	byte = syssend(child_pid[2], buffer, strlen(buffer));
+	sprintf(console, "send proc pid=%d to sleep for %d ms, ret=%d\n", child_pid[3], n, byte);
 	sysputs(&console);
 
 
