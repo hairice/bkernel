@@ -26,21 +26,31 @@ void idleproc ()
 */
 void root()
 {
-	int child_pid[4], n=2000, byte=5,i;
+	int child_pid[4], n=2000, byte=5,i,pid;
 	unsigned int *ptr;
-	char buffer[5], console[50];
+	char buffer[5], console[75];
+
+	pid=sysgetpid();
 
 	child_pid[0]=syscreate(&proc1, PROC_STACK);
-	//kprintf("created proc pid=%d\n", pid[0]);
+	sprintf(console, "[p%d]\t\t[created]\t\t[p%d]\0", pid, child_pid[0]);
+	sysputs(console);
 
 	child_pid[1]=syscreate(&proc2, PROC_STACK);
-	//kprintf("created proc pid=%d\n", pid[1]);
+	sprintf(console, "[p%d]\t\t[created]\t\t[p%d]\0", pid, child_pid[1]);
+	sysputs(console);
 
 	child_pid[2]=syscreate(&proc3, PROC_STACK);
-	//kprintf("created proc pid=%d\n", pid[2]);
+	sprintf(console, "[p%d]\t\t[created]\t\t[p%d]\0", pid, child_pid[2]);
+	sysputs(console);
 
 	child_pid[3]=syscreate(&proc4, PROC_STACK);
-	//kprintf("created proc pid=%d\n", pid[3]);
+	sprintf(console, "[p%d]\t\t[created]\t\t[p%d]\0", pid, child_pid[3]);
+	sysputs(console);
+
+
+	sprintf(console, "\n--------------------------------------------\n\0");
+	sysputs(console);
 
 	syssleep(4000);
 
@@ -48,43 +58,37 @@ void root()
 	/* send the third created process a message to sleep for 10 seconds */
 	n=10000;
 	sprintf(buffer, "%d", n);
-	sprintf(console, "send proc pid=%d to sleep for %d ms\n", child_pid[2], n);
-	sysputs(&console);
 	syssend(child_pid[2], buffer, strlen(buffer));
 
 	/* send the fourth created process a message to sleep for 7 seconds */
 	n=7000;
 	sprintf(buffer, "%d", n);
-	sprintf(console, "send proc pid=%d to sleep for %d ms\n", child_pid[1], n);
-	sysputs(&console);
 	syssend(child_pid[1], buffer, strlen(buffer));
 
 	/* send the third created process a message to sleep for 20 seconds */
 	n=20000;
 	sprintf(buffer, "%d", n);
-	sprintf(console, "send proc pid=%d to sleep for %d ms\n", child_pid[0], n);
-	sysputs(&console);
 	syssend(child_pid[0], buffer, strlen(buffer));
 
 	/* send the third created process a message to sleep for 27 seconds */
 	n=27000;
 	sprintf(buffer, "%d", n);
-	sprintf(console, "send proc pid=%d to sleep for %d ms\n", child_pid[3], n);
-	sysputs(&console);
 	syssend(child_pid[3], buffer, strlen(buffer));
 
 	/* attempt to receive a message from the fourth created process */
 	ptr = &(child_pid[3]);
+	memset (buffer,'0',byte);
 	byte = sysrecv(ptr, buffer, byte);
-	sprintf(console, "root received msg from pid=%d byte=%d\n", child_pid[3], byte);
-	sysputs(&console);
+	sprintf(console, "[p%d]\t\t[received_msg]\t\t[ret_status %d]\0", pid, byte);
+	sysputs(console);
+	
 	
 	/* attempt to send a message to the third created process */
 	n=1000;
 	sprintf(buffer, "%d", n);
 	byte = syssend(child_pid[2], buffer, strlen(buffer));
-	sprintf(console, "send proc pid=%d to sleep for %d ms, ret=%d\n", child_pid[3], n, byte);
-	sysputs(&console);
+	sprintf(console, "[p%d]\t\t[sent_msg]\t\t[ret_status %d]\0", pid, byte);
+	sysputs(console);
 
 
 	/* eventual loop for root */	
@@ -98,24 +102,25 @@ void root()
 */
 void proc1 ()
 {
-	unsigned int byte=5,dst=0,n;
+	unsigned int byte=5,dst=0,n, pid;
 	unsigned int *ptr = &dst;
 	unsigned char buffer[5];
 	char *console[50];	
 
-	//kprintf("proc1 alive!\n");
+
+	pid=sysgetpid();
+
 	syssleep(5000);
-	sprintf(console, "proc1 wake!\n");
+	sprintf(console, "[p%d]\t\t[wake]\0", pid);
 	sysputs(console);
 
 	byte = sysrecv(ptr, buffer, byte);
 	n=atoi(buffer);
-
-	sprintf(console, "proc1 received msg byte=%d, sleep=%d ms\n", byte, n);
+	sprintf(console, "[p%d]\t\t[received_msg]\t\t[sleep %d ms]\0", pid, n);
 	sysputs(console);
 
 	syssleep(n);
-	sprintf(console, "proc1 wake again! exiting\n");
+	sprintf(console, "[p%d]\t\t[exiting]\t\t[sleep_ended]\0", pid);
 	sysputs(console);
 }
 
@@ -126,24 +131,25 @@ void proc1 ()
 */
 void proc2 ()
 {
-	unsigned int byte=4,dst=0,n;
+	unsigned int byte=4,dst=0,n,pid;
 	unsigned int *ptr = &dst;
 	unsigned char buffer[5];	
 	char *console[50];	
 
+	pid=sysgetpid();
 
-	//kprintf("proc2 alive!\n");
+
 	syssleep(5000);
-	sprintf(console, "proc2 wake!\n");
+	sprintf(console, "[p%d]\t\t[wake]\0", pid);
 	sysputs(console);
 
 	byte = sysrecv(ptr, buffer, byte);
 	n=atoi(buffer);
-	sprintf(console, "proc2 received msg byte=%d, sleep=%d ms\n", byte, n);
+	sprintf(console, "[p%d]\t\t[received_msg]\t\t[sleep %d ms]\0", pid, n);
 	sysputs(console);
 
 	syssleep(n);
-	sprintf(console, "proc2 wake again! exiting\n");
+	sprintf(console, "[p%d]\t\t[exiting]\t\t[sleep_ended]\0", pid);
 	sysputs(console);
 }
 
@@ -154,23 +160,25 @@ void proc2 ()
 */
 void proc3 ()
 {
-	unsigned int byte=5,dst=0,n;
+	unsigned int byte=5,dst=0,n,pid;
 	unsigned int *ptr = &dst;
 	unsigned char buffer[5];	
 	char *console[50];	
 
-	//kprintf("proc3 alive!\n");
+
+	pid=sysgetpid();
+
 	syssleep(5000);
-	sprintf(console, "proc3 wake!\n");
+	sprintf(console, "[p%d]\t\t[wake]\0", pid);
 	sysputs(console);
 
 	byte = sysrecv(ptr, buffer, byte);
 	n=atoi(buffer);
-	sprintf(console, "proc3 received msg byte=%d, sleep=%d ms\n", byte, n);
+	sprintf(console, "[p%d]\t\t[received_msg]\t\t[sleep %d ms]\0", pid, n);
 	sysputs(console);
 
 	syssleep(n);
-	sprintf(console, "proc3 wake again! exiting\n");
+	sprintf(console, "[p%d]\t\t[exiting]\t\t[sleep_ended]\0", pid);
 	sysputs(console);
 }
 
@@ -181,23 +189,24 @@ void proc3 ()
 */
 void proc4 ()
 {
-	unsigned int byte=5,dst=0,n;
+	unsigned int byte=5,dst=0,n,pid;
 	unsigned int *ptr = &dst;
 	unsigned char buffer[5];	
 	char *console[50];	
 
-	//kprintf("proc4 alive!\n");
+	pid=sysgetpid();
+
 	syssleep(5000);
-	sprintf(console, "proc4 wake!\n");
+	sprintf(console, "[p%d]\t\t[wake]\0", pid);
 	sysputs(console);
 
 	byte = sysrecv(ptr, buffer, byte);
 	n=atoi(buffer);
-	sprintf(console, "proc4 received msg byte=%d, sleep=%d ms\n", byte, n);
+	sprintf(console, "[p%d]\t\t[received_msg]\t\t[sleep %d ms]\0", pid, n);
 	sysputs(console);
 
 	syssleep(n);
-	sprintf(console, "proc4 wake again! exiting\n");
+	sprintf(console, "[p%d]\t\t[exiting]\t\t[sleep_ended]\0", pid);
 	sysputs(console);
 }
 
