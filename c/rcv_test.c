@@ -25,9 +25,10 @@ extern void rcvtest_proc3(void);
 */	
 void rcvtest_root(void)
 {
+#ifdef RECV_POSITIVE_TEST
 	unsigned int child_pid[3], n=2000, byte,i,pid,dst;
 	unsigned int *ptr=&dst;
-	char buffer[10];
+	char buffer[10], rcv_buffer[1];
 
 	kprintf("----------------------------------------------------------------------------\n");
 	kprintf("proc\t\tstate\t\t\t\tsize\t\t\tdest\n");
@@ -35,13 +36,9 @@ void rcvtest_root(void)
 	pid = sysgetpid();
 	sprintf(buffer, "%d", n);
 
-
-#ifdef RECV_POSITIVE_TEST
-
 	child_pid[0] = syscreate(&rcvtest_proc1, PROC_STACK);
 	child_pid[1] = syscreate(&rcvtest_proc2, PROC_STACK);
 	child_pid[2] = syscreate(&rcvtest_proc3, PROC_STACK);
-
 
 	/* initial ipc_send to pass root pid to all child processes */
 	syssleep(1000);
@@ -60,7 +57,7 @@ void rcvtest_root(void)
 	dst=child_pid[1];
 	kprintf("[p%d]\t\t[blocked_receive]\t\t[%d bytes]\t\t[p%d]\n", pid, byte, *ptr);
 	byte = sysrecv(ptr, buffer, byte);
-	kprintf("[p%d]\t\t[unblocked_receive]\t\t[%d bytes]\t\t[p%d]\n", pid, byte, *ptr);
+	kprintf("[p%d]*\t\t[unblocked_receive]\t\t[%d bytes]*\t\t[p%d]\n", pid, byte, *ptr);
 
 	if(byte == 4)
 		result[0] = TRUE;
@@ -78,8 +75,8 @@ void rcvtest_root(void)
 	byte=1;			/* receive only 1 byte of data */
 	dst=child_pid[0];
 	kprintf("[p%d]\t\t[blocked_receive]\t\t[%d bytes]\t\t[p%d]\n", pid, byte, *ptr);
-	byte = sysrecv(ptr, buffer, byte);
-	kprintf("[p%d]\t\t[unblocked_receive]\t\t[%d bytes]\t\t[p%d]\n", pid, byte, *ptr);
+	byte = sysrecv(ptr, rcv_buffer, byte);
+	kprintf("[p%d]*\t\t[unblocked_receive]\t\t[%d bytes]*\t\t[p%d]\n", pid, byte, *ptr);
 
 	if(byte == 1)
 		result[1] = TRUE;
@@ -114,6 +111,16 @@ void rcvtest_root(void)
 
 #elif defined RECV_NEGATIVE_TEST
 
+	unsigned int child_pid[3], n=2000, byte,i,pid,dst;
+	unsigned int *ptr=&dst;
+	char buffer[10];
+
+	kprintf("----------------------------------------------------------------------------\n");
+	kprintf("proc\t\tstate\t\t\t\tsize\t\t\tdest\n");
+	kprintf("----------------------------------------------------------------------------\n");
+	pid = sysgetpid();
+	sprintf(buffer, "%d", n);
+
 	/* initial ipc_send to pass root pid to all child processes */
 	child_pid[0] = syscreate(&rcvtest_proc1, PROC_STACK);
 	syssend(child_pid[0], buffer, strlen(buffer));
@@ -130,7 +137,7 @@ void rcvtest_root(void)
 	dst=9;
 	kprintf("[p%d]\t\t[blocked_receive]\t\t[%d bytes]\t\t[p%d]\n", pid, byte, *ptr);
 	byte = sysrecv(ptr, buffer, byte);
-	kprintf("[p%d]\t\t[unblocked_receive]\t\t[%d bytes]\t\t[p%d]\n", pid, byte, *ptr);
+	kprintf("[p%d]*\t\t[unblocked_receive]\t\t[%d bytes]*\t\t[p%d]\n", pid, byte, *ptr);
 
 	if(byte == -1)
 		result[0] = TRUE;
@@ -149,7 +156,7 @@ void rcvtest_root(void)
 	byte=4;
 	kprintf("[p%d]\t\t[blocked_receive]\t\t[%d bytes]\t\t[p%d]\n", pid, byte, *ptr);
 	byte = sysrecv(ptr, buffer, byte);
-	kprintf("[p%d]\t\t[unblocked_receive]\t\t[%d bytes]\t\t[p%d]\n", pid, byte, *ptr);
+	kprintf("[p%d]*\t\t[unblocked_receive]\t\t[%d bytes]*\t\t[p%d]\n", pid, byte, *ptr);
 
 	if(byte == -3)
 		result[1] = TRUE;
@@ -195,6 +202,8 @@ void rcvtest_root(void)
 */
 void rcvtest_proc1(void)
 {
+#ifdef RECV_POSITIVE_TEST
+
 	unsigned int byte=4,dst=0,pid,n;
 	unsigned int *ptr = &dst;
 	unsigned char buffer[10];	
@@ -203,7 +212,6 @@ void rcvtest_proc1(void)
 	/* initial ipc_recv to get the root's pid */
 	byte = sysrecv(ptr, buffer, byte);
 
-#ifdef RECV_POSITIVE_TEST
 	n = 2000;
 	sprintf(buffer, "%d", n);
 	kprintf("[p%d]\t\t[blocked_send]\t\t\t[%d bytes]\t\t[p%d]\n", pid, byte, *ptr);
@@ -211,6 +219,14 @@ void rcvtest_proc1(void)
 	kprintf("[p%d]\t\t[unblocked_send]\t\t[%d bytes]\t\t[p%d]\n", pid, byte, *ptr);
 
 #elif defined RECV_NEGATIVE_TEST
+
+	unsigned int byte=4,dst=0,pid;
+	unsigned int *ptr = &dst;
+	unsigned char buffer[10];	
+	pid = sysgetpid();
+
+	/* initial ipc_recv to get the root's pid */
+	byte = sysrecv(ptr, buffer, byte);
 
 	kprintf("[p%d]\t\t[blocked_receive]\t\t[%d bytes]\t\t[p%d]\n", pid, byte, *ptr);
 	byte = sysrecv(ptr, buffer, byte);

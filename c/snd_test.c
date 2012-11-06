@@ -21,6 +21,7 @@ extern void sndtest_proc3(void);
 */	
 void sndtest_root(void)
 {
+#ifdef SEND_POSITIVE_TEST
 	int child_pid[3], n=2000, byte,i,pid;
 	char buffer[10];
 
@@ -29,8 +30,6 @@ void sndtest_root(void)
 	kprintf("----------------------------------------------------------------------------\n");
 	pid = sysgetpid();
 
-
-#ifdef SEND_POSITIVE_TEST
 
 	child_pid[0] = syscreate(&sndtest_proc1, PROC_STACK);
 	child_pid[1] = syscreate(&sndtest_proc2, PROC_STACK);
@@ -55,7 +54,7 @@ void sndtest_root(void)
 	syssleep(1000);	
 	kprintf("[p%d]\t\t[blocked_send]\t\t\t[%d bytes]\t\t[p%d]\n", pid, strlen(buffer), child_pid[1]);
 	byte = syssend(child_pid[1], buffer, strlen(buffer));	
-	kprintf("[p%d]\t\t[unblocked_send]\t\t[%d bytes]\t\t[p%d]\n", pid, byte, child_pid[1]);
+	kprintf("[p%d]*\t\t[unblocked_send]\t\t[%d bytes]*\t\t[p%d]\n", pid, byte, child_pid[1]);
 
 	if(byte == 4)
 		result[0] = TRUE;
@@ -75,7 +74,7 @@ void sndtest_root(void)
 	sprintf(buffer, "%d", n);
 	kprintf("[p%d]\t\t[blocked_send]\t\t\t[%d bytes]\t\t[p%d]\n", pid, strlen(buffer), child_pid[2]);
 	byte = syssend(child_pid[2], buffer, strlen(buffer));	
-	kprintf("[p%d]\t\t[unblocked_send]\t\t[%d bytes]\t\t[p%d]\n", pid, byte, child_pid[2]);
+	kprintf("[p%d]*\t\t[unblocked_send]\t\t[%d bytes]*\t\t[p%d]\n", pid, byte, child_pid[2]);
 
 	if(byte == 3)
 		result[1] = TRUE;
@@ -111,6 +110,13 @@ void sndtest_root(void)
 
 
 #elif defined SEND_NEGATIVE_TEST
+	int child_pid[3],byte,pid;
+	char buffer[10];
+
+	kprintf("----------------------------------------------------------------------------\n");
+	kprintf("proc\t\tstate\t\t\t\tsize\t\t\tdest\n");
+	kprintf("----------------------------------------------------------------------------\n");
+	pid = sysgetpid();
 
 	syssleep(1000);	
 
@@ -123,7 +129,7 @@ void sndtest_root(void)
 	*/
 	kprintf("[p%d]\t\t[blocked_send]\t\t\t[%d bytes]\t\t[p%d]\n", pid, strlen(buffer), pid);
 	byte = syssend(pid, buffer, strlen(buffer));	
-	kprintf("[p%d]\t\t[unblocked_send]\t\t[%d bytes]\t\t[p%d]\n", pid, byte, pid);
+	kprintf("[p%d]*\t\t[unblocked_send]\t\t[%d bytes]*\t\t[p%d]\n", pid, byte, pid);
 
 	if(byte == -2)
 		result[0] = TRUE;	

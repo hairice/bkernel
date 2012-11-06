@@ -77,12 +77,10 @@ void timetest_root(void)
 */
 void timetest_proc1(void)
 {
+#ifdef TIME_TEST
 	unsigned int pid,i=0,cnt=0;
-	Bool puts_console = FALSE;
 	pid = sysgetpid();
 	
-
-#ifdef TIME_TEST
 	for(;;) 
 	{
 		if(i < 300000) i++;
@@ -115,12 +113,10 @@ void timetest_proc1(void)
 */
 void timetest_proc2(void)
 {
+#ifdef TIME_TEST
 	unsigned int pid,i=0,cnt=0;
-	Bool puts_console = FALSE;
 	pid = sysgetpid();
 	
-
-#ifdef TIME_TEST
 	for(;;) 
 	{
 		if(i < 300000) i++;
@@ -153,12 +149,10 @@ void timetest_proc2(void)
 */
 void timetest_proc3(void)
 {
-	unsigned int pid,i=0,cnt=0;
-	Bool puts_console = FALSE;
-	pid = sysgetpid();
-	
-
 #ifdef TIME_TEST
+	unsigned int pid,i=0,cnt=0;
+	pid = sysgetpid();	
+
 	for(;;) 
 	{
 		if(i < 300000) i++;
