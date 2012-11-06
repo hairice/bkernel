@@ -2,9 +2,10 @@
  */
 
 #include <xeroskernel.h>
+#include <i386.h>
 
 /* Your code goes here */
-
+extern long freemem;		/* used to check buffer address location is in user stack space */
 
 /*
 * send
@@ -38,6 +39,23 @@ void send(pcb_t* p, unsigned int pid, void *buffer, int buffer_len)
         /* when an empty buffer_len or null buffer is passed, add current proc to ready_q */
         if(!buffer_len || !buffer || !pid)
         {
+         	p->state = READY_STATE; 
+                p->rc = ERR_IPC;
+                ready(p);
+                return;
+	}
+
+	/* check the buffer address is within the user stack space, 
+	* the buffer address should be ensured that it is not in the following regions.
+	* 1. below freemem
+	* 2. between holestart and holeend
+	* 3. above 4mb
+	*/
+
+	if( (int)buffer < freemem ||
+	( (int)buffer > HOLESTART && (int)buffer < HOLEEND ) ||
+	( (int)buffer > (int)0x400000 ))
+	{
          	p->state = READY_STATE; 
                 p->rc = ERR_IPC;
                 ready(p);
@@ -182,6 +200,21 @@ void recv(pcb_t *p, unsigned int *pid, void *buffer, int buffer_len)
 		return;
 	}
 
+	/* check the buffer address is within the user stack space, 
+	* the buffer address should be ensured that it is not in the following regions.
+	* 1. below freemem
+	* 2. between holestart and holeend
+	* 3. above 4mb
+	*/
+	if( (int)buffer < freemem ||
+	( (int)buffer > HOLESTART && (int)buffer < HOLEEND ) ||
+	( (int)buffer > (int)0x400000 ))
+	{
+         	p->state = READY_STATE; 
+                p->rc = ERR_IPC;
+                ready(p);
+                return;
+	}
 	
 	/* hold the ipc() args in the generic ptr in pcb */
         mem = kmalloc(sizeof(ipc_t));
@@ -420,7 +453,6 @@ void puts_blocked_q()
 void puts_receive_any ()
 {
         int i;
-        pcb_t *tmp;
         ipc_t *comm;
 
         kprintf("receive_any: ");

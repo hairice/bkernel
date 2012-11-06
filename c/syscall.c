@@ -26,6 +26,7 @@ int syscall (int call, ...) {
 	va_start(ap, call);
 
 	/* pass syscall() args by register, 'eax' and 'edx' */
+	/* after the context has been switched back to the process stack, the return value is retrieved from eax */
 	__asm __volatile( " \
 		movl %0, %%eax 	\n\
 		movl %1, %%edx 	\n\

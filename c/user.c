@@ -26,7 +26,7 @@ void idleproc ()
 */
 void root()
 {
-	int child_pid[4], n=2000, byte=5,i,pid,tmp;
+	int child_pid[4], n=2000, byte=5,pid,tmp;
 	unsigned int *ptr;
 	char buffer[5], console[75];
 
@@ -107,7 +107,6 @@ void proc1 ()
 	unsigned int *ptr = &dst;
 	unsigned char buffer[5];
 	char *console[50];	
-
 
 	pid=sysgetpid();
 

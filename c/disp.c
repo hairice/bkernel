@@ -38,11 +38,8 @@ void dispatch()
         /* ipc arg(s) */
         unsigned int pid;
         unsigned int *pid_ptr;  /* used for from_id for sysrecv()               */
-        pcb_t *proc=NULL;
         void *buffer;
         int buffer_len;
-        ipc_t *comm;            /* used to temporarily hold the ipc args        */
-        int *mem;
 
 
         /* start dispatcher */
