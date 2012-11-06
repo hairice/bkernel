@@ -49,6 +49,8 @@ void timetest_root(void)
 	*		also, only 5 console lines are printed per process, because this is to ensure the entire print stack is still in the viewing 
 	*		console at the end of the test
 	*/
+
+	/* output test results */
 	for(i=0 ; i<3 ; i++)
 	{
 		if(result[i] == FALSE)
@@ -86,6 +88,12 @@ void timetest_proc1(void)
 		if(i < 300000) i++;
 		else
 		{	
+			if(cnt > MAX_CNT)
+			{
+				result[0] = FALSE;
+				break;
+			}
+
 			if(cnt == MAX_CNT)
 			{
 				result[0] = TRUE;
@@ -118,6 +126,12 @@ void timetest_proc2(void)
 		if(i < 300000) i++;
 		else
 		{	
+			if(cnt > MAX_CNT)
+			{
+				result[1] = FALSE;
+				break;
+			}
+
 			if(cnt == MAX_CNT)
 			{
 				result[1] = TRUE;
@@ -150,6 +164,12 @@ void timetest_proc3(void)
 		if(i < 300000) i++;
 		else
 		{
+			if(cnt > MAX_CNT)
+			{
+				result[2] = FALSE;
+				break;
+			}
+
 			if(cnt == MAX_CNT)
 			{
 				result[2] = TRUE;
