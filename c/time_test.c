@@ -5,7 +5,7 @@
 */
 
 #include <xeroskernel.h>
-#define MAX_CNT	30
+#define MAX_CNT	5
 
 /* test driver */
 extern void timetest_proc1(void);
@@ -13,6 +13,7 @@ extern void timetest_proc2(void);
 extern void timetest_proc3(void);
 
 static unsigned int cnt=0;
+static Bool result[3];
 
 /*
 * test_root
@@ -22,7 +23,7 @@ static unsigned int cnt=0;
 */	
 void timetest_root(void)
 {
-	int child_pid[3],pid;
+	int child_pid[3],pid,i;
 	pid = sysgetpid();
 
 #ifdef TIME_TEST
@@ -34,6 +35,37 @@ void timetest_root(void)
 	kprintf("proc\t\t\tstate\t\t\t\tcnt\n");
 	kprintf("-----------------------------------------------------------\n");	
 #endif
+
+	syssleep(7000);
+
+	/*  
+	* @test: 	time_share_pos_1
+	*
+	* @desc:	the child processes are able to be preempted by the kernel and share cpu resource by not exceeding its quantum
+	*
+	* @outcome:	each process will output 5 console lines
+	*
+	* @note:	this test case is done without sysyield(), the processes are expected to be switched to another processes involuntarily,
+	*		also, only 5 console lines are printed per process, because this is to ensure the entire print stack is still in the viewing 
+	*		console at the end of the test
+	*/
+	for(i=0 ; i<3 ; i++)
+	{
+		if(result[i] == FALSE)
+		{
+			kprintf("\n\ntest\t\t\tresult\t\tcomment\n");
+			kprintf("-----------------------------------------------------------\n");
+			kprintf("time_share_pos_1\tfail\t\tp%d did not exec %d times\n", child_pid[i], MAX_CNT);
+			break;
+		}
+		
+		if(i == 2)
+		{
+			kprintf("\n\ntest\t\t\tresult\t\tcomment\n");
+			kprintf("-----------------------------------------------------------\n");
+			kprintf("time_share_pos_1\tpass\t\tall proc have exec %d times\n", MAX_CNT);
+		}
+	}
 }
 
 /*
@@ -51,9 +83,15 @@ void timetest_proc1(void)
 #ifdef TIME_TEST
 	for(;;) 
 	{
-		if(i < 600000) i++;
+		if(i < 300000) i++;
 		else
 		{	
+			if(cnt == MAX_CNT)
+			{
+				result[0] = TRUE;
+				break;
+			}
+
 			cnt++;
 			kprintf("[p%d]\t\t\t[running]\t\t\t[%d]\n", pid, cnt);
 			i=0;
@@ -77,9 +115,15 @@ void timetest_proc2(void)
 #ifdef TIME_TEST
 	for(;;) 
 	{
-		if(i < 700000) i++;
+		if(i < 300000) i++;
 		else
 		{	
+			if(cnt == MAX_CNT)
+			{
+				result[1] = TRUE;
+				break;
+			}
+
 			cnt++;
 			kprintf("[p%d]\t\t\t[running]\t\t\t[%d]\n", pid, cnt);
 			i=0;
@@ -103,9 +147,15 @@ void timetest_proc3(void)
 #ifdef TIME_TEST
 	for(;;) 
 	{
-		if(i < 800000) i++;
+		if(i < 300000) i++;
 		else
 		{
+			if(cnt == MAX_CNT)
+			{
+				result[2] = TRUE;
+				break;
+			}
+
 			cnt++;
 			kprintf("[p%d]\t\t\t[running]\t\t\t[%d]\n", pid, cnt);
 			i=0;
