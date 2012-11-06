@@ -57,7 +57,7 @@ void sndtest_root(void)
 	byte = syssend(child_pid[1], buffer, strlen(buffer));	
 	kprintf("[p%d]\t\t[unblocked_send]\t\t[%d bytes]\t\t[p%d]\n", pid, byte, child_pid[1]);
 
-	if(byte = 4)
+	if(byte == 4)
 		result[0] = TRUE;
 	else
 		result[0] = FALSE;	
@@ -77,7 +77,7 @@ void sndtest_root(void)
 	byte = syssend(child_pid[2], buffer, strlen(buffer));	
 	kprintf("[p%d]\t\t[unblocked_send]\t\t[%d bytes]\t\t[p%d]\n", pid, byte, child_pid[2]);
 
-	if(byte = 3)
+	if(byte == 3)
 		result[1] = TRUE;
 	else
 		result[1] = FALSE;	
