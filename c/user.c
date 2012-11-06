@@ -26,7 +26,7 @@ void idleproc ()
 */
 void root()
 {
-	int child_pid[4], n=2000, byte=5,i,pid;
+	int child_pid[4], n=2000, byte=5,i,pid,tmp;
 	unsigned int *ptr;
 	char buffer[5], console[75];
 
@@ -35,7 +35,8 @@ void root()
 	child_pid[0]=syscreate(&proc1, PROC_STACK);
 	sprintf(console, "[p%d]\t\t[created]\t\t[p%d]\0", pid, child_pid[0]);
 	sysputs(console);
-
+	tmp = child_pid[0];
+	
 	child_pid[1]=syscreate(&proc2, PROC_STACK);
 	sprintf(console, "[p%d]\t\t[created]\t\t[p%d]\0", pid, child_pid[1]);
 	sysputs(console);
@@ -68,7 +69,7 @@ void root()
 	/* send the third created process a message to sleep for 20 seconds */
 	n=20000;
 	sprintf(buffer, "%d", n);
-	syssend(child_pid[0], buffer, strlen(buffer));
+	syssend(tmp, buffer, strlen(buffer));
 
 	/* send the third created process a message to sleep for 27 seconds */
 	n=27000;
