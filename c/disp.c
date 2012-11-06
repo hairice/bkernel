@@ -121,7 +121,7 @@ void dispatch()
                                 str = va_arg(ap, char*);
                 
                                 if(str)
-                                        kprintf("[k]: %s", str);
+                                        kprintf("%s\n", str);
         
                                 p->state = READY_STATE;                         
                                 ready(p);                               
