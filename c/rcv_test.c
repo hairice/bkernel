@@ -6,6 +6,7 @@
 
 #include <xeroskernel.h>
 
+static Bool result[2];
 
 /* test driver */
 extern void rcvtest_proc1(void);
@@ -61,6 +62,10 @@ void rcvtest_root(void)
 	byte = sysrecv(ptr, buffer, byte);
 	kprintf("[p%d]\t\t[unblocked_receive]\t\t[%d bytes]\t\t[p%d]\n", pid, byte, *ptr);
 
+	if(byte == 4)
+		result[0] = TRUE;
+	else
+		result[0] = FALSE;
 
 	/*  
 	* @test: 	ipc_recv_pos_2
@@ -75,6 +80,37 @@ void rcvtest_root(void)
 	kprintf("[p%d]\t\t[blocked_receive]\t\t[%d bytes]\t\t[p%d]\n", pid, byte, *ptr);
 	byte = sysrecv(ptr, buffer, byte);
 	kprintf("[p%d]\t\t[unblocked_receive]\t\t[%d bytes]\t\t[p%d]\n", pid, byte, *ptr);
+
+	if(byte == 1)
+		result[1] = TRUE;
+	else
+		result[1] = FALSE;
+
+
+	/* output test results */
+	syssleep(2000);
+
+	kprintf("\n\ntest\t\tresult\t\tcomment\n");
+	kprintf("-----------------------------------------------------------\n");
+	for(i=0 ; i<2 ; i++)
+	{
+		switch(i)
+		{
+			case 0:
+				if(result[0] == TRUE)
+					kprintf("ipc_recv_pos_1\tpass\t\t4 bytes have been received\n");
+				else
+					kprintf("ipc_recv_pos_1\tfail\t\tdid not receive 4 bytes\n");
+				break;
+
+			case 1:
+				if(result[1] == TRUE)
+					kprintf("ipc_recv_pos_2\tpass\t\t1 byte have been received\n");
+				else
+					kprintf("ipc_recv_pos_2\tfail\t\tdid not receive 1 byte\n");
+				break;		
+		}
+	}
 
 #elif defined RECV_NEGATIVE_TEST
 
@@ -96,6 +132,10 @@ void rcvtest_root(void)
 	byte = sysrecv(ptr, buffer, byte);
 	kprintf("[p%d]\t\t[unblocked_receive]\t\t[%d bytes]\t\t[p%d]\n", pid, byte, *ptr);
 
+	if(byte == -1)
+		result[0] = TRUE;
+	else
+		result[0] = FALSE;	
 
 	/*  
 	* @test: 	ipc_recv_neg_2
@@ -110,6 +150,37 @@ void rcvtest_root(void)
 	kprintf("[p%d]\t\t[blocked_receive]\t\t[%d bytes]\t\t[p%d]\n", pid, byte, *ptr);
 	byte = sysrecv(ptr, buffer, byte);
 	kprintf("[p%d]\t\t[unblocked_receive]\t\t[%d bytes]\t\t[p%d]\n", pid, byte, *ptr);
+
+	if(byte == -3)
+		result[1] = TRUE;
+	else
+		result[1] = FALSE;
+
+
+	/* output test results */
+	syssleep(1000);
+
+	kprintf("\n\ntest\t\tresult\t\tcomment\n");
+	kprintf("-----------------------------------------------------------\n");
+	for(i=0 ; i<2 ; i++)
+	{
+		switch(i)
+		{
+			case 0:
+				if(result[0] == TRUE)
+					kprintf("ipc_recv_neg_1\tpass\t\t-1 was returned\n");
+				else
+					kprintf("ipc_recv_neg_1\tfail\t\t-1 was not returned\n");
+				break;
+
+			case 1:
+				if(result[1] == TRUE)
+					kprintf("ipc_recv_neg_2\tpass\t\t-3 was returned\n");
+				else
+					kprintf("ipc_recv_neg_2\tfail\t\t-3 was not returned\n");
+				break;		
+		}
+	}
 
 #endif
 
