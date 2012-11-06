@@ -45,41 +45,48 @@ void root()
 	syssleep(4000);
 
 
+	/* send the third created process a message to sleep for 10 seconds */
 	n=10000;
 	sprintf(buffer, "%d", n);
-
 	sprintf(console, "send proc pid=%d to sleep for %d ms\n", pid[2], n);
 	sysputs(&console);
 	syssend(pid[2], buffer, strlen(buffer));
 
+	/* send the fourth created process a message to sleep for 7 seconds */
 	n=7000;
 	sprintf(buffer, "%d", n);
 	sprintf(console, "send proc pid=%d to sleep for %d ms\n", pid[1], n);
 	sysputs(&console);
 	syssend(pid[1], buffer, strlen(buffer));
 
+	/* send the third created process a message to sleep for 20 seconds */
 	n=20000;
 	sprintf(buffer, "%d", n);
 	sprintf(console, "send proc pid=%d to sleep for %d ms\n", pid[0], n);
 	sysputs(&console);
 	syssend(pid[0], buffer, strlen(buffer));
 
+	/* send the third created process a message to sleep for 27 seconds */
 	n=27000;
 	sprintf(buffer, "%d", n);
 	sprintf(console, "send proc pid=%d to sleep for %d ms\n", pid[3], n);
 	sysputs(&console);
 	syssend(pid[3], buffer, strlen(buffer));
 
+	/* attempt to receive a message from the fourth created process */
 	ptr = &(pid[3]);
 	byte = sysrecv(ptr, buffer, byte);
 	sprintf(console, "root received msg from pid=%d byte=%d\n", pid[3], byte);
 	sysputs(&console);
 	
+	/* attempt to send a message to the third created process */
 	n=1000;
 	sprintf(buffer, "%d", n);
 	byte = syssend(pid[2], buffer, strlen(buffer));
 	sprintf(console, "send proc pid=%d to sleep for %d ms, ret=%d\n", pid[3], n, byte);
 	sysputs(&console);
+
+
 	/* eventual loop for root */	
 	for(;;);
 }
