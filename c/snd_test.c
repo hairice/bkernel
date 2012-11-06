@@ -6,6 +6,7 @@
 
 #include <xeroskernel.h>
 
+static Bool result[2];
 
 /* test driver */
 extern void sndtest_proc1(void);
@@ -56,6 +57,11 @@ void sndtest_root(void)
 	byte = syssend(child_pid[1], buffer, strlen(buffer));	
 	kprintf("[p%d]\t\t[unblocked_send]\t\t[%d bytes]\t\t[p%d]\n", pid, byte, child_pid[1]);
 
+	if(byte = 4)
+		result[0] = TRUE;
+	else
+		result[0] = FALSE;	
+
 
 	/*  
 	* @test: 	ipc_send_pos_2
@@ -70,6 +76,38 @@ void sndtest_root(void)
 	kprintf("[p%d]\t\t[blocked_send]\t\t\t[%d bytes]\t\t[p%d]\n", pid, strlen(buffer), child_pid[2]);
 	byte = syssend(child_pid[2], buffer, strlen(buffer));	
 	kprintf("[p%d]\t\t[unblocked_send]\t\t[%d bytes]\t\t[p%d]\n", pid, byte, child_pid[2]);
+
+	if(byte = 3)
+		result[1] = TRUE;
+	else
+		result[1] = FALSE;	
+
+
+	/* output test results */
+	syssleep(2000);
+
+	kprintf("\n\ntest\t\tresult\t\tcomment\n");
+	kprintf("-----------------------------------------------------------\n");
+
+	for(i=0 ; i<2 ; i++)
+	{
+		switch(i)
+		{
+			case 0:
+				if(result[0] == TRUE)
+					kprintf("ipc_send_pos_1\tpass\t\t4 bytes have been sent\n");
+				else
+					kprintf("ipc_send_pos_1\tfail\t\tdid not send 4 bytes\n");
+				break;
+
+			case 1:
+				if(result[1] == TRUE)
+					kprintf("ipc_send_pos_2\tpass\t\t3 bytes have been sent\n");
+				else
+					kprintf("ipc_send_pos_2\tfail\t\tdid not sent 3 bytes\n");
+				break;		
+		}
+	}
 
 
 #elif defined SEND_NEGATIVE_TEST
@@ -86,6 +124,23 @@ void sndtest_root(void)
 	kprintf("[p%d]\t\t[blocked_send]\t\t\t[%d bytes]\t\t[p%d]\n", pid, strlen(buffer), pid);
 	byte = syssend(pid, buffer, strlen(buffer));	
 	kprintf("[p%d]\t\t[unblocked_send]\t\t[%d bytes]\t\t[p%d]\n", pid, byte, pid);
+
+	if(byte == -2)
+		result[0] = TRUE;	
+	else
+		result[0] = FALSE;	
+
+
+	/* output test results */
+	syssleep(1000);
+
+	kprintf("\n\ntest\t\tresult\t\tcomment\n");
+	kprintf("-----------------------------------------------------------\n");
+
+	if(result[0] == TRUE)	
+		kprintf("ipc_send_neg_1\tpass\t\t-2 was returned\n");
+	else
+		kprintf("ipc_send_neg_1\tpass\t\t-2 was not returned\n");
 
 #endif
 
