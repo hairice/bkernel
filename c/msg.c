@@ -263,3 +263,178 @@ void recv(pcb_t *p, unsigned int *pid, void *buffer, int buffer_len)
                 }
 	}
 }
+
+/*
+* block
+*
+* @desc:        add pcb block to the end of block queue
+*
+* @param:       p               proc to be added to a blocked queue
+*               q               blocked queue to add a new proc
+*
+* @note:        a proc can be blocked by the following events,
+*               1. ipc_send();
+*               2. ipc_recv();
+*/
+void block(pcb_t **q, pcb_t *p)
+{
+        pcb_t *tmp = *q;
+
+        p->next = NULL;
+        if(!(*q)) 
+        {
+                *q = p;
+                return;
+        }
+
+        while(tmp) 
+        {
+                if(!(tmp->next)) break;
+                tmp = tmp->next;
+        }
+        tmp->next = p;
+}
+
+/*
+* unblock
+*
+* @desc:        get the proc pcb from the block_q
+*
+* @param:       pid             pid of the proc pcb to retrieve from the block_q
+*               q               blocked queue to search for a particular proc pid
+*
+* @output:      p               proc that has been unblocked from queue
+*
+* @note:        ipc_senders call this function to find the matching ipc_receiver, and vice versa
+*/
+pcb_t* unblock(pcb_t **q, unsigned int pid)
+{
+        pcb_t *tmp=*q, *p=NULL;
+
+        /* a proc is unblocked if the following conditions are met
+        * 1. the queue proc pid matches to the provided pid
+        * 2. the provided pid is 0 (receive_any)
+        */      
+
+        if(!(*q)) return NULL;
+        if((*q)->pid == pid || !pid)
+        {
+                p = *q;
+                *q = (*q)->next;
+                return p;
+        }
+
+        /* find matching ipc proc in body of block_q, 
+        *  at this point, the algorithm assumes the block_q has at least 2 proc
+        */
+        while(tmp && tmp->next) 
+        {                       
+                /* stated conditions have been met, the proc is released from block_q */
+                if(tmp->next->pid == pid || !pid)
+                {
+                        p = tmp->next;
+                        tmp->next = tmp->next->next;
+                        return p;
+                }
+
+                tmp = tmp->next;
+        }
+
+        return NULL;
+}
+
+/*
+* deadlock
+*
+* @desc:        checks for deadlock scenario in ipc communication
+*
+* @param:       q               queue for checking if certain proc exists
+*               p               targetted proc for deadlock checking
+*
+* @output:      Bool            proc pcb for the matching input pid
+*
+* @note:        for deadlock to occur, proc1 would be on the same blocked queue of proc2, as proc2 is of proc1
+*/
+Bool deadlock(pcb_t *q, pcb_t *p)
+{
+        while(q)
+        {
+                if(q->pid == p->pid) return TRUE;
+                q=q->next;
+        }
+
+        return FALSE;
+}
+
+/*
+* puts_blocked_q
+*
+* @desc:        output all blocked queue proc pid to console
+*/
+void puts_blocked_q()
+{
+        int i;
+        pcb_t *tmp;
+
+        for(i=0; i<MAX_PROC; i++)
+        {
+                if(proc_table[i].pid == INVALID_PID) continue;          
+                if(proc_table[i].pid == IDLE_PROC_PID) continue;
+                
+                /* check proc blocked_senders queue */ 
+                tmp = proc_table[i].blocked_senders;
+                if(tmp)
+                {
+                        kprintf("pid %d blocked_sender:\t", proc_table[i].pid);
+                        while(tmp)
+                        {
+                                kprintf("%d ", tmp->pid);
+                                tmp=tmp->next;
+                        }
+                        kprintf("\n");
+                }
+
+                /* check proc blocked_receivers queue */ 
+                tmp = proc_table[i].blocked_receivers;
+                if(tmp)
+                {
+                        tmp = proc_table[i].blocked_receivers;
+                        kprintf("pid %d blocked_receiver:\t", proc_table[i].pid);
+                        while(tmp)
+                        {
+                                kprintf("%d ", tmp->pid);
+                                tmp=tmp->next;
+                        }
+                        kprintf("\n");
+                }
+        }
+}
+
+/*
+* puts_receive_any
+*
+* @desc:        output all receive any proc pid with state BLOCK_ON_RECV_STATE to console
+*
+* @note:        a proc who has been blocked on a receive any call does not exist on any particular proc's blocked_receivers queue
+*/
+void puts_receive_any ()
+{
+        int i;
+        pcb_t *tmp;
+        ipc_t *comm;
+
+        kprintf("receive_any: ");
+        for(i=0; i<MAX_PROC; i++)
+        {
+                if(proc_table[i].pid == INVALID_PID) continue;          
+                if(proc_table[i].pid == IDLE_PROC_PID) continue;
+                if(!(proc_table[i].ptr)) continue;
+        
+                comm = (ipc_t *) proc_table[i].ptr;
+                
+                /* cycle through the process table and look for proc whose dest_proc pid is 0 and whose state is BLOCK_ON_RECV_STATE */
+                if(*(comm->pid_ptr) == RECEIVE_ANY_PID && proc_table[i].state == BLOCK_ON_RECV_STATE)
+                        kprintf("%d ", proc_table[i].pid);
+        }
+        kprintf("\n");
+}
