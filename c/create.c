@@ -70,6 +70,8 @@ int create(void (*func)(void), int stack)
 		/* find unused pid */
 		pid = find_pid();
 
+		/* no more available pids */
+		/* given the size of the proc_table and the range of (MIN_PID, MAX_PID), this branch is not expected to be taken */
 		if(pid == SYSERR)
 			return SYSERR;
 		else				
