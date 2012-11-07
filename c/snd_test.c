@@ -7,17 +7,20 @@
 #include <xeroskernel.h>
 
 static Bool result[2];
-
-/* test driver */
 extern void sndtest_proc1(void);
 extern void sndtest_proc2(void);
 extern void sndtest_proc3(void);
 
+
 /*
-* test_root
+* sndtest_root
 *
 * @desc:	executes the testroot process
-* @note:	this process executes the process management test cases
+*
+* @note:	this process executes the ipc_send test cases, 
+*		SEND_POSITIVE_TEST or SEND_NEGATIVE_TEST needs to be uncommented in order to execute the tests
+*		
+*		this test includes 2 SEND_POSITIVE_TEST tests and 2 SEND_NEGATIVE_TEST tests
 */	
 void sndtest_root(void)
 {
@@ -155,9 +158,9 @@ void sndtest_root(void)
 }
 
 /*
-* test_proc1
+* sndtest_proc1
 *
-* @desc:	executes the testproc process
+* @desc:	executes a child test proc
 */
 void sndtest_proc1(void)
 {
@@ -181,9 +184,9 @@ void sndtest_proc1(void)
 }
 
 /*
-* test_proc2
+* sndtest_proc2
 *
-* @desc:	executes the testproc process
+* @desc:	executes a child test proc
 */
 void sndtest_proc2(void)
 {
@@ -207,9 +210,9 @@ void sndtest_proc2(void)
 }
 
 /*
-* test_proc3
+* sndtest_proc3
 *
-* @desc:	executes the testproc process
+* @desc:	executes a child test proc
 */
 void sndtest_proc3(void)
 {

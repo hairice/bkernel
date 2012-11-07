@@ -7,19 +7,21 @@
 #include <xeroskernel.h>
 #define MAX_CNT	5
 
-/* test driver */
+static Bool result[3];
+static unsigned int cnt=0;
 extern void timetest_proc1(void);
 extern void timetest_proc2(void);
 extern void timetest_proc3(void);
 
-static unsigned int cnt=0;
-static Bool result[3];
 
 /*
-* test_root
+* timetest_root
 *
 * @desc:	executes the testroot process
-* @note:	this process executes the process management test cases
+*
+* @note:	this process executes the time_sharing test cases, 
+*		
+*		this test includes 1 TIME_SHARING test
 */	
 void timetest_root(void)
 {
@@ -36,7 +38,9 @@ void timetest_root(void)
 	kprintf("-----------------------------------------------------------\n");	
 #endif
 
-	syssleep(7000);
+
+	syssleep(8000);
+
 
 	/*  
 	* @test: 	time_share_pos_1
@@ -71,9 +75,11 @@ void timetest_root(void)
 }
 
 /*
-* test_proc1
+* timetest_proc1
 *
-* @desc:	executes the testproc process
+* @desc:	executes a child test proc
+*
+* @note:	each child proc will output MAX_CNT number of lines to console
 */
 void timetest_proc1(void)
 {
@@ -107,9 +113,11 @@ void timetest_proc1(void)
 }
 
 /*
-* test_proc2
+* timetest_proc2
 *
-* @desc:	executes the testproc process
+* @desc:	executes a child test proc
+*
+* @note:	each child proc will output MAX_CNT number of lines to console
 */
 void timetest_proc2(void)
 {
@@ -143,9 +151,11 @@ void timetest_proc2(void)
 }
 
 /*
-* test_proc3
+* timetest_proc3
 *
-* @desc:	executes the testproc process
+* @desc:	executes a child test proc
+*
+* @note:	each child proc will output MAX_CNT number of lines to console
 */
 void timetest_proc3(void)
 {

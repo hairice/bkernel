@@ -7,11 +7,10 @@
 #include <xeroskernel.h>
 
 static Bool result[2];
-
-/* test driver */
 extern void rcvtest_proc1(void);
 extern void rcvtest_proc2(void);
 extern void rcvtest_proc3(void);
+
 
 /*
 * rcvtest_root
@@ -198,7 +197,7 @@ void rcvtest_root(void)
 /*
 * rcvtest_proc1
 *
-* @desc:	executes a test child proc
+* @desc:	executes a child test proc
 */
 void rcvtest_proc1(void)
 {
@@ -234,14 +233,13 @@ void rcvtest_proc1(void)
 
 #endif
 
-
 	for(;;);
 }
 
 /*
 * rcvtest_proc2
 *
-* @desc:	executes a test child proc
+* @desc:	executes a child test proc
 */
 void rcvtest_proc2(void)
 {
@@ -271,7 +269,7 @@ void rcvtest_proc2(void)
 /*
 * rcvtest_proc3
 *
-* @desc:	executes a test child proc
+* @desc:	executes a child test proc
 */
 void rcvtest_proc3(void)
 {
@@ -298,6 +296,3 @@ void rcvtest_proc3(void)
 
 	for(;;);
 }
-
-
-
