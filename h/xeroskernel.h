@@ -73,6 +73,10 @@ typedef char            Bool;           /* boolean type                         
 #define MIN_STACK       1024            
 
 
+/* sleep constants */
+#define BLOCKED_SLEEP	0
+
+
 /* ========= */
 /* test mode */
 #ifndef SEND_TEST

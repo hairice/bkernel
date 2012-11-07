@@ -121,6 +121,7 @@ void wake ()
 		if(!(sleep_q->delta_slice))	
 		{
 			p = sleep_q;
+			p->rc = p->delta_slice;
 			sleep_q = sleep_q->next;
 
 			ready(p);

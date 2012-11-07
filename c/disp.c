@@ -132,6 +132,7 @@ void dispatch()
                                 /* proc requested no sleep or syssleep is blocked for the time requested*/
                                 if(!p->delta_slice || !sleep(p))
                                 {
+					p->rc = BLOCKED_SLEEP;		/* erroneous request time for sleep */
                                         p->state = READY_STATE;                         
                                         ready(p);
                                 }
