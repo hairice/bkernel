@@ -28,7 +28,7 @@ void root()
 {
 	int child_pid[4], n=2000, byte=5,pid,tmp;
 	unsigned int *ptr;
-	char buffer[5], console[75];
+	char buffer[10], console[75];
 
 	pid=sysgetpid();
 
@@ -111,16 +111,16 @@ void proc1 ()
 	pid=sysgetpid();
 
 	syssleep(5000);
-	sprintf(console, "[p%d]\t\t[wake]\0", pid);
+	sprintf(console, "[p%d]\t\t[alive]", pid);
 	sysputs(console);
 
 	byte = sysrecv(ptr, buffer, byte);
 	n=atoi(buffer);
-	sprintf(console, "[p%d]\t\t[received_msg]\t\t[sleep %d ms]\0", pid, n);
+	sprintf(console, "[p%d]\t\t[received_msg]\t\t[sleep %d ms]", pid, n);
 	sysputs(console);
 
 	syssleep(n);
-	sprintf(console, "[p%d]\t\t[exiting]\t\t[sleep_ended]\0", pid);
+	sprintf(console, "[p%d]\t\t[exiting]\t\t[sleep_ended]", pid);
 	sysputs(console);
 }
 
@@ -140,16 +140,16 @@ void proc2 ()
 
 
 	syssleep(5000);
-	sprintf(console, "[p%d]\t\t[wake]\0", pid);
+	sprintf(console, "[p%d]\t\t[alive]", pid);
 	sysputs(console);
 
 	byte = sysrecv(ptr, buffer, byte);
 	n=atoi(buffer);
-	sprintf(console, "[p%d]\t\t[received_msg]\t\t[sleep %d ms]\0", pid, n);
+	sprintf(console, "[p%d]\t\t[received_msg]\t\t[sleep %d ms]", pid, n);
 	sysputs(console);
 
 	syssleep(n);
-	sprintf(console, "[p%d]\t\t[exiting]\t\t[sleep_ended]\0", pid);
+	sprintf(console, "[p%d]\t\t[exiting]\t\t[sleep_ended]", pid);
 	sysputs(console);
 }
 
@@ -169,16 +169,16 @@ void proc3 ()
 	pid=sysgetpid();
 
 	syssleep(5000);
-	sprintf(console, "[p%d]\t\t[wake]\0", pid);
+	sprintf(console, "[p%d]\t\t[alive]", pid);
 	sysputs(console);
 
 	byte = sysrecv(ptr, buffer, byte);
 	n=atoi(buffer);
-	sprintf(console, "[p%d]\t\t[received_msg]\t\t[sleep %d ms]\0", pid, n);
+	sprintf(console, "[p%d]\t\t[received_msg]\t\t[sleep %d ms]", pid, n);
 	sysputs(console);
 
 	syssleep(n);
-	sprintf(console, "[p%d]\t\t[exiting]\t\t[sleep_ended]\0", pid);
+	sprintf(console, "[p%d]\t\t[exiting]\t\t[sleep_ended]", pid);
 	sysputs(console);
 }
 
@@ -197,16 +197,16 @@ void proc4 ()
 	pid=sysgetpid();
 
 	syssleep(5000);
-	sprintf(console, "[p%d]\t\t[wake]\0", pid);
+	sprintf(console, "[p%d]\t\t[alive]", pid);
 	sysputs(console);
 
 	byte = sysrecv(ptr, buffer, byte);
 	n=atoi(buffer);
-	sprintf(console, "[p%d]\t\t[received_msg]\t\t[sleep %d ms]\0", pid, n);
+	sprintf(console, "[p%d]\t\t[received_msg]\t\t[sleep %d ms]", pid, n);
 	sysputs(console);
 
 	syssleep(n);
-	sprintf(console, "[p%d]\t\t[exiting]\t\t[sleep_ended]\0", pid);
+	sprintf(console, "[p%d]\t\t[exiting]\t\t[sleep_ended]", pid);
 	sysputs(console);
 }
 
