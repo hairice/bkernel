@@ -67,10 +67,12 @@ unsigned int sleep (pcb_t *p)
 
 	while(tmp) 
 	{	
+		/* increment cnt as the amount of timer ticks to return */
 		cnt += tmp->delta_slice;
 	
 		if(tmp->delta_slice <= p->delta_slice)
 		{
+			/* decrement the current proc's delta_slice before comparing w/ the next proc in queue */
 			p->delta_slice -= tmp->delta_slice;
 		
 			/* add proc to body */
@@ -146,6 +148,7 @@ unsigned int tick()
 	slice_elapsed++;
 	if(slice_elapsed == sleep_q->delta_slice) 
 	{
+		/* reset slice count value */
 		slice_elapsed = 0;	
 		return 1;
 	}

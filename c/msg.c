@@ -433,7 +433,7 @@ void puts_blocked_q()
 *
 * @desc:        output all receive any proc pid with state BLOCK_ON_RECV_STATE to console
 *
-* @note:        a proc who has been blocked on a receive any call does not exist on any particular proc's blocked_receivers queue
+* @note:        a proc that has been blocked on a receive_any call does not exist on any particular proc's blocked_receivers queue
 */
 void puts_receive_any ()
 {
