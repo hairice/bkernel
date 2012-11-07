@@ -17,7 +17,18 @@ pcb_t *ready_q;
 /*
 * dispatch
 *
-* @desc:        executes the dispatcher
+* @desc:        executes the kernel dispatcher
+*
+* @note:	the following request are serviced by this dispatcher
+*		1. timer_interrupt
+*		2. syscreate()
+*		3. sysyield() 
+*		4. sysstop()
+*		5. sysgetpid()
+*		6. sysputs()
+*		7. syssleep()
+*		8. syssend()
+*		9. sysrecv()
 */
 void dispatch() 
 {

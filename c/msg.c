@@ -7,6 +7,7 @@
 /* Your code goes here */
 extern long freemem;		/* used to check buffer address location is in user stack space */
 
+
 /*
 * send
 *
@@ -51,7 +52,6 @@ void send(pcb_t* p, unsigned int pid, void *buffer, int buffer_len)
 	* 2. between holestart and holeend
 	* 3. above 4mb
 	*/
-
 	if( (int)buffer < freemem ||
 	( (int)buffer > HOLESTART && (int)buffer < HOLEEND ) ||
 	( (int)buffer > (int)0x400000 ))
@@ -74,23 +74,18 @@ void send(pcb_t* p, unsigned int pid, void *buffer, int buffer_len)
         proc = unblock(&(p->blocked_receivers), pid);
         if(proc)
         {
+		/* transfer data from sender buffer to receiver buffer */
 		dst_comm = proc->ptr;
 		snd_buffer = (char *) comm->buffer;
 		rcv_buffer = (char *) dst_comm->buffer;
-
-        	/* set return value as the number of bytes sent */
 		sprintf(rcv_buffer, "%s", snd_buffer);
 
+              	/* set return value as the number of bytes sent */
 		if(comm->buffer_len >= dst_comm->buffer_len)
 			p->rc = dst_comm->buffer_len;
 		else
 			p->rc = comm->buffer_len;
                 proc->rc = p->rc;
-
-                /* free allocated mem for ipc args for both sender and receiver */
-                //kfree(mem);
-                //mem = (int *) proc->ptr;
-                //kfree(mem);
 
                 /* set proc as ready and put back on ready_q */                 
                 p->state = READY_STATE;
@@ -107,12 +102,13 @@ void send(pcb_t* p, unsigned int pid, void *buffer, int buffer_len)
                         dst_comm = (ipc_t*) proc->ptr;
                         if(proc->ptr && *(dst_comm->pid_ptr) == RECEIVE_ANY_PID && proc->state == BLOCK_ON_RECV_STATE)
                         {
-                        	/* set return value as the number of bytes sent */
+				/* transfer data from sender buffer to receiver buffer */
 				dst_comm = proc->ptr;
 				snd_buffer = (char *) comm->buffer;
 				rcv_buffer = (char *) dst_comm->buffer;
 				sprintf(rcv_buffer, "%s", snd_buffer);
 			
+                        	/* set return value as the number of bytes sent */
 				if(comm->buffer_len >= dst_comm->buffer_len)
 					p->rc = dst_comm->buffer_len;
 				else
@@ -127,11 +123,6 @@ void send(pcb_t* p, unsigned int pid, void *buffer, int buffer_len)
                                 proc->state = READY_STATE;      
                                 ready(p);
                                 ready(proc);
-
-                                /* free allocated mem for ipc args for both sender and receiver */
-                                //kfree(mem);
-                                //mem = (int *) proc->ptr;
-                                //kfree(mem);
  			}
                         /* deadlock detection for ipc blocked send/receive queues */
                         /* when a deadlock is detected, only the current proc is put back on the ready_q */
@@ -232,11 +223,10 @@ void recv(pcb_t *p, unsigned int *pid, void *buffer, int buffer_len)
         	/* when the receiver wants to receive from pid 0, update to the actual sender pid */
                 if(!(*pid)) *pid = proc->pid;
 
-
+		/* transfer data from sender buffer to receiver buffer */
 		src_comm = proc->ptr;
 		snd_buffer = (char *) src_comm->buffer;
 		rcv_buffer = (char *) comm->buffer;
-
 		sprintf(rcv_buffer, "%s", snd_buffer);
 
                 /* set return value as the number of bytes sent */
@@ -245,12 +235,7 @@ void recv(pcb_t *p, unsigned int *pid, void *buffer, int buffer_len)
 		else
 			p->rc = comm->buffer_len;
                 proc->rc = p->rc;                                    
-
-                /* free allocated mem for ipc args for both sender and receiver */
-                //kfree(mem);
-                //mem = (int *) proc->ptr;
-                //kfree(mem);
-                                
+                              
                 /* set proc as ready and put back on ready_q */         
                 p->state = READY_STATE;
                 proc->state = READY_STATE;

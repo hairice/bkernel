@@ -17,6 +17,7 @@ static int min_pid = MIN_PID;		/* lower bound of used pid region 						*/
 static int max_pid = MIN_PID;		/* upper bound of used pid region 						*/
 static int next_pid = MIN_PID+1;	/* reference to the next pid, the next pid may/may not be an available pid 	*/
 
+
 /*
 * create
 *

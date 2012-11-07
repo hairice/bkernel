@@ -134,12 +134,13 @@ int contextswitch( pcb_t *p )
 */
 void contextinit() 
 {
-	// set idt vector entry point for all syscall()
+	/* set idt vector entry point for all syscall() */
 	set_evec(KERNEL_INT, _syscall_entry_point);
 
-	// set idet vector entry point for timer interrupt
+	/* set idt vector entry point for timer interrupt */
 	set_evec(IRQBASE, _timer_entry_point);
 
-	// set timer interrupt quantum
+	/* set timer interrupt quantum */
+	/* by setting the clock divisor, the kernel has been set as a quantum driven preemption kernel */
 	initPIT(CLOCK_DIVISOR);
 }
