@@ -274,6 +274,15 @@ extern void send(pcb_t* p, unsigned int pid, void *buffer, int buffer_len);
 extern void recv(pcb_t* p, unsigned int *pid, void *buffer, int buffer_len);
 
 
+/* signal processing */
+extern int syssighandler(int signal, void (*newhandler)(void *), void (** oldHandler)(void *));
+extern void sigreturn(void *old_sp);
+extern int syskill(int pid, int sig_no);
+extern int syssigwait(void);
+extern void sigtramp(void (*handler)(void *), void *cntx, void *osp);
+extern int signal(int pid, int sig_no);
+
+
 /* test processes */
 extern void sndtest_root(void);
 extern void rcvtest_root(void);
