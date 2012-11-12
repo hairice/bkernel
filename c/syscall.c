@@ -123,11 +123,11 @@ unsigned int syssleep( unsigned int milliseconds )
 *		buffer_len	length of the send buffer
 *		
 * @output:	rc		returns the number of bytes that have been received, in exceptional cases, the following will be returned
-*				-1	invalid_pid
-*				-2	loopback_pid
-*				-3 	other_ipc_errors	
+*				-1	invalid pid
+*				-2	loopback pid
+*				-3 	other ipc errors	
 */
-extern int syssend(unsigned int dest_pid, void *buffer, int buffer_len)
+int syssend(unsigned int dest_pid, void *buffer, int buffer_len)
 {
 	return syscall(SEND, dest_pid, buffer, buffer_len);
 }
@@ -142,11 +142,71 @@ extern int syssend(unsigned int dest_pid, void *buffer, int buffer_len)
 *		buffer_len	length of the receive buffer
 *		
 * @output:	rc		returns the number of bytes that have been received, in exceptional cases, the following will be returned
-*				-1	invalid_pid
-*				-2	loopback_pid
-*				-3 	other_ipc_errors		
+*				-1	invalid pid
+*				-2	loopback pid
+*				-3 	other ipc errors		
 */
-extern int sysrecv(unsigned int *from_pid, void *buffer, int buffer_len)
+int sysrecv(unsigned int *from_pid, void *buffer, int buffer_len)
 {
 	return syscall(RECV, from_pid, buffer, buffer_len);
+}
+
+/*
+* syssighandler
+*
+* @desc:	signals a signal installation for a user proc
+*
+* @param:	signal		string message to display on console
+*		new_handler	buffer for receiving the ipc message
+*		old_handler	length of the receive buffer
+*		
+* @output:	rc		returns the status of the signal installation
+*				0	successfully installed signal
+*				-1	invalid signal
+*				-2	invalid handler address 
+*/
+int syssighandler(int signal, void (*new_handler)(void *), void (** old_handler)(void *))
+{
+	return syscall(SIG_HANDLER, signal, new_handler, old_handler);
+}
+
+/*
+* sigreturn
+*
+* @desc:	signals a change of stack pointer address for a user proc
+*
+* @param:	old_sp		user proc stack pointer address
+*/
+void sigreturn(void *old_sp)
+{
+	return syscall(SIG_RETURN, old_sp);
+}
+
+/*
+* syskill
+*
+* @desc:	signals a signal delivery to the targetted user proc
+*
+* @param:	pid		target proc for signal delivery
+*		sig_no		target signal for delivery
+*		
+* @output:	rc		returns the status of the signal delivery
+*				0	successful signal delivery to user proc
+*				-18	invalid pid
+*/
+int syskill(int pid, int sig_no)
+{
+	return syscall(SIG_KILL, pid, sig_no);
+}
+
+/*
+* syssigwait
+*
+* @desc:	signals a user proc to be suspended until a signal is delivered to it
+*
+* @output:	rc		returns the unblocking delivered signal number
+*/
+int syssigwait(void)
+{
+	return syscall(SIG_WAIT);
 }

@@ -32,33 +32,13 @@ typedef char            Bool;           /* boolean type                         
 #define ERR_IPC         -3              /* any other ipc errors                 */
 
 
-/* interrupt descriptor table entry */
-#define TIMER_INT       1
-#define KERNEL_INT      64
-
-
-/* system call request id */
-#define STOP            100
-#define YIELD           101
-#define CREATE          102
-#define GETPID          103
-#define PUTS            104
-#define SLEEP           105
-#define SEND            106
-#define RECV            107
-
-
-/* process states */
+/* user process state constants */
 #define RUNNING_STATE           0
 #define READY_STATE             1
 #define SLEEP_STATE             2
 #define BLOCK_ON_SEND_STATE     3
 #define BLOCK_ON_RECV_STATE     4
 #define STOP_STATE              5
-
-
-/* hardware timer constant */
-#define CLOCK_DIVISOR   100     
 
 
 /* user process constants */
@@ -71,11 +51,38 @@ typedef char            Bool;           /* boolean type                         
 #define RECEIVE_ANY_PID 0               /* ipc_recv call for receiving from any proc    */
 #define IDLE_PROC_PID   65536           /* this pid is also used as the pid bound       */
 #define PROC_STACK      1024*4          /* set process stack to 4096                    */
-#define MIN_STACK       1024            
+#define MIN_STACK       1024    
+
+
+/* hardware timer constant */
+#define CLOCK_DIVISOR   100     
 
 
 /* sleep constants */
 #define BLOCKED_SLEEP	0
+
+
+/* ================================ */
+/* interrupt descriptor table entry */
+#define TIMER_INT       1
+#define KERNEL_INT      64
+
+
+/* ====================== */
+/* system call request id */
+#define STOP            100
+#define YIELD           101
+#define CREATE          102
+#define GETPID          103
+#define PUTS            104
+#define SLEEP           105
+#define SEND            106
+#define RECV            107
+
+#define SIG_HANDLER	1000
+#define SIG_RETURN	1001
+#define SIG_KILL	1002
+#define SIG_WAIT	1003
 
 
 /* ========= */
@@ -278,7 +285,7 @@ extern void recv(pcb_t* p, unsigned int *pid, void *buffer, int buffer_len);
 
 
 /* signal processing */
-extern int syssighandler(int signal, void (*newhandler)(void *), void (** oldHandler)(void *));
+extern int syssighandler(int signal, void (*new_handler)(void *), void (** old_handler)(void *));
 extern void sigreturn(void *old_sp);
 extern int syskill(int pid, int sig_no);
 extern int syssigwait(void);
