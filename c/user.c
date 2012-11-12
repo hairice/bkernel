@@ -8,6 +8,7 @@
 
 /* Your code goes here */
 
+void handler1(void *arg);
 
 /*
 * idleproc
@@ -19,6 +20,12 @@ void idleproc ()
 	for(;;);
 }
 
+
+void handler1(void *arg)
+{
+	kprintf("handler1\n");
+}
+
 /*
 * root
 *
@@ -26,6 +33,9 @@ void idleproc ()
 */
 void root()
 {
+
+	kprintf("root\n");
+/*
 	int child_pid[4], n=2000, byte=5,pid;
 	unsigned int *ptr;
 	char buffer[10], console[75];
@@ -53,43 +63,53 @@ void root()
 	sysputs(console);
 
 	syssleep(4000);
-
+*/
 
 	/* send the third created process a message to sleep for 10 seconds */
+/*
 	n=10000;
 	sprintf(buffer, "%d", n);
 	syssend(child_pid[2], buffer, strlen(buffer));
+*/
 
 	/* send the fourth created process a message to sleep for 7 seconds */
+/*
 	n=7000;
 	sprintf(buffer, "%d", n);
 	syssend(child_pid[1], buffer, strlen(buffer));
+*/
 
 	/* send the third created process a message to sleep for 20 seconds */
+/*
 	n=20000;
 	sprintf(buffer, "%d", n);
 	syssend(child_pid[0], buffer, strlen(buffer));
+*/
 
 	/* send the third created process a message to sleep for 27 seconds */
+/*
 	n=27000;
 	sprintf(buffer, "%d", n);
 	syssend(child_pid[3], buffer, strlen(buffer));
+*/
 
 	/* attempt to receive a message from the fourth created process */
+/*
 	ptr = &(child_pid[3]);
 	memset (buffer,'0',byte);
 	byte = sysrecv(ptr, buffer, byte);
 	sprintf(console, "[p%d]\t\t[received_msg]\t\t[ret_status %d]\0", pid, byte);
 	sysputs(console);
-	
+*/	
 	
 	/* attempt to send a message to the third created process */
+/*
 	n=1000;
 	sprintf(buffer, "%d", n);
 	byte = syssend(child_pid[2], buffer, strlen(buffer));
 	sprintf(console, "[p%d]\t\t[sent_msg]\t\t[ret_status %d]\0", pid, byte);
 	sysputs(console);
-
+*/
 
 	/* eventual loop for root */	
 	for(;;);

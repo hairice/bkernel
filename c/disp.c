@@ -171,6 +171,22 @@ void dispatch()
 				/* execute ipc_recv */
 				recv(p, pid_ptr, buffer, buffer_len);
                                 break;
+
+			case SIG_HANDLER:
+		
+				break;
+
+			case SIG_RETURN:
+	
+				break;
+
+			case SIG_KILL:
+	
+				break;
+
+			case SIG_WAIT:
+
+				break;	
                 }
         }
 }

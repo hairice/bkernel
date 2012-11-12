@@ -161,6 +161,9 @@ struct pcb
                                         *  this value is stored as a key in the delta list for sleep queue              */
 
 	unsigned int sig_table[SIG_SZ];	/* user process signal table 							*/
+	unsigned int sig_target_mask;	/* all signals signals targetted to the proc 					*/
+	unsigned int sig_accept_mask;	/* signals with an installed handler 						*/
+	unsigned int sig_prio_mask;	/* ignored signals (toggled as 0) 						*/
 
         void *ptr;                      /* generic pointer, as of a2, this pointer is used to reference the ipc data    */
         unsigned int rc;                /* return code from syscall()                                                   */
@@ -257,6 +260,11 @@ extern unsigned int syssleep(unsigned int milliseconds);
 extern unsigned int sysgetpid(void);
 extern void sysputs(char *str);
 
+extern int syssighandler(int signal, void (*new_handler)(void *), void (** old_handler)(void *));
+extern void sigreturn(void *old_sp);
+extern int syskill(int pid, int sig_no);
+extern int syssigwait(void);
+
 
 /* user processes */
 extern void idleproc (void);
@@ -285,12 +293,9 @@ extern void recv(pcb_t* p, unsigned int *pid, void *buffer, int buffer_len);
 
 
 /* signal processing */
-extern int syssighandler(int signal, void (*new_handler)(void *), void (** old_handler)(void *));
-extern void sigreturn(void *old_sp);
-extern int syskill(int pid, int sig_no);
-extern int syssigwait(void);
 extern void sigtramp(void (*handler)(void *), void *cntx, void *osp);
 extern int signal(int pid, int sig_no);
+extern void puts_sig_table(pcb_t *p);
 
 
 /* test processes */
