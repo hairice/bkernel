@@ -33,7 +33,7 @@ static int next_pid = MIN_PID+1;	/* reference to the next pid, the next pid may/
 */
 int create(void (*func)(void), int stack) 
 {
-	int *mem,pid;
+	int *mem,pid,i;
 	context_frame_t *frame;
 	pcb_t *p = NULL;
 
@@ -78,6 +78,15 @@ int create(void (*func)(void), int stack)
 			p->pid = pid;
 	}
 	
+	/* initialize signals */
+	for(i=0 ; i<SIG_SZ ; i++) 
+		p->sig_table[i] = 0;
+
+	p->sig_target_mask = SIG_OFF;
+	p->sig_accept_mask = SIG_OFF;	
+	p->sig_prio_mask = ~(SIG_OFF);
+
+
 	/* add proc to ready queue */
 	p->state = READY_STATE;	
 	p->blocked_senders=NULL;			
