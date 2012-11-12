@@ -32,6 +32,12 @@ typedef char            Bool;           /* boolean type                         
 #define ERR_IPC         -3              /* any other ipc errors                 */
 
 
+/* signal return constants */
+#define	SIG_INSTALLED	0
+#define ERR_SIG		-1
+#define ERR_HANDLER	-2
+
+
 /* user process state constants */
 #define RUNNING_STATE           0
 #define READY_STATE             1
@@ -60,6 +66,11 @@ typedef char            Bool;           /* boolean type                         
 
 /* sleep constants */
 #define BLOCKED_SLEEP	0
+
+
+/* signal constants */
+#define SIG_OFF 	0x0
+#define SIG_ON		0x1
 
 
 /* ================================ */
@@ -293,9 +304,11 @@ extern void recv(pcb_t* p, unsigned int *pid, void *buffer, int buffer_len);
 
 
 /* signal processing */
+extern int siginstall(pcb_t *p, int signal, void (*new_handler)(void *), void (** old_handler)(void *));
 extern void sigtramp(void (*handler)(void *), void *cntx, void *osp);
 extern int signal(int pid, int sig_no);
 extern void puts_sig_table(pcb_t *p);
+
 
 
 /* test processes */
