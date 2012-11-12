@@ -32,7 +32,7 @@ pcb_t *ready_q;
 */
 void dispatch() 
 {
-        unsigned int request;
+        unsigned int request,pid;
         pcb_t *p=NULL;
         va_list ap;
 
@@ -47,7 +47,6 @@ void dispatch()
         unsigned int sleep_ms=0;
 
         /* ipc arg(s) */
-        unsigned int pid;
         unsigned int *pid_ptr;  /* used for from_id for sysrecv()               */
         void *buffer;
         int buffer_len;
@@ -195,11 +194,18 @@ void dispatch()
 				break;
 
 			case SIG_KILL:
-	
+                                ap = (va_list)p->args;
+                                pid = va_arg(ap, unsigned int);
+                                signal = va_arg(ap, unsigned int);
+
+				/* enable target bit in proc target_mask */
+				p->rc = sigkill(pid, signal);
+
+                                ready(p);                               	
 				break;
 
 			case SIG_WAIT:
-
+				p->state = BLOCK_ON_SIG_STATE;
 				break;	
                 }
         }
