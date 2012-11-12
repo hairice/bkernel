@@ -62,10 +62,11 @@ typedef char            Bool;           /* boolean type                         
 
 
 /* user process constants */
-#define MAX_PROC        32              
 #define INVALID_PID     1               /* errorneous return code for create()          */
 #define MIN_PID         1               
 #define MAX_PID         65536
+#define PROC_SZ        	32              
+#define SIG_SZ		32
 
 #define RECEIVE_ANY_PID 0               /* ipc_recv call for receiving from any proc    */
 #define IDLE_PROC_PID   65536           /* this pid is also used as the pid bound       */
@@ -152,6 +153,8 @@ struct pcb
         unsigned int delta_slice;       /* process time slices to sleep for,
                                         *  this value is stored as a key in the delta list for sleep queue              */
 
+	unsigned int sig_table[SIG_SZ];	/* user process signal table 							*/
+
         void *ptr;                      /* generic pointer, as of a2, this pointer is used to reference the ipc data    */
         unsigned int rc;                /* return code from syscall()                                                   */
 
@@ -180,7 +183,7 @@ struct context_frame
                                         */
 };
 
-pcb_t proc_table[MAX_PROC];             /* list of process control blocks       */
+pcb_t proc_table[PROC_SZ];             /* list of process control blocks       */
 pcb_t *stop_q;                          /* stop queue for pcb                   */
 
 

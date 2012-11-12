@@ -40,7 +40,7 @@ LDSTR	= -e start -Ttext ${TEXTSPOT}
 #Do NOT modify these lines
 SOBJ = startup.o intr.o 
 IOBJ = init.o i386.o evec.o kprintf.o
-UOBJ = mem.o disp.o ctsw.o syscall.o create.o user.o msg.o sleep.o snd_test.o rcv_test.o time_test.o
+UOBJ = mem.o disp.o ctsw.o syscall.o create.o user.o msg.o sleep.o signal.o snd_test.o rcv_test.o time_test.o
 
 #Add your sources here
 MY_OBJ = 
@@ -86,6 +86,7 @@ create.o: ../c/create.c ../h/xeroskernel.h
 user.o: ../c/user.c ../h/xeroskernel.h
 msg.o: ../c/msg.c ../h/xeroskernel.h
 sleep.o: ../c/sleep.c ../h/xeroskernel.h
+signal.o: ../c/signal.c ../h/xeroskernel.h
 snd_test.o: ../c/snd_test.c ../h/xeroskernel.h
 rcv_test.o: ../c/rcv_test.c ../h/xeroskernel.h
 time_test.o: ../c/time_test.c ../h/xeroskernel.h

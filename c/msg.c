@@ -394,7 +394,7 @@ void puts_blocked_q()
         int i;
         pcb_t *tmp;
 
-        for(i=0; i<MAX_PROC; i++)
+        for(i=0; i<PROC_SZ; i++)
         {
                 if(proc_table[i].pid == INVALID_PID) continue;          
                 if(proc_table[i].pid == IDLE_PROC_PID) continue;
@@ -441,7 +441,7 @@ void puts_receive_any ()
         ipc_t *comm;
 
         kprintf("receive_any: ");
-        for(i=0; i<MAX_PROC; i++)
+        for(i=0; i<PROC_SZ; i++)
         {
                 if(proc_table[i].pid == INVALID_PID) continue;          
                 if(proc_table[i].pid == IDLE_PROC_PID) continue;

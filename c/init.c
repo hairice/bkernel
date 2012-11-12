@@ -27,7 +27,7 @@ extern char	*maxaddr;	/* max memory address (set in i386.c)	*/
  *  The init process, this is where it all begins...
  *------------------------------------------------------------------------
  */
-extern pcb_t proc_table[MAX_PROC];
+extern pcb_t proc_table[PROC_SZ];
 
 /*
 * initproc
@@ -43,7 +43,7 @@ void initproc( void )				/* The beginning */
 	contextinit();
 
 	/* fill the stop queue */
-	for(i=0 ; i<MAX_PROC ; i++) 
+	for(i=0 ; i<PROC_SZ ; i++) 
 		stop(&proc_table[i]);
 
 	create(&idleproc, PROC_STACK);

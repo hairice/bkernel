@@ -11,7 +11,7 @@
 				/* of the memory allocation 					*/
 
 extern pcb_t *stop_q;
-extern pcb_t proc_table[MAX_PROC];
+extern pcb_t proc_table[PROC_SZ];
 
 static int min_pid = MIN_PID;		/* lower bound of used pid region 						*/
 static int max_pid = MIN_PID;		/* upper bound of used pid region 						*/
@@ -156,12 +156,12 @@ unsigned int find_pid ()
 	/* search for the smallest value in the range (min_pid, max_pid) that is unused */
 	for(pid ; pid<max_pid ; pid++)
 	{
-		for(i=0 ; i<MAX_PROC ; i++)
+		for(i=0 ; i<PROC_SZ ; i++)
 		{
 			if(proc_table[i].pid == pid)
 				break;
 
-			if(i == MAX_PROC-1) 
+			if(i == PROC_SZ-1) 
 				pid_found = TRUE;
 		}
 
@@ -178,12 +178,12 @@ unsigned int find_pid ()
 	{
 		for(pid=next_pid ; pid<max_pid ; pid++)	
 		{
-			for(i=0 ; i<MAX_PROC ; i++)
+			for(i=0 ; i<PROC_SZ ; i++)
 			{
 				if(proc_table[i].pid == pid) continue;
 
 				/* found an unused pid in the range [next_pid+1, max_pid) */
-				if(i == MAX_PROC-1) 
+				if(i == PROC_SZ-1) 
 				{
 					tmp = next_pid-1;
 					next_pid = pid;
@@ -220,7 +220,7 @@ void set_max_pid()
 		max_pid = proc_table[i].pid;
 	}
 	
-	for(i ; i<MAX_PROC ; i++)
+	for(i ; i<PROC_SZ ; i++)
 	{
 		if(proc_table[i].pid > max_pid)
 			max_pid = proc_table[i].pid;
@@ -237,7 +237,7 @@ void set_min_pid()
 	int i;
 
 	min_pid = proc_table[0].pid;
-	for(i=1 ; i<MAX_PROC ; i++)
+	for(i=1 ; i<PROC_SZ ; i++)
 	{
 		if(proc_table[i].pid == IDLE_PROC_PID) continue;
 		if(proc_table[i].pid == INVALID_PID) continue;

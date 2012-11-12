@@ -9,7 +9,7 @@
 
 /* Your code goes here */
 extern pcb_t *stop_q;
-extern pcb_t proc_table[MAX_PROC];
+extern pcb_t proc_table[PROC_SZ];
 
 pcb_t *ready_q;
 
@@ -188,7 +188,7 @@ pcb_t* get_proc(int pid)
 {
         int i;
 
-        for(i=0 ; i < MAX_PROC ; i++)
+        for(i=0 ; i < PROC_SZ ; i++)
         {
                 if(proc_table[i].pid == pid)
                         return &(proc_table[i]);
@@ -242,7 +242,7 @@ void ready(pcb_t *p)
 *
 * @desc:        count the number of pcb in the ready queue
 *
-* @note:        the stop queue count is (MAX_PROC-cnt)
+* @note:        the stop queue count is (PROC_SZ-cnt)
 */
 int count (void)
 {
