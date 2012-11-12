@@ -52,6 +52,11 @@ void dispatch()
         void *buffer;
         int buffer_len;
 
+	/* sig arg(s) */
+	unsigned int signal;
+	void *new_handler;
+	void **old_handler;
+
 
         /* start dispatcher */
         for(;;) 
@@ -173,11 +178,20 @@ void dispatch()
                                 break;
 
 			case SIG_HANDLER:
-		
+                                ap = (va_list)p->args;
+                                signal = va_arg(ap, unsigned int);
+                                new_handler = va_arg(ap, void*);
+                                old_handler = va_arg(ap, void**);
+
+				/* install new signal */
+				p->rc = siginstall(p, signal, new_handler, old_handler);		
+
+                                ready(p);                               
 				break;
 
 			case SIG_RETURN:
-	
+
+                                ready(p);                               	
 				break;
 
 			case SIG_KILL:
