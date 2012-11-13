@@ -165,9 +165,9 @@ int sysrecv(unsigned int *from_pid, void *buffer, int buffer_len)
 *				-1	invalid signal
 *				-2	invalid handler address 
 */
-int syssighandler(int signal, void (*new_handler)(void *), void (** old_handler)(void *))
+int syssighandler(int sig_no, void (*new_handler)(void *), void (** old_handler)(void *))
 {
-	return syscall(SIG_HANDLER, signal, new_handler, old_handler);
+	return syscall(SIG_HANDLER, sig_no, new_handler, old_handler);
 }
 
 /*

@@ -13,6 +13,8 @@ extern pcb_t proc_table[PROC_SZ];
 
 pcb_t *ready_q;
 
+static int cnt = 0;
+
 
 /*
 * dispatch
@@ -68,7 +70,13 @@ void dispatch()
                         ready(p);
                         continue;
                 }
+
+
+		/* find high priority signal and execute handler */		
+		//if(p->sig_target_mask)
+		//	sighigh(p);
                 
+
                 p->state = RUNNING_STATE;
                 request = contextswitch(p);
 
@@ -200,7 +208,7 @@ void dispatch()
 
 				/* enable target bit in proc target_mask */
 				p->rc = sigkill(pid, signal);
-
+			
                                 ready(p);                               	
 				break;
 

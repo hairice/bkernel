@@ -273,7 +273,7 @@ extern unsigned int syssleep(unsigned int milliseconds);
 extern unsigned int sysgetpid(void);
 extern void sysputs(char *str);
 
-extern int syssighandler(int signal, void (*new_handler)(void *), void (** old_handler)(void *));
+extern int syssighandler(int sig_no, void (*new_handler)(void *), void (** old_handler)(void *));
 extern void sigreturn(void *old_sp);
 extern int syskill(int pid, int sig_no);
 extern int syssigwait(void);
@@ -306,12 +306,12 @@ extern void recv(pcb_t* p, unsigned int *pid, void *buffer, int buffer_len);
 
 
 /* signal processing */
-extern int siginstall(pcb_t *p, int signal, void (*new_handler)(void *), void (** old_handler)(void *));
-extern int sigkill(int pid, int signal);
-extern void sigtramp(void (*handler)(void *), void *cntx, void *osp);
+extern int siginstall(pcb_t *p, int sig_no, void (*new_handler)(void *), void (** old_handler)(void *));	/* install signal for user proc 		*/
+extern int sigkill(int pid, int sig_no);									/* set target signal bit for proc		*/
+extern int sighigh(pcb_t *p);											/* pick highest signal and deliver to proc 	*/
+extern void sigtramp(void (*handler)(void *), void *cntx, void *osp);					
 extern int signal(int pid, int sig_no);
 extern void puts_sig_table(pcb_t *p);
-
 
 
 /* test processes */

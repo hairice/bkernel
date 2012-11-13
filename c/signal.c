@@ -21,33 +21,64 @@ void sigtramp(void (*handler)(void *), void *cntx, void *osp)
 	sigreturn(osp);
 }
 
+/*
+* sighigh
+*
+* @desc:	
+*/
+int sighigh(pcb_t *p)
+{
+	int sig_no=-1,i;
+	unsigned int tmp_mask = p->sig_target_mask, bit_mask=SIG_ON;
+
+	/* get signal number */
+	while(tmp_mask)
+	{
+		sig_no++;
+		tmp_mask >>= 1;
+	}
+
+	if(sig_no == -1) return 0;
+
+	/* make mask to toggle off signal bit */
+	for(i=0 ; i<sig_no ; i++)
+		bit_mask *= 2;
+
+	p->sig_target_mask &= ~bit_mask;
+	return signal(p, sig_no);
+}
+
+/*
+* signal
+*
+* @desc:	
+*/
+int signal(int pid, int sig_no)
+{
+
+	return 1;
+}
 
 /*
 * siginstall
 *
 * @desc:	
 */
-int siginstall(pcb_t *p, int signal, void (*new_handler)(void *), void (**old_handler)(void *))
+int siginstall(pcb_t *p, int sig_no, void (*new_handler)(void *), void (**old_handler)(void *))
 {
-	int tmp;
+	unsigned int bit_mask=SIG_ON,i;
 
-	if(signal < 0 || signal >= SIG_SZ) return ERR_SIG_NO;
+	if(sig_no < 0 || sig_no >= SIG_SZ) return ERR_SIG_NO;
 	if(new_handler > freemem) return ERR_SIG_HANDLER;
 
-	*old_handler = p->sig_table[signal];
-	p->sig_table[signal] = new_handler;
+	*old_handler = p->sig_table[sig_no];
+	p->sig_table[sig_no] = new_handler;
 
-	/* save current state of sig_accept_mask */
-	tmp = p->sig_accept_mask;
+	/* make mask to toggle on signal bit */
+	for(i=0 ; i<sig_no ; i++)
+		bit_mask *= 2;
 
-	/* shift and toggle signal mask bit */
-	p->sig_accept_mask >>= signal;
-	p->sig_accept_mask |= SIG_ON;
-	p->sig_accept_mask <<= signal;
-
-	/* return shifted bits */
-	p->sig_accept_mask |= tmp;
-
+	p->sig_accept_mask |= bit_mask;
 	return SIG_SUCCESS;
 }																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																									
 
@@ -56,34 +87,34 @@ int siginstall(pcb_t *p, int signal, void (*new_handler)(void *), void (**old_ha
 *
 * @desc:	
 */
-int sigkill(int pid, int signal)
-{
-	unsigned int old_target_mask, new_target_mask = SIG_OFF;
+int sigkill(int pid, int sig_no)
+{	
+	int i;
+	unsigned int bit_mask=SIG_OFF;
 	pcb_t* p = NULL;
 
-	if(signal < 0 || signal >= PROC_SZ) return ERR_SIG_NO;
-
+	if(sig_no < 0 || sig_no >= PROC_SZ) return ERR_SIG_NO;
 	p = get_proc(pid);
 	if(!p) return ERR_SIG_TARGET_PROC;
 
-	new_target_mask >>= signal;
-	new_target_mask |= SIG_ON;
-	new_target_mask <<= signal;
+	/* make mask to toggle on signal bit */
+	bit_mask=SIG_ON;
+	for(i=0 ; i<sig_no ; i++)
+		bit_mask *= 2;
 
-	new_target_mask &= p->sig_accept_mask;
+	bit_mask &= p->sig_accept_mask;
 
 	/* enable proc target_mask */
-	if(new_target_mask)
-		p->sig_target_mask |= new_target_mask;
+	if(bit_mask)
+		p->sig_target_mask |= bit_mask;
 
 	return SIG_SUCCESS;
 }
 
-
 /*
 * puts_sig_table
 *
-* @desc:	output all signal handler address of user proc to console
+* @desc:	output all sig_no handler address of user proc to console
 */
 void puts_sig_table(pcb_t *p)
 {
