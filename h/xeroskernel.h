@@ -176,7 +176,7 @@ struct pcb
 	unsigned int sig_table[SIG_SZ];	/* user process signal table 							*/
 	unsigned int sig_target_mask;	/* all signals signals targetted to the proc 					*/
 	unsigned int sig_accept_mask;	/* signals with an installed handler 						*/
-	unsigned int sig_prio_mask;	/* ignored signals (toggled as 0) 						*/
+	unsigned int sig_ignore_mask;	/* ignored signals (toggled as 0) 						*/
 
         void *ptr;                      /* generic pointer, as of a2, this pointer is used to reference the ipc data    */
         unsigned int rc;                /* return code from syscall()                                                   */
@@ -205,6 +205,8 @@ struct context_frame
                                         *  however it is not returned back from
                                         */
 };
+
+
 
 pcb_t proc_table[PROC_SZ];             /* list of process control blocks       */
 pcb_t *stop_q;                          /* stop queue for pcb                   */

@@ -84,7 +84,7 @@ int create(void (*func)(void), int stack)
 
 	p->sig_target_mask = SIG_OFF;
 	p->sig_accept_mask = SIG_OFF;	
-	p->sig_prio_mask = ~(SIG_OFF);
+	p->sig_ignore_mask = ~(SIG_OFF);
 
 
 	/* add proc to ready queue */
