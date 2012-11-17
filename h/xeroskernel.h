@@ -207,7 +207,6 @@ struct context_frame
 };
 
 
-
 pcb_t proc_table[PROC_SZ];             /* list of process control blocks       */
 pcb_t *stop_q;                          /* stop queue for pcb                   */
 

@@ -16,8 +16,8 @@ struct sig_arg
 	void (*handler)( void *);
         void *cntx;
      	void *osp;
-//	unsigned int rc;
-//	unsigned int sig_ignore_mask;
+	unsigned int rc;
+	unsigned int sig_ignore_mask;
 };
 
 
@@ -150,6 +150,16 @@ int sigkill(int pid, int sig_no)
 	if(sig_no < 0 || sig_no >= PROC_SZ) return ERR_SIG_NO;
 	p = get_proc(pid);
 	if(!p) return ERR_SIG_TARGET_PROC;
+
+	/* check proc state if is in block_state */
+	if(p->state == BLOCK_ON_SIG_STATE)
+	{
+		p->state == READY_STATE;
+
+		/* set proc rc as the signal which unblocked it */
+		p->rc = sig_no;
+		ready(p);
+	}
 
 	/* make mask to toggle on signal bit */
 	bit_mask=SIG_ON;
