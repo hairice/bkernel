@@ -10,6 +10,17 @@
 extern long freemem;
 
 
+typedef struct sig_arg sig_arg_t;
+struct sig_arg
+{
+	void (*handler)( void *);
+        void *cntx;
+     	void *osp;
+//	unsigned int rc;
+//	unsigned int sig_ignore_mask;
+};
+
+
 /*
 * sigtramp
 *
@@ -17,6 +28,7 @@ extern long freemem;
 */
 void sigtramp(void (*handler)(void *), void *cntx, void *osp)
 {
+	int *stack = (int *) osp;
 	handler(cntx);
 	sigreturn(osp);
 }
@@ -45,7 +57,7 @@ int sighigh(pcb_t *p)
 		bit_mask *= 2;
 
 	p->sig_target_mask &= ~bit_mask;
-	return signal(p, sig_no);
+	return signal(p->pid, sig_no);
 }
 
 /*
@@ -54,9 +66,51 @@ int sighigh(pcb_t *p)
 * @desc:	
 */
 int signal(int pid, int sig_no)
-{
+{	
+	unsigned int mem;
+	pcb_t *p = NULL;
+	sig_arg_t *sig_args = NULL;
+	context_frame_t *frame = NULL;
 
-	return 1;
+
+	if(sig_no < 0 || sig_no >= SIG_SZ) return ERR_SIG_NO;
+	p = get_proc(pid);
+	if(!p) return ERR_SIG_TARGET_PROC;
+
+	// TODO: unblock proc
+
+
+	/* get user proc stack pointer */
+	mem = p->esp;
+
+	/* setup sigtramp arguments */
+	mem -= sizeof(sig_arg_t);
+	sig_args = (sig_arg_t*) mem;
+	//sig_args->rc = p->rc;
+	sig_args->osp = p->esp;
+	sig_args->cntx = p->esp;
+	sig_args->handler = p->sig_table[sig_no];
+	//sig_args->sig_ignore_mask = p->sig_ignore_mask;
+
+	/* setup sigtramp frame */
+	mem -= sizeof(context_frame_t);
+	frame = (context_frame_t*) mem;
+	frame->iret_cs = getCS();
+	frame->iret_eip = (unsigned int) sigtramp;
+    	frame->esp = mem;
+	frame->ebp = frame->esp;
+	frame->eflags = 0x00003200;
+
+	p->esp = mem;
+
+	//newct->edi = 0;
+	//newct->esi = 0;
+	//newct->ebx = 0;
+	//newct->edx = 0;
+	//newct->ecx = 0;
+	//newct->eax = 0;
+	
+	return SIG_SUCCESS;
 }
 
 /*

@@ -13,8 +13,6 @@ extern pcb_t proc_table[PROC_SZ];
 
 pcb_t *ready_q;
 
-static int cnt = 0;
-
 
 /*
 * dispatch
@@ -57,6 +55,7 @@ void dispatch()
 	unsigned int signal;
 	void *new_handler;
 	void **old_handler;
+	void *osp;
 
 
         /* start dispatcher */
@@ -73,9 +72,8 @@ void dispatch()
 
 
 		/* find high priority signal and execute handler */		
-		//if(p->sig_target_mask)
-		//	sighigh(p);
-                
+		if(p->sig_target_mask)
+			p->rc = sighigh(p);
 
                 p->state = RUNNING_STATE;
                 request = contextswitch(p);
@@ -184,6 +182,7 @@ void dispatch()
 				recv(p, pid_ptr, buffer, buffer_len);
                                 break;
 
+			/* signal handlers */
 			case SIG_HANDLER:
                                 ap = (va_list)p->args;
                                 signal = va_arg(ap, unsigned int);
@@ -197,6 +196,10 @@ void dispatch()
 				break;
 
 			case SIG_RETURN:
+                                ap = (va_list)p->args;
+                                osp = va_arg(ap, void*);
+
+				p->esp = (int *) osp;
 
                                 ready(p);                               	
 				break;
