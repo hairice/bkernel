@@ -70,7 +70,7 @@ void dispatch()
                         continue;
                 }
 
-
+		
 		/* find high priority signal and execute handler */		
 		if(p->sig_target_mask)
 			p->rc = sighigh(p);
@@ -191,7 +191,6 @@ void dispatch()
 
 				/* install new signal */
 				p->rc = siginstall(p, signal, new_handler, old_handler);		
-
                                 ready(p);                               
 				break;
 
@@ -200,7 +199,6 @@ void dispatch()
                                 osp = va_arg(ap, void*);
 
 				p->esp = (int *) osp;
-
                                 ready(p);                               	
 				break;
 
@@ -211,8 +209,7 @@ void dispatch()
 
 				/* enable target bit in proc target_mask */
 				p->rc = sigkill(pid, signal);
-			
-                                ready(p);                               	
+				ready(p);                               	
 				break;
 
 			case SIG_WAIT:

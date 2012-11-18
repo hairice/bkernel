@@ -77,9 +77,6 @@ int signal(int pid, int sig_no)
 	p = get_proc(pid);
 	if(!p) return ERR_SIG_TARGET_PROC;
 
-	// TODO: unblock proc
-
-
 	/* get user proc stack pointer */
 	mem = p->esp;
 
@@ -120,7 +117,7 @@ int signal(int pid, int sig_no)
 */
 int siginstall(pcb_t *p, int sig_no, void (*new_handler)(void *), void (**old_handler)(void *))
 {
-	unsigned int bit_mask=SIG_ON,i;
+	unsigned int bit_mask=SIG_ON,i;	
 
 	if(sig_no < 0 || sig_no >= SIG_SZ) return ERR_SIG_NO;
 	if(new_handler > freemem) return ERR_SIG_HANDLER;
@@ -133,6 +130,7 @@ int siginstall(pcb_t *p, int sig_no, void (*new_handler)(void *), void (**old_ha
 		bit_mask *= 2;
 
 	p->sig_accept_mask |= bit_mask;
+
 	return SIG_SUCCESS;
 }																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																									
 
@@ -146,12 +144,47 @@ int sigkill(int pid, int sig_no)
 	int i;
 	unsigned int bit_mask=SIG_OFF;
 	pcb_t* p = NULL;
+	pcb_t* ipc = NULL;	
+	ipc_t* comm = NULL;
 
 	if(sig_no < 0 || sig_no >= PROC_SZ) return ERR_SIG_NO;
 	p = get_proc(pid);
 	if(!p) return ERR_SIG_TARGET_PROC;
 
-	/* check proc state if is in block_state */
+
+	/* check if proc is blocked on ipc_recv or ipc_send */
+	if(p->state == BLOCK_ON_RECV_STATE || p->state == BLOCK_ON_SEND_STATE) 
+	{
+		comm = (ipc_t*) p->ptr;
+			
+		switch(p->state) 
+		{
+			case BLOCK_ON_RECV_STATE:
+				/* check if ipc_recv is receive any */
+				if(comm && *(comm->pid_ptr))
+				{
+					ipc = get_proc(*(comm->pid_ptr));
+					p = unblock(&(ipc->blocked_receivers), pid);
+				}
+
+				break;
+			case BLOCK_ON_SEND_STATE:
+				/* check if ipc_recv is receive any */
+				if(comm && comm->pid)
+				{
+					ipc = get_proc(comm->pid);
+					p = unblock(&(ipc->blocked_senders), pid);
+				}
+
+				break;
+		}
+
+		p->state = READY_STATE;
+		p->rc = -128;
+		ready(p);
+	}
+
+	/* check if proc is blocked waiting on a signal */
 	if(p->state == BLOCK_ON_SIG_STATE)
 	{
 		p->state == READY_STATE;
