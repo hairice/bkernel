@@ -15,7 +15,6 @@ typedef char            Bool;           /* boolean type                         
 #define NULL            0               /* null pointer for linked lists        */
 #define NULLCH          '\0'            /* The null character                   */
 
-
 /* universal return constants */
 #define OK               1              /* system call ok                       */
 #define SYSERR          -1              /* system call failed                   */
@@ -156,6 +155,7 @@ struct memHeader
 typedef struct ipc ipc_t;               
 struct ipc
 {
+	unsigned int pid;
         unsigned int *pid_ptr;          /* desired pid to send/receive in ipc communication             */
         void *buffer;                   /* holds the data that will be transmitted to/from between proc */
         int buffer_len;                 /* the length of data transfer acceptance at one end of ipc     */
@@ -169,17 +169,18 @@ struct pcb
         unsigned int esp;               /* process stack pointer                                                        */
         unsigned int *mem;              /* process memory 'dataStart' pointer                                           */
         unsigned int args;              /* retains all arguments passed from a syscall()                                */
-
-        unsigned int delta_slice;       /* process time slices to sleep for,
-                                        *  this value is stored as a key in the delta list for sleep queue              */
+        unsigned int rc;                /* return code from syscall()                                                   */
 
 	unsigned int sig_table[SIG_SZ];	/* user process signal table 							*/
 	unsigned int sig_target_mask;	/* all signals signals targetted to the proc 					*/
 	unsigned int sig_accept_mask;	/* signals with an installed handler 						*/
 	unsigned int sig_ignore_mask;	/* ignored signals (toggled as 0) 						*/
 
+        unsigned int delta_slice;       /* process time slices to sleep for,
+                                        *  this value is stored as a key in the delta list for sleep queue              */
+
         void *ptr;                      /* generic pointer, as of a2, this pointer is used to reference the ipc data    */
-        unsigned int rc;                /* return code from syscall()                                                   */
+
 
         pcb_t *blocked_senders;         /* queue of blocked senders for a proc */
         pcb_t *blocked_receivers;       /* queue of blocked receivers for a proc */     
