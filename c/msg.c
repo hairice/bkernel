@@ -21,7 +21,7 @@ extern long freemem;		/* used to check buffer address location is in user stack 
 * @note:        	if the receiver process is currently not on the current proc's blocked receiver queue or no receiver_any proc is found,
 *			then this proc added to the receiver's blocked_sender queue if the receiver proc pid exists and that no deadlock is detected
 */
-void send(pcb_t* p, unsigned int pid, void *buffer, int buffer_len)
+void send(pcb_t *p, unsigned int pid, void *buffer, int buffer_len)
 {
 	ipc_t *comm = NULL, *dst_comm = NULL;
 	char *rcv_buffer, *snd_buffer;
@@ -68,6 +68,7 @@ void send(pcb_t* p, unsigned int pid, void *buffer, int buffer_len)
         comm->pid_ptr = &pid;
         comm->buffer = buffer;
         comm->buffer_len = buffer_len;
+	comm->pid = pid;
         p->ptr = comm;
 
 	/* search for ipc_receiver in block_q */
@@ -128,6 +129,7 @@ void send(pcb_t* p, unsigned int pid, void *buffer, int buffer_len)
                         /* when a deadlock is detected, only the current proc is put back on the ready_q */
                         else if(deadlock(p->blocked_senders, proc))
                         {
+                        	/* deadlock detected, current proc is put back to the ready_q */
                         	kfree(mem);
                                 p->rc = ERR_IPC;
                                 p->state = READY_STATE;
@@ -135,7 +137,7 @@ void send(pcb_t* p, unsigned int pid, void *buffer, int buffer_len)
 			}
                         else
                         {
-                        	/* deadlock detected, current proc is put back to the ready_q */
+				/* no deadlock detected, add proc to blocked_senders queue */
                         	block(&(proc->blocked_senders), p);
                                 p->state = BLOCK_ON_SEND_STATE;
   			}
@@ -259,6 +261,7 @@ void recv(pcb_t *p, unsigned int *pid, void *buffer, int buffer_len)
                         /* when a deadlock is detected, only the current proc is put back on the ready_q */
                         if(deadlock(p->blocked_receivers, proc))
                         {
+                        	/* deadlock detected, current proc is put back to the ready_q */
                         	kfree(mem);
                                 p->rc = ERR_IPC;
                                 p->state = READY_STATE;
@@ -266,7 +269,7 @@ void recv(pcb_t *p, unsigned int *pid, void *buffer, int buffer_len)
                         }
                         else
                         {
-                        	/* deadlock detected, current proc is put back to the ready_q */
+				/* no deadlock detected, add proc to blocked_receivers queue */
                                 block(&(proc->blocked_receivers), p);
                                 p->state = BLOCK_ON_RECV_STATE;
                         }
@@ -393,6 +396,7 @@ void puts_blocked_q()
 {
         int i;
         pcb_t *tmp;
+	    ipc_t *comm;
 
         for(i=0; i<PROC_SZ; i++)
         {
@@ -406,7 +410,8 @@ void puts_blocked_q()
                         kprintf("pid %d blocked_sender:\t", proc_table[i].pid);
                         while(tmp)
                         {
-                                kprintf("%d ", tmp->pid);
+				comm = (ipc_t *) tmp->ptr;
+                                kprintf("%d(%d) ", tmp->pid, comm->pid);
                                 tmp=tmp->next;
                         }
                         kprintf("\n");
@@ -420,7 +425,8 @@ void puts_blocked_q()
                         kprintf("pid %d blocked_receiver:\t", proc_table[i].pid);
                         while(tmp)
                         {
-                                kprintf("%d ", tmp->pid);
+				comm = (ipc_t *) tmp->ptr;
+                                kprintf("%d(%d) ", tmp->pid, *(comm->pid_ptr));
                                 tmp=tmp->next;
                         }
                         kprintf("\n");
