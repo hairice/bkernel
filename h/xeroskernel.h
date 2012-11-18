@@ -293,6 +293,7 @@ extern void proc4(void);
 /* sleep device */
 extern unsigned int sleep(pcb_t *p);    
 extern void wake(void);                                 /* get head proc pcb in the sleep_q                             */
+extern void wake_early(pcb_t *p);
 extern unsigned int sleeper (void);                     /* count number of proc pcb in the sleep_q                      */
 extern unsigned int sleep_to_slice (unsigned int ms);   /* convert ms to number of slices, ms / (CLOCK_DIVISOR/10)      */
 extern void puts_sleep_q(void);
@@ -314,6 +315,7 @@ extern int sighigh(pcb_t *p);											/* pick highest signal and deliver to pr
 extern void sigtramp(void (*handler)(void *), void *cntx, void *osp);					
 extern int signal(int pid, int sig_no);
 extern void puts_sig_table(pcb_t *p);
+extern void puts_sig_mask(void);
 
 
 /* test processes */

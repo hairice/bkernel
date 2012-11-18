@@ -8,7 +8,7 @@
 
 /* Your code goes here */
 extern long freemem;
-
+extern pcb_t proc_table[PROC_SZ];
 
 typedef struct sig_arg sig_arg_t;
 struct sig_arg
@@ -151,6 +151,9 @@ int sigkill(int pid, int sig_no)
 	p = get_proc(pid);
 	if(!p) return ERR_SIG_TARGET_PROC;
 
+	/* check if proc is sleeping */
+	if(p->state == SLEEP_STATE)
+		wake_early(p);
 
 	/* check if proc is blocked on ipc_recv or ipc_send */
 	if(p->state == BLOCK_ON_RECV_STATE || p->state == BLOCK_ON_SEND_STATE) 
@@ -208,6 +211,22 @@ int sigkill(int pid, int sig_no)
 	return SIG_SUCCESS;
 }
 
+
+void puts_sig_mask()
+{
+	int i;
+
+	for(i=0 ; i<PROC_SZ ; i++) 
+	{
+		if(proc_table[i].sig_accept_mask)
+			kprintf("pid %d: sig_accept %d\n", i, proc_table[i].sig_accept_mask);
+
+		if(proc_table[i].sig_target_mask)
+			kprintf("pid %d: sig_target %d\n", i, proc_table[i].sig_target_mask);
+	}
+}
+
+
 /*
 * puts_sig_table
 *
@@ -218,7 +237,10 @@ void puts_sig_table(pcb_t *p)
 	int i;
 
 	kprintf("sig: ");
-	for(i=0 ; i<PROC_SZ ; i++)
-		kprintf("%d ", p->sig_table[i]);
+	for(i=0 ; i<SIG_SZ ; i++)
+	{
+		if(p->sig_table[i])
+			kprintf("%d ", p->sig_table[i]);
+	}
 	kprintf("\n");
 }

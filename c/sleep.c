@@ -135,6 +135,64 @@ void wake ()
 }
 
 /*
+* wake_early
+*
+* @desc:	wake a sleeping proc prematurely
+* 
+* @param:	p		sleeping proc to be woken ahead of its sleeping time
+*/
+void wake_early(pcb_t *p)
+{
+	pcb_t *tmp = sleep_q;
+	int cnt=0;
+
+	if(!p) return;
+	if(sleep_q->pid == p->pid)
+	{
+		sleep_q = sleep_q->next;
+
+		/* reset slice count value */	
+		slice_elapsed = 0;
+
+		/* update the delta_slice for the proc after the awaken proc */
+		if(sleep_q)
+			sleep_q->delta_slice += p->delta_slice;
+
+		/* set rc as leftover delta_slice and put back in ready_q */
+		p->rc = p->delta_slice;
+		p->state = READY_STATE;
+		ready(p);
+		return;
+	}
+
+        while(tmp && tmp->next) 
+        {                       
+		cnt += tmp->delta_slice;
+
+                /* stated conditions have been met, the proc is released from block_q */
+                if(tmp->next->pid == p->pid)
+                {
+                        tmp->next = tmp->next->next;
+			
+			/* update the delta_slice for the proc after the awaken proc */
+			if(tmp->next)
+				tmp->next->delta_slice += p->delta_slice;
+
+			/* set rc as leftover delta_slice and put back in ready_q */
+			p->rc = cnt + p->delta_slice;
+			p->state = READY_STATE;	
+			ready(p);
+			return;
+                }
+
+                tmp = tmp->next;
+        }
+
+	/* code should not reach this point, if a proc is in the sleep_state, then it must be found in the sleep_q */
+	return;
+}
+
+/*
 * tick
 *
 * @desc:	increment the global tick value, if the global tick value equates to the head queue element sleep value,
