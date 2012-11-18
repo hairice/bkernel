@@ -210,3 +210,63 @@ int syssigwait(void)
 {
 	return syscall(SIG_WAIT);
 }
+
+/*
+* sysopen
+*
+* @desc:	
+*
+* @output:	
+*/
+int sysopen(int device_no)
+{
+	return syscall(DEV_OPEN, device_no);
+}
+
+/*
+* sysclose
+*
+* @desc:	
+*
+* @output:	
+*/
+int sysclose(int fd)
+{
+	return syscall(DEV_CLOSE, fd);
+}
+
+/*
+* syswrite
+*
+* @desc:	
+*
+* @output:	
+*/
+int syswrite(int fd, void *buff, int bufflen)
+{
+	return syscall(DEV_WRITE, fd, buff, bufflen);
+}
+
+/*
+* sysread
+*
+* @desc:	
+*
+* @output:	
+*/
+int sysread(int fd, void *buff, int bufflen)
+{
+	return syscall(DEV_READ, fd, buff, bufflen);
+}
+
+/*
+* sysioctl
+*
+* @desc:	
+*
+* @output:	
+*/
+int sysioctl(int fd, unsigned long command, ...)
+{
+	return syscall(DEV_IOCTL, fd, command);
+}

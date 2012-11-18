@@ -91,6 +91,9 @@ void dispatch()
                                 end_of_intr();
                                 break;
 
+			case KBD_INT:
+				break;
+
                         case CREATE:    
                                 /* retrieve args passed from syscall() */
                                 ap = (va_list)p->args;
@@ -215,6 +218,21 @@ void dispatch()
 			case SIG_WAIT:
 				p->state = BLOCK_ON_SIG_STATE;
 				break;	
+
+			case DEV_OPEN:
+				break;
+
+			case DEV_CLOSE:
+				break;
+
+			case DEV_WRITE:
+				break;
+
+			case DEV_READ:
+				break;
+
+			case DEV_IOCTL:
+				break;
                 }
         }
 }

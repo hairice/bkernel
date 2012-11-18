@@ -54,6 +54,8 @@ typedef char            Bool;           /* boolean type                         
 #define MAX_PID         65536
 #define PROC_SZ        	32              
 #define SIG_SZ		32
+#define FD_SZ		4
+#define DEV_SZ		2
 
 #define RECEIVE_ANY_PID 0               /* ipc_recv call for receiving from any proc    */
 #define IDLE_PROC_PID   65536           /* this pid is also used as the pid bound       */
@@ -77,6 +79,7 @@ typedef char            Bool;           /* boolean type                         
 /* ================================ */
 /* interrupt descriptor table entry */
 #define TIMER_INT       1
+#define KBD_INT       	2
 #define KERNEL_INT      64
 
 
@@ -95,6 +98,12 @@ typedef char            Bool;           /* boolean type                         
 #define SIG_RETURN	1001
 #define SIG_KILL	1002
 #define SIG_WAIT	1003
+
+#define DEV_OPEN	2000
+#define DEV_CLOSE	2001
+#define DEV_WRITE	2002
+#define DEV_READ	2003
+#define DEV_IOCTL	2004
 
 
 /* ========= */
@@ -181,6 +190,7 @@ struct pcb
 
         void *ptr;                      /* generic pointer, as of a2, this pointer is used to reference the ipc data    */
 
+	unsigned int fd_table[FD_SZ];
 
         pcb_t *blocked_senders;         /* queue of blocked senders for a proc */
         pcb_t *blocked_receivers;       /* queue of blocked receivers for a proc */     
@@ -207,9 +217,33 @@ struct context_frame
                                         */
 };
 
+typedef struct devsw devsw_t;
+struct devsw 
+{
+	int dvnum;
+	char *devname;
+	int (*dvinit)();
+	int (*dvopen)();
+	int (*dvclose)();
+	int (*dvread)();
+	int (*dvwrite)();
+	int (*dvseek)();
+	int (*dvgetc)();
+	int (*dvputc)();
+	int (*dvcntl)();
+	void *dvcsr;
+	void *dvivec;
+	void *dvovec;
+	int (*dviint)();
+	int (*dvoint)();
+	void *dvioblk;
+	int dvminor;
+};
+
 
 pcb_t proc_table[PROC_SZ];             /* list of process control blocks       */
 pcb_t *stop_q;                          /* stop queue for pcb                   */
+devsw_t dev_table[DEV_SZ];
 
 
 /* ================= */
@@ -280,6 +314,12 @@ extern void sigreturn(void *old_sp);
 extern int syskill(int pid, int sig_no);
 extern int syssigwait(void);
 
+extern int sysopen(int device_no);
+extern int sysclose(int fd);
+extern int syswrite(int fd, void *buff, int bufflen);
+extern int sysread(int fd, void *buff, int bufflen);
+extern int sysioctl(int fd, unsigned long command, ...);
+
 
 /* user processes */
 extern void idleproc (void);
@@ -317,6 +357,13 @@ extern int signal(int pid, int sig_no);
 extern void puts_sig_table(pcb_t *p);
 extern void puts_sig_mask(void);
 
+
+/* device driver */
+extern int di_open(int device_no);
+extern int di_close(int fd);
+extern int di_write(int fd, void *buff, int bufflen);
+extern int di_read(int fd, void *buff, int bufflen);
+extern int di_ioctl(int fd, unsigned long command, ...);
 
 /* test processes */
 extern void sndtest_root(void);
