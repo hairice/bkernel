@@ -15,6 +15,7 @@
 */
 
 
+void _kdb_entry_point(void);		/* keyboard isr 			*/
 void _timer_entry_point(void);		/* timer isr 				*/
 void _syscall_entry_point(void);	/* system call isr 			*/
 void _common_entry_point(void);		/* system call and interrupt isr 	*/
@@ -84,6 +85,11 @@ int contextswitch( pcb_t *p )
 				movl    %%eax, 28(%%esp) 	\n\
 				popa 				\n\
 				iret 				\n\
+	_kdb_entry_point:					\n\
+				cli				\n\
+    				pusha   			\n\
+				movl 	$2, %%ecx		\n\
+				jmp	_common_entry_point	\n\
 	_timer_entry_point:					\n\
 				cli				\n\
     				pusha   			\n\
@@ -143,4 +149,7 @@ void contextinit()
 	/* set timer interrupt quantum */
 	/* by setting the clock divisor, the kernel has been set as a quantum driven preemption kernel */
 	initPIT(CLOCK_DIVISOR);
+
+	/* set idt vector entry point for keyboard interrupt */
+	set_evec(IRQBASE+0x1, _kdb_entry_point);
 }

@@ -45,7 +45,8 @@ typedef char            Bool;           /* boolean type                         
 #define BLOCK_ON_SEND_STATE     3
 #define BLOCK_ON_RECV_STATE     4
 #define BLOCK_ON_SIG_STATE     	5
-#define STOP_STATE              6
+#define BLOCK_ON_DEV_STATE     	6
+#define STOP_STATE              7
 
 
 /* user process constants */
@@ -74,6 +75,11 @@ typedef char            Bool;           /* boolean type                         
 /* signal constants */
 #define SIG_OFF 	0x0
 #define SIG_ON		0x1
+
+
+/* device constants */
+#define KBD_NECHO	0
+#define KBD_ECHO	1
 
 
 /* ================================ */
@@ -170,6 +176,12 @@ struct ipc
         int buffer_len;                 /* the length of data transfer acceptance at one end of ipc     */
 };
 
+typedef struct fd fd_t;
+struct fd
+{
+	int dvmajor;
+};
+
 typedef struct pcb pcb_t;
 struct pcb 
 {
@@ -190,7 +202,7 @@ struct pcb
 
         void *ptr;                      /* generic pointer, as of a2, this pointer is used to reference the ipc data    */
 
-	unsigned int fd_table[FD_SZ];
+	fd_t fd_table[FD_SZ];
 
         pcb_t *blocked_senders;         /* queue of blocked senders for a proc */
         pcb_t *blocked_receivers;       /* queue of blocked receivers for a proc */     
@@ -220,12 +232,13 @@ struct context_frame
 typedef struct devsw devsw_t;
 struct devsw 
 {
-	int dvnum;
+	pcb_t *dvowner;			/* proc which is currently using this device 	*/
+	int dvnum;			/* dev major number 				*/
 	char *devname;
-	int (*dvinit)();
+	int (*dvinit)();		
 	int (*dvopen)();
 	int (*dvclose)();
-	int (*dvread)();
+	int (*dvread)();		/* dev read interface 				*/
 	int (*dvwrite)();
 	int (*dvseek)();
 	int (*dvgetc)();
@@ -234,7 +247,7 @@ struct devsw
 	void *dvcsr;
 	void *dvivec;
 	void *dvovec;
-	int (*dviint)();
+	int (*dviint)();		
 	int (*dvoint)();
 	void *dvioblk;
 	int dvminor;
@@ -242,7 +255,7 @@ struct devsw
 
 
 pcb_t proc_table[PROC_SZ];             /* list of process control blocks       */
-pcb_t *stop_q;                          /* stop queue for pcb                   */
+pcb_t *stop_q;                         /* stop queue for pcb                   */
 devsw_t dev_table[DEV_SZ];
 
 
@@ -359,11 +372,11 @@ extern void puts_sig_mask(void);
 
 
 /* device driver */
-extern int di_open(int device_no);
-extern int di_close(int fd);
-extern int di_write(int fd, void *buff, int bufflen);
-extern int di_read(int fd, void *buff, int bufflen);
-extern int di_ioctl(int fd, unsigned long command, ...);
+extern int di_open(pcb_t *p, int device_no);
+extern int di_close(pcb_t *p, int fd);
+extern int di_write(pcb_t *p, int fd, void *buf, int buflen);
+extern int di_read(pcb_t *p, int fd, void *buf, int buflen);
+extern int di_ioctl(pcb_t *p, int fd, unsigned long command, ...);
 
 /* test processes */
 extern void sndtest_root(void);

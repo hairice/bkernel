@@ -40,6 +40,7 @@ void initproc( void )				/* The beginning */
 	kprintf( "\n\nCPSC 415, 2012W1 \n32 Bit Xeros 1.1\nLocated at: %x to %x\n", &entry, &end ); 
         /* Your code goes here */
 	kmeminit();
+	kbd_init();
 	contextinit();
 
 	/* fill the stop queue */

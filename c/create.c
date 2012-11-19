@@ -87,6 +87,11 @@ int create(void (*func)(void), int stack)
 	p->sig_ignore_mask = ~(SIG_OFF);
 
 
+	/* initialize file descriptor table */
+	for(i=0 ; i<FD_SZ ; i++)
+		p->fd_table[i].dvmajor = -1;
+
+
 	/* add proc to ready queue */
 	p->state = READY_STATE;	
 	p->blocked_senders=NULL;			
