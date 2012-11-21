@@ -56,7 +56,18 @@ int sighigh(pcb_t *p)
 	for(i=0 ; i<sig_no ; i++)
 		bit_mask *= 2;
 
+	/* pend signal in mask */
 	p->sig_pend_mask &= ~bit_mask;
+
+	/* toggle off all bits for same or lower level signals */
+	bit_mask = BIT_ON;
+	for(i=0 ; i<sig_no ; i++)
+	{
+		bit_mask <<= 1;
+		bit_mask |= BIT_ON;	
+	}
+	p->sig_ignore_mask &= ~bit_mask;
+
 	return signal(p->pid, sig_no);
 }
 
@@ -208,9 +219,36 @@ int sigkill(int pid, int sig_no)
 	if(bit_mask)
 		p->sig_pend_mask |= bit_mask;
 
-
-
 	return SIG_SUCCESS;
+}
+
+/*
+* sigcease
+*
+* @desc:	
+*/
+void sigcease(pcb_t *p)
+{
+	int sig_no = -1,i;
+	unsigned int bit_mask = ~(p->sig_ignore_mask);
+
+	/* get signal number */
+	while(bit_mask)
+	{
+		sig_no++;
+		bit_mask >>= 1;
+	}
+
+	if(sig_no == -1) return;	
+
+	/* toggle on all bits for same or lower level signals */
+	bit_mask = BIT_ON;
+	for(i=0 ; i<sig_no ; i++)
+	{
+		bit_mask <<= 1;
+		bit_mask |= BIT_ON;	
+	}
+	p->sig_ignore_mask |= bit_mask;	
 }
 
 

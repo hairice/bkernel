@@ -212,6 +212,8 @@ void dispatch()
                                 osp = va_arg(ap, void*);
 
 				p->esp = (int *) osp;
+				sigcease(p);
+
                                 ready(p);                               	
 				break;
 

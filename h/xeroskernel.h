@@ -369,6 +369,7 @@ extern int sigkill(int pid, int sig_no);									/* set target signal bit for pr
 extern int sighigh(pcb_t *p);											/* pick highest signal and deliver to proc 	*/
 extern void sigtramp(void (*handler)(void *), void *cntx, void *osp);					
 extern int signal(int pid, int sig_no);
+extern void sigcease(pcb_t *p);
 extern void puts_sig_table(pcb_t *p);
 extern void puts_sig_mask(void);
 
