@@ -264,18 +264,29 @@ int kbd_iint()
 	{		
 		key = kbtoa(inb(READY_PORT));
 
-		if(key != 0)
+		/* copy typed characters to internal buffer */
+		if(key != 0 && key != 4)
 		{
 			kbd_buf[kbd_buf_i] = key;
 			kbd_buf_i++;
 		}		
 
+		/* return to user process if ctrl-d is pressed */
+		if(key == 4)		
+		{
+			p = kbd_dequeue();
+			p->state = READY_STATE;
+			ready(p);
+		}
+
+		/* copy character from internal buffer to user buffer */
 		if(kbd_q && key != 0)
 		{
 			k = (kbdi_t*) kbd_q->ptr;
 
 			switch(k->d->dvnum)
-			{
+			{			
+				/* keyboard no echo device, typped characters will only be copied to user buffer */				
 				case KBD_NECHO:
 					buf = (unsigned char *) k->buf;
 				
@@ -292,6 +303,7 @@ int kbd_iint()
 					}				
 					break;
 
+				/* keyboard echo device, typped characters will be copied to user buffer and console */				
 				case KBD_ECHO:
 					buf = (unsigned char *) k->buf;
 				
@@ -307,11 +319,11 @@ int kbd_iint()
 						k->bufi++;
 					}				
 
-					kprintf("copy buffer: %s\n", buf);
+					kprintf("kbd_echo: %s\n", buf);
 					break;
 			}
 
-
+			/* return process if user buffer is full */
 			if(k->bufi == k->buflen)
 			{	
 				p = kbd_dequeue();
@@ -320,6 +332,7 @@ int kbd_iint()
 			}	
 		}
 
+		/* reset internal buffer index when size is 4 */
 		if(kbd_buf_i == 4)
 		{		
 			strcpy(kbd_buf, "");
