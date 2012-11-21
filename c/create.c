@@ -82,9 +82,9 @@ int create(void (*func)(void), int stack)
 	for(i=0 ; i<SIG_SZ ; i++) 
 		p->sig_table[i] = 0;
 
-	p->sig_target_mask = SIG_OFF;
-	p->sig_accept_mask = SIG_OFF;	
-	p->sig_ignore_mask = ~(SIG_OFF);
+	p->sig_pend_mask = SIG_OFF;
+	p->sig_install_mask = SIG_OFF;	
+	p->sig_ignore_mask = SIG_ON;
 
 
 	/* initialize file descriptor table */

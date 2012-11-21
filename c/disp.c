@@ -76,7 +76,7 @@ void dispatch()
 
 		
 		/* find high priority signal and execute handler */		
-		if(p->sig_target_mask)
+		if(p->sig_pend_mask & p->sig_ignore_mask)
 			p->rc = sighigh(p);
 
                 p->state = RUNNING_STATE;
@@ -265,7 +265,7 @@ void dispatch()
                                 buffer = va_arg(ap, void*);
                                 buffer_len = va_arg(ap, int);
 
-				/* close device */
+				/* read device */
 				p->rc = di_read(p, fd_no, buffer, buffer_len);
 
 				if(p->rc == -1)

@@ -35,7 +35,7 @@ typedef char            Bool;           /* boolean type                         
 #define	SIG_SUCCESS		0
 #define ERR_SIG_NO		-1
 #define ERR_SIG_HANDLER		-2
-#define ERR_SIG_TARGET_PROC	-18
+#define ERR_SIG_PEND_PROC	-18
 
 
 /* user process state constants */
@@ -73,8 +73,10 @@ typedef char            Bool;           /* boolean type                         
 
 
 /* signal constants */
-#define SIG_OFF 	0x0
-#define SIG_ON		0x1
+#define BIT_OFF 	0x0
+#define BIT_ON		0x1
+#define SIG_ON		0xFFFFFFFF
+#define SIG_OFF		0x00000000
 
 
 /* device constants */
@@ -193,8 +195,8 @@ struct pcb
         unsigned int rc;                /* return code from syscall()                                                   */
 
 	unsigned int sig_table[SIG_SZ];	/* user process signal table 							*/
-	unsigned int sig_target_mask;	/* all signals signals targetted to the proc 					*/
-	unsigned int sig_accept_mask;	/* signals with an installed handler 						*/
+	unsigned int sig_pend_mask;	/* all signals signals targetted to the proc 					*/
+	unsigned int sig_install_mask;	/* signals with an installed handler 						*/
 	unsigned int sig_ignore_mask;	/* ignored signals (toggled as 0) 						*/
 
         unsigned int delta_slice;       /* process time slices to sleep for,

@@ -41,7 +41,7 @@ void sigtramp(void (*handler)(void *), void *cntx, void *osp)
 int sighigh(pcb_t *p)
 {
 	int sig_no=-1,i;
-	unsigned int tmp_mask = p->sig_target_mask, bit_mask=SIG_ON;
+	unsigned int tmp_mask = p->sig_pend_mask, bit_mask=BIT_ON;
 
 	/* get signal number */
 	while(tmp_mask)
@@ -56,7 +56,7 @@ int sighigh(pcb_t *p)
 	for(i=0 ; i<sig_no ; i++)
 		bit_mask *= 2;
 
-	p->sig_target_mask &= ~bit_mask;
+	p->sig_pend_mask &= ~bit_mask;
 	return signal(p->pid, sig_no);
 }
 
@@ -75,7 +75,7 @@ int signal(int pid, int sig_no)
 
 	if(sig_no < 0 || sig_no >= SIG_SZ) return ERR_SIG_NO;
 	p = get_proc(pid);
-	if(!p) return ERR_SIG_TARGET_PROC;
+	if(!p) return ERR_SIG_PEND_PROC;
 
 	/* get user proc stack pointer */
 	mem = p->esp;
@@ -117,7 +117,7 @@ int signal(int pid, int sig_no)
 */
 int siginstall(pcb_t *p, int sig_no, void (*new_handler)(void *), void (**old_handler)(void *))
 {
-	unsigned int bit_mask=SIG_ON,i;	
+	unsigned int bit_mask=BIT_ON,i;	
 
 	if(sig_no < 0 || sig_no >= SIG_SZ) return ERR_SIG_NO;
 	if(new_handler > freemem) return ERR_SIG_HANDLER;
@@ -129,7 +129,7 @@ int siginstall(pcb_t *p, int sig_no, void (*new_handler)(void *), void (**old_ha
 	for(i=0 ; i<sig_no ; i++)
 		bit_mask *= 2;
 
-	p->sig_accept_mask |= bit_mask;
+	p->sig_install_mask |= bit_mask;
 
 	return SIG_SUCCESS;
 }																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																									
@@ -142,14 +142,14 @@ int siginstall(pcb_t *p, int sig_no, void (*new_handler)(void *), void (**old_ha
 int sigkill(int pid, int sig_no)
 {	
 	int i;
-	unsigned int bit_mask=SIG_OFF;
+	unsigned int bit_mask=BIT_OFF;
 	pcb_t* p = NULL;
 	pcb_t* ipc = NULL;	
 	ipc_t* comm = NULL;
 
 	if(sig_no < 0 || sig_no >= PROC_SZ) return ERR_SIG_NO;
 	p = get_proc(pid);
-	if(!p) return ERR_SIG_TARGET_PROC;
+	if(!p) return ERR_SIG_PEND_PROC;
 
 	/* check if proc is sleeping */
 	if(p->state == SLEEP_STATE)
@@ -198,15 +198,17 @@ int sigkill(int pid, int sig_no)
 	}
 
 	/* make mask to toggle on signal bit */
-	bit_mask=SIG_ON;
+	bit_mask=BIT_ON;
 	for(i=0 ; i<sig_no ; i++)
 		bit_mask *= 2;
 
-	bit_mask &= p->sig_accept_mask;
+	bit_mask &= p->sig_install_mask;
 
 	/* enable proc target_mask */
 	if(bit_mask)
-		p->sig_target_mask |= bit_mask;
+		p->sig_pend_mask |= bit_mask;
+
+
 
 	return SIG_SUCCESS;
 }
@@ -218,11 +220,11 @@ void puts_sig_mask()
 
 	for(i=0 ; i<PROC_SZ ; i++) 
 	{
-		if(proc_table[i].sig_accept_mask)
-			kprintf("pid %d: sig_accept %d\n", i, proc_table[i].sig_accept_mask);
+		if(proc_table[i].sig_install_mask)
+			kprintf("pid %d: sig_install %d\n", i, proc_table[i].sig_install_mask);
 
-		if(proc_table[i].sig_target_mask)
-			kprintf("pid %d: sig_target %d\n", i, proc_table[i].sig_target_mask);
+		if(proc_table[i].sig_pend_mask)
+			kprintf("pid %d: sig_pend %d\n", i, proc_table[i].sig_pend_mask);
 	}
 }
 
