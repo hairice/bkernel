@@ -32,6 +32,13 @@ int di_open(pcb_t *p, int device_no)
     	if(dev_table[device_no].dvowner)
     		return -1;
 
+	/* only 1 kbd device can be opened, echo/non-echo */
+	for(i=0 ; i<DEV_SZ ; i++)
+	{
+		if(dev_table[i].dvowner) 
+			return -1;
+	}
+
 	/* scan for a free spot in the file descriptor table */
 	for(i = 0 ; i<FD_SZ ; i++)
 	{
