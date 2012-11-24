@@ -62,7 +62,7 @@ pcb_t* kbd_peek()
 *
 * @desc:	
 */
-pcb_t* kbd_dequeue()
+void kbd_dequeue()
 {
 	pcb_t* p = NULL;
 
@@ -70,31 +70,9 @@ pcb_t* kbd_dequeue()
 	{
 		p = kbd_q;
 		kbd_q = kbd_q->next;
+		p->state = READY_STATE;
+		ready(p);
 	}
-
-	return p;
-}
-
-/*
-* kbd_dequeue_at
-*
-* @desc:	
-*/
-void kbd_dequeue_at(pcb_t *p)
-{
-	pcb_t *tmp = kbd_q;
-
-        if(!kbd_q) return;
-        if(kbd_q->pid == p->pid)
-                kbd_q = kbd_q->next;
-
-        while(tmp && tmp->next) 
-        {                       
-                if(tmp->next->pid == p->pid)
-                        tmp->next = tmp->next->next;
-
-                tmp = tmp->next;
-        }
 }
 
 /*
@@ -168,8 +146,6 @@ void kbd_init()
 *
 * @param:	
 *		
-*		
-*
 * @output:	
 */
 int kbd_open(devsw_t* d)
@@ -264,6 +240,71 @@ int kbd_ioctl(devsw_t* d, unsigned long cmd)
 }
 
 /*
+* kbd_notify
+*
+* @desc:	
+*
+* @param:	
+*		
+*		
+*
+* @output:	
+*/
+void kbd_notify()
+{
+	unsigned char *buf;
+	unsigned char tmp[1];			/* temporary holder of character to concatenated onto the end of the user buffer */
+	kbdi_t* k = NULL;
+	pcb_t* p = NULL;
+
+	/* copy character from internal buffer to user buffer */
+	if(kbd_q)
+	{
+		k = (kbdi_t*) kbd_q->ptr;
+		buf = (unsigned char *) k->buf;
+
+		switch(k->d->dvnum)
+		{			
+			/* keyboard no echo device, typped characters will only be copied to user buffer */				
+			case KBD_NECHO:
+				if(kbd_buf_i > k->bufi)
+				{
+					strcpy(buf, kbd_buf);
+					k->bufi = kbd_buf_i;
+				}		
+				else
+				{
+					strncpy(tmp, kbd_buf+(kbd_buf_i-1), 1); 
+					strncat(buf, tmp, 1);
+					k->bufi++;
+				}					
+				break;
+
+			/* keyboard echo device, typped characters will be copied to user buffer and console */				
+			case KBD_ECHO:
+				if(kbd_buf_i > k->bufi)
+				{
+					strcpy(buf, kbd_buf);
+					k->bufi = kbd_buf_i;
+				}		
+				else
+				{
+					strncpy(tmp, kbd_buf+(kbd_buf_i-1), 1); 
+					strncat(buf, tmp, 1);
+					k->bufi++;
+				}				
+
+				kprintf("kbd_echo: %s\n", buf);
+		}
+
+		/* return to user process if enter is pressed */
+		/* return process if user buffer is full */
+		if(kbd_buf[kbd_buf_i-1] == 10 || k->bufi == k->buflen)
+			kbd_dequeue();
+	}
+}
+
+/*
 * kbd_iint
 *
 * @desc:	
@@ -273,11 +314,6 @@ int kbd_ioctl(devsw_t* d, unsigned long cmd)
 int kbd_iint()
 {
 	unsigned char key;
-	unsigned char *buf;
-	unsigned char tmp[1];			/* temporary holder of character to concatenated onto the end of the user buffer */
-	int i;
-	kbdi_t* k = NULL;
-	pcb_t* p = NULL;
 
 	if(DATA_READY & inb(CTRL_PORT))
 	{		
@@ -288,86 +324,14 @@ int kbd_iint()
 		{
 			kbd_buf[kbd_buf_i] = key;
 			kbd_buf_i++;
-		}		
+		}	
 
-		/* return to user process if ctrl-d is pressed */
-		if(key == 4)		
-		{
-			p = kbd_dequeue();
-			p->state = READY_STATE;
-			ready(p);
-		}
+		if(key == 4)
+			kbd_dequeue();
 
-		/* copy character from internal buffer to user buffer */
-		if(kbd_q && key != 0)
-		{
-			k = (kbdi_t*) kbd_q->ptr;
-
-			switch(k->d->dvnum)
-			{			
-				/* keyboard no echo device, typped characters will only be copied to user buffer */				
-				case KBD_NECHO:
-					buf = (unsigned char *) k->buf;
-				
-					if(kbd_buf_i > k->bufi)
-					{
-						strcpy(buf, kbd_buf);
-						k->bufi = kbd_buf_i;
-					}		
-					else
-					{
-						strncpy(tmp, kbd_buf+(kbd_buf_i-1), 1); 
-						strncat(buf, tmp, 1);
-						k->bufi++;
-					}	
-
-					/* return to user process if enter is pressed */
-					if(key == 10)
-					{
-						p = kbd_dequeue();
-						p->state = READY_STATE;
-						ready(p);
-					}
-			
-					break;
-
-				/* keyboard echo device, typped characters will be copied to user buffer and console */				
-				case KBD_ECHO:
-					buf = (unsigned char *) k->buf;
-				
-					if(kbd_buf_i > k->bufi)
-					{
-						strcpy(buf, kbd_buf);
-						k->bufi = kbd_buf_i;
-					}		
-					else
-					{
-						strncpy(tmp, kbd_buf+(kbd_buf_i-1), 1); 
-						strncat(buf, tmp, 1);
-						k->bufi++;
-					}				
-
-					kprintf("kbd_echo: %s\n", buf);
-
-					/* return to user process if enter is pressed */
-					if(key == 10)
-					{
-						p = kbd_dequeue();
-						p->state = READY_STATE;
-						ready(p);
-					}
-
-					break;
-			}
-
-			/* return process if user buffer is full */
-			if(k->bufi == k->buflen)
-			{	
-				p = kbd_dequeue();
-				p->state = READY_STATE;
-				ready(p);
-			}	
-		}
+		/* notify the upper kbd layer that a new character has arrived */
+		if(key != 0)
+			kbd_notify();	
 
 		/* reset internal buffer index when size is 4 */
 		if(kbd_buf_i == 4)
