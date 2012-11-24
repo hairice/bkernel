@@ -325,7 +325,7 @@ extern unsigned int sysgetpid(void);
 extern void sysputs(char *str);
 
 extern int syssighandler(int sig_no, void (*new_handler)(void *), void (** old_handler)(void *));
-extern void sigreturn(void *old_sp);
+extern void sigreturn(void *old_sp, unsigned int old_im);
 extern int syskill(int pid, int sig_no);
 extern int syssigwait(void);
 
@@ -367,9 +367,9 @@ extern void recv(pcb_t* p, unsigned int *pid, void *buffer, int buffer_len);
 extern int siginstall(pcb_t *p, int sig_no, void (*new_handler)(void *), void (** old_handler)(void *));	/* install signal for user proc 		*/
 extern int sigkill(int pid, int sig_no);									/* set target signal bit for proc		*/
 extern int sighigh(pcb_t *p);											/* pick highest signal and deliver to proc 	*/
-extern void sigtramp(void (*handler)(void *), void *cntx, void *osp);					
+extern void sigtramp(void (*handler)(void *), void *cntx, void *osp, unsigned int rc, unsigned int oim);					
 extern int signal(int pid, int sig_no);
-extern void sigcease(pcb_t *p);
+extern void sigcease(pcb_t *p, unsigned int oim);
 extern void puts_sig_table(pcb_t *p);
 extern void puts_sig_mask(void);
 

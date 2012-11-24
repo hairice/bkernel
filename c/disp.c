@@ -57,6 +57,7 @@ void dispatch()
 	void *new_handler;
 	void **old_handler;
 	void *osp;
+	unsigned int oim;
 
 	/* dev arg(s) */
 	int dev_no,fd_no;
@@ -210,10 +211,12 @@ void dispatch()
 			case SIG_RETURN:
                                 ap = (va_list)p->args;
                                 osp = va_arg(ap, void*);
+                                oim = va_arg(ap, unsigned int);
 
 				p->esp = (int *) osp;
-				sigcease(p);
+				sigcease(p, oim);
 
+				p->state = READY_STATE;
                                 ready(p);                               	
 				break;
 

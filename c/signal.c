@@ -26,11 +26,11 @@ struct sig_arg
 *
 * @desc:	
 */
-void sigtramp(void (*handler)(void *), void *cntx, void *osp)
+void sigtramp(void (*handler)(void *), void *cntx, void *osp, unsigned int rc, unsigned int oim)
 {
 	int *stack = (int *) osp;
 	handler(cntx);
-	sigreturn(osp);
+	sigreturn(osp, oim);
 }
 
 /*
@@ -56,17 +56,8 @@ int sighigh(pcb_t *p)
 	for(i=0 ; i<sig_no ; i++)
 		bit_mask *= 2;
 
-	/* pend signal in mask */
+	/* toggle off pend signal in mask */
 	p->sig_pend_mask &= ~bit_mask;
-
-	/* toggle off all bits for same or lower level signals */
-	bit_mask = BIT_ON;
-	for(i=0 ; i<sig_no ; i++)
-	{
-		bit_mask <<= 1;
-		bit_mask |= BIT_ON;	
-	}
-	p->sig_ignore_mask &= ~bit_mask;
 
 	return signal(p->pid, sig_no);
 }
@@ -78,11 +69,11 @@ int sighigh(pcb_t *p)
 */
 int signal(int pid, int sig_no)
 {	
-	unsigned int mem;
+	int i;
+	unsigned int mem,bit_mask=BIT_ON;
 	pcb_t *p = NULL;
 	sig_arg_t *sig_args = NULL;
 	context_frame_t *frame = NULL;
-
 
 	if(sig_no < 0 || sig_no >= SIG_SZ) return ERR_SIG_NO;
 	p = get_proc(pid);
@@ -94,11 +85,23 @@ int signal(int pid, int sig_no)
 	/* setup sigtramp arguments */
 	mem -= sizeof(sig_arg_t);
 	sig_args = (sig_arg_t*) mem;
-	//sig_args->rc = p->rc;
+	sig_args->rc = p->rc;
 	sig_args->osp = p->esp;
 	sig_args->cntx = p->esp;
 	sig_args->handler = p->sig_table[sig_no];
-	//sig_args->sig_ignore_mask = p->sig_ignore_mask;
+	sig_args->sig_ignore_mask = p->sig_ignore_mask;		/* old sig_ignore_mask of the stack below */
+
+	/* toggle off all bits for same or lower level signals */
+	bit_mask = BIT_ON;
+	for(i=0 ; i<sig_no ; i++)
+	{
+		bit_mask <<= 1;
+		bit_mask |= BIT_ON;	
+	}
+	p->sig_ignore_mask &= ~bit_mask;
+
+	//kprintf("signal\t\tpend_mask: %d\n", p->sig_pend_mask);
+	//kprintf("signal\t\tignore_mask: %d\n", ~(p->sig_ignore_mask));
 
 	/* setup sigtramp frame */
 	mem -= sizeof(context_frame_t);
@@ -227,7 +230,7 @@ int sigkill(int pid, int sig_no)
 *
 * @desc:	
 */
-void sigcease(pcb_t *p)
+void sigcease(pcb_t *p, unsigned int oim)
 {
 	int sig_no = -1,i;
 	unsigned int bit_mask = ~(p->sig_ignore_mask);
@@ -248,6 +251,10 @@ void sigcease(pcb_t *p)
 		bit_mask <<= 1;
 		bit_mask |= BIT_ON;	
 	}
+
+	//kprintf("sigcease\tbit_mask: %d	oim: %d\n", bit_mask, ~oim);
+
+	bit_mask -= ~oim;
 	p->sig_ignore_mask |= bit_mask;	
 }
 

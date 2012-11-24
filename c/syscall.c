@@ -177,9 +177,9 @@ int syssighandler(int sig_no, void (*new_handler)(void *), void (** old_handler)
 *
 * @param:	old_sp		user proc stack pointer address
 */
-void sigreturn(void *old_sp)
+void sigreturn(void *old_sp, unsigned int old_im)
 {
-	return syscall(SIG_RETURN, old_sp);
+	return syscall(SIG_RETURN, old_sp, old_im);
 }
 
 /*
