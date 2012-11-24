@@ -123,7 +123,7 @@ void puts_kbd_q()
 void kbd_init()
 {
 	/* init non-echo kbd */
-	dev_table[KBD_NECHO].dvowner  	= NULL;
+	dev_table[KBD_NECHO].dvowner  	= 0;
 	dev_table[KBD_NECHO].dvnum    	= KBD_NECHO;
 	dev_table[KBD_NECHO].dvinit    	= kbd_error;
 	dev_table[KBD_NECHO].dvopen   	= kbd_open;
@@ -142,7 +142,7 @@ void kbd_init()
 	dev_table[KBD_NECHO].dvioblk   	= NULL;	
 
 	/* init echo kbd */
-	dev_table[KBD_ECHO].dvowner  	= NULL;
+	dev_table[KBD_ECHO].dvowner  	= 0;
 	dev_table[KBD_ECHO].dvnum    	= KBD_ECHO;
 	dev_table[KBD_ECHO].dvinit    	= kbd_error;
 	dev_table[KBD_ECHO].dvopen   	= kbd_open;

@@ -234,8 +234,8 @@ struct context_frame
 typedef struct devsw devsw_t;
 struct devsw 
 {
-	pcb_t *dvowner;			/* proc which is currently using this device 	*/
-	int dvnum;			/* dev major number 				*/
+	unsigned int dvowner;			/* proc which is currently using this device 	*/
+	unsigned int dvnum;			/* dev major number 				*/
 	char *devname;
 	int (*dvinit)();		
 	int (*dvopen)();

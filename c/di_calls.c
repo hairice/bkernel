@@ -38,7 +38,7 @@ int di_open(pcb_t *p, int device_no)
 	       	if(p->fd_table[i].dvmajor == -1)
 		{
 	       		p->fd_table[i].dvmajor = device_no;            
-			dev_table[device_no].dvowner = p;
+			dev_table[device_no].dvowner = p->pid;
 
 			(*dev_table[device_no].dvopen)(&(dev_table[device_no]));
 
@@ -74,10 +74,10 @@ int di_close(pcb_t *p, int fd)
 	dvmajor = p->fd_table[fd].dvmajor;
 
 	/* check if the device is owned by the current proc */
-	if(dev_table[dvmajor].dvowner->pid != p->pid)
+	if(dev_table[dvmajor].dvowner != p->pid)
 		return -1;
 
-	dev_table[dvmajor].dvowner = NULL;
+	dev_table[dvmajor].dvowner = 0;
 	p->fd_table[fd].dvmajor = -1;
 
 	return (*dev_table[dvmajor].dvclose)(&(dev_table[dvmajor]));
@@ -126,7 +126,7 @@ int di_read(pcb_t *p, int fd, void *buf, int buflen)
 	dvmajor = p->fd_table[fd].dvmajor;
 
 	/* check if the device is owned by the current proc */
-	if(dev_table[dvmajor].dvowner->pid != p->pid)
+	if(dev_table[dvmajor].dvowner != p->pid)
 		return -1;
 	
 	return (*dev_table[dvmajor].dvread)(p, &(dev_table[dvmajor]), buf, buflen);
