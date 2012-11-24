@@ -300,7 +300,16 @@ int kbd_iint()
 						strncpy(tmp, kbd_buf+(kbd_buf_i-1), 1); 
 						strncat(buf, tmp, 1);
 						k->bufi++;
-					}				
+					}	
+
+					/* return to user process if enter is pressed */
+					if(key == 10)
+					{
+						p = kbd_dequeue();
+						p->state = READY_STATE;
+						ready(p);
+					}
+			
 					break;
 
 				/* keyboard echo device, typped characters will be copied to user buffer and console */				
@@ -320,6 +329,15 @@ int kbd_iint()
 					}				
 
 					kprintf("kbd_echo: %s\n", buf);
+
+					/* return to user process if enter is pressed */
+					if(key == 10)
+					{
+						p = kbd_dequeue();
+						p->state = READY_STATE;
+						ready(p);
+					}
+
 					break;
 			}
 
