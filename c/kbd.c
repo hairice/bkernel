@@ -122,24 +122,43 @@ void puts_kbd_q()
 */
 void kbd_init()
 {
-	/* initialize keyboards */
-	dev_table[KBD_NECHO].dvowner  = NULL;
-	dev_table[KBD_NECHO].dvnum    = KBD_NECHO;
-	dev_table[KBD_NECHO].dvopen   = kbd_open;
-	dev_table[KBD_NECHO].dvclose  = kbd_close;
-	dev_table[KBD_NECHO].dvread   = kbd_read;
-	dev_table[KBD_NECHO].dvwrite  = kbd_write;
-	dev_table[KBD_NECHO].dvcntl   = kbd_ioctl;
-	//dev_table[KBD_NECHO].dviint   = kbd_iint;
-	
-	dev_table[KBD_ECHO].dvowner  = NULL;
-	dev_table[KBD_ECHO].dvnum    = KBD_ECHO;
-	dev_table[KBD_ECHO].dvopen   = kbd_open;
-	dev_table[KBD_ECHO].dvclose  = kbd_close;
-	dev_table[KBD_ECHO].dvread   = kbd_read;
-	dev_table[KBD_ECHO].dvwrite  = kbd_write;
-	dev_table[KBD_ECHO].dvcntl   = kbd_ioctl;
-	//dev_table[KBD_ECHO].dviint   = kbd_iint;
+	/* init non-echo kbd */
+	dev_table[KBD_NECHO].dvowner  	= NULL;
+	dev_table[KBD_NECHO].dvnum    	= KBD_NECHO;
+	dev_table[KBD_NECHO].dvinit    	= kbd_error;
+	dev_table[KBD_NECHO].dvopen   	= kbd_open;
+	dev_table[KBD_NECHO].dvclose  	= kbd_close;
+	dev_table[KBD_NECHO].dvread   	= kbd_read;
+	dev_table[KBD_NECHO].dvwrite  	= kbd_write;
+	dev_table[KBD_NECHO].dvseek  	= kbd_error;
+	dev_table[KBD_NECHO].dvgetc  	= kbd_error;
+	dev_table[KBD_NECHO].dvputc  	= kbd_error;
+	dev_table[KBD_NECHO].dvcntl   	= kbd_ioctl;
+	dev_table[KBD_NECHO].dvcsr   	= NULL;
+	dev_table[KBD_NECHO].dvivec   	= NULL;
+	dev_table[KBD_NECHO].dvovec   	= NULL;
+	dev_table[KBD_NECHO].dviint   	= kbd_error;
+	dev_table[KBD_NECHO].dvoint   	= kbd_error;
+	dev_table[KBD_NECHO].dvioblk   	= NULL;	
+
+	/* init echo kbd */
+	dev_table[KBD_ECHO].dvowner  	= NULL;
+	dev_table[KBD_ECHO].dvnum    	= KBD_ECHO;
+	dev_table[KBD_ECHO].dvinit    	= kbd_error;
+	dev_table[KBD_ECHO].dvopen   	= kbd_open;
+	dev_table[KBD_ECHO].dvclose  	= kbd_close;
+	dev_table[KBD_ECHO].dvread   	= kbd_read;
+	dev_table[KBD_ECHO].dvwrite  	= kbd_write;
+	dev_table[KBD_ECHO].dvseek  	= kbd_error;
+	dev_table[KBD_ECHO].dvgetc  	= kbd_error;
+	dev_table[KBD_ECHO].dvputc  	= kbd_error;
+	dev_table[KBD_ECHO].dvcntl   	= kbd_ioctl;
+	dev_table[KBD_ECHO].dvcsr   	= NULL;
+	dev_table[KBD_ECHO].dvivec   	= NULL;
+	dev_table[KBD_ECHO].dvovec   	= NULL;
+	dev_table[KBD_ECHO].dviint   	= kbd_error;
+	dev_table[KBD_ECHO].dvoint   	= kbd_error;
+	dev_table[KBD_ECHO].dvioblk   	= NULL;
 }
 
 /*
@@ -359,4 +378,17 @@ int kbd_iint()
 	}
 
 	return 0;
+}
+
+
+/*
+* kbd_error
+*
+* @desc:	
+*
+* @output:	
+*/
+int kbd_error()
+{
+	return -1;
 }

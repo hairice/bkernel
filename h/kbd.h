@@ -23,6 +23,7 @@ extern int kbd_write(devsw_t* d, void* buf, int buflen);
 extern int kbd_read(pcb_t *p, devsw_t* d, void* buf, int buflen);
 extern int kbd_ioctl(devsw_t* d, unsigned long cmd); 
 extern int kbd_iint();
+extern int kbd_error();
 
 extern void kbd_enqueue(pcb_t *p);
 extern pcb_t* kbd_peek();
