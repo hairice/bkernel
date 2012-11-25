@@ -61,6 +61,8 @@ void dispatch()
 
 	/* dev arg(s) */
 	int dev_no,fd_no;
+	unsigned long cmd;	
+	unsigned char eof;
 
 
         /* start dispatcher */
@@ -284,6 +286,13 @@ void dispatch()
 				break;
 
 			case DEV_IOCTL:
+                                ap = (va_list)p->args;
+                                fd_no = va_arg(ap, int);
+                                cmd = va_arg(ap, unsigned long);
+                                eof = va_arg(ap, int);
+
+				/* adjust eof for kbd */
+				p->rc = di_ioctl(p, fd_no, cmd, eof);
 
                                 p->state = READY_STATE;                         				
 				ready(p);

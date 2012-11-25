@@ -5,7 +5,7 @@
 */
 
 #include <xeroskernel.h>
-
+#include <stdarg.h>
 
 /* Your code goes here */
 extern devsw_t dev_table[DEV_SZ];
@@ -70,7 +70,7 @@ int di_open(pcb_t *p, int device_no)
 */
 int di_close(pcb_t *p, int fd)
 {
-	int i,dvmajor;
+	int dvmajor;
 
 	if(fd < 0 || fd > FD_SZ)
 		return -1;
@@ -152,7 +152,29 @@ int di_read(pcb_t *p, int fd, void *buf, int buflen)
 */
 int di_ioctl(pcb_t *p, int fd, unsigned long command, ...)
 {
+	int dvmajor;
+	va_list ap;
+	va_start(ap, command);
+	int eof = va_arg(ap, int);
+
+	if(fd < 0 || fd > FD_SZ)
+		return -1;
+
+	if(p->fd_table[fd].dvmajor == -1)
+		return -1;
+
+	if(command != SET_EOF) 
+		return -1;
+
+	if(eof < 0 || eof > 127)
+		return -1;
 
 
-	return 0;
+	dvmajor = p->fd_table[fd].dvmajor;
+
+	/* check if the device is owned by the current proc */
+	if(dev_table[dvmajor].dvowner != p->pid)
+		return -1;
+	
+	return (*dev_table[dvmajor].dvcntl)(eof);
 }

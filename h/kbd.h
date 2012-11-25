@@ -21,7 +21,7 @@ extern int kbd_open(devsw_t* d);
 extern int kbd_close(devsw_t* d);
 extern int kbd_write(devsw_t* d, void* buf, int buflen);
 extern int kbd_read(pcb_t *p, devsw_t* d, void* buf, int buflen);
-extern int kbd_ioctl(devsw_t* d, unsigned long cmd); 
+extern int kbd_ioctl(int eof);
 extern int kbd_iint();
 extern int kbd_error();
 extern void kbd_notify();

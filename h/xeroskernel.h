@@ -82,6 +82,7 @@ typedef char            Bool;           /* boolean type                         
 /* device constants */
 #define KBD_NECHO	0
 #define KBD_ECHO	1
+#define SET_EOF		100
 
 
 /* ================================ */
@@ -254,7 +255,6 @@ struct devsw
 	void *dvioblk;
 	int dvminor;
 };
-
 
 pcb_t proc_table[PROC_SZ];             /* list of process control blocks       */
 pcb_t *stop_q;                         /* stop queue for pcb                   */

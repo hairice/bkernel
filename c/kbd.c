@@ -12,6 +12,7 @@
 /* Your code goes here */
 extern devsw_t dev_table[DEV_SZ];
 static unsigned char kbd_buf[5];
+static unsigned char kbd_eof = 10;		/* init eof to enter */
 static int kbd_buf_i = 0;	
 pcb_t *kbd_q = NULL;
 
@@ -232,10 +233,9 @@ int kbd_read(pcb_t *p, devsw_t* d, void* buf, int buflen)
 *
 * @output:	
 */
-int kbd_ioctl(devsw_t* d, unsigned long cmd)
+int kbd_ioctl(int eof)
 {
-
-
+	kbd_eof = eof;
 	return 0;
 }
 
@@ -299,7 +299,7 @@ void kbd_notify()
 
 		/* return to user process if enter is pressed */
 		/* return process if user buffer is full */
-		if(kbd_buf[kbd_buf_i-1] == 10 || k->bufi == k->buflen)
+		if(kbd_buf[kbd_buf_i-1] == 10 || k->bufi == k->buflen || kbd_buf[kbd_buf_i-1] == kbd_eof)
 			kbd_dequeue();
 	}
 }

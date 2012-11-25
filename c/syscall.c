@@ -268,5 +268,9 @@ int sysread(int fd, void *buff, int bufflen)
 */
 int sysioctl(int fd, unsigned long command, ...)
 {
-	return syscall(DEV_IOCTL, fd, command);
+        va_list ap;
+	va_start(ap, command);
+	int eof = va_arg(ap, int);
+
+	return syscall(DEV_IOCTL, fd, command, eof);
 }
