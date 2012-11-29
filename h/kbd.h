@@ -14,6 +14,8 @@
 #define CTRL_PORT		0x64
 #define DATA_READY		0x1
 
+#define ENTER_KEY		10
+
 
 /* keyboard device */
 extern void kbd_init();
@@ -28,6 +30,5 @@ extern void kbd_notify();
 
 
 extern void kbd_enqueue(pcb_t *p);
-extern pcb_t* kbd_peek();
 extern void kbd_dequeue();
 extern void puts_kbd_q();

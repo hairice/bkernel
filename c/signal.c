@@ -10,14 +10,16 @@
 extern long freemem;
 extern pcb_t proc_table[PROC_SZ];
 
+
+/* signal arguments for sigtramp to be placed right below a new signal stack in user space */
 typedef struct sig_arg sig_arg_t;
 struct sig_arg
 {
-	void (*handler)( void *);
-        void *cntx;
-     	void *osp;
-	unsigned int rc;
-	unsigned int sig_ignore_mask;
+	void (*handler)( void *);		/* pointer to signal handler 						*/
+        void *cntx;				
+     	void *osp;				/* stack pointer to stack right below the new signal stack 		*/
+	int rc;					/* saved return value from the stack right below the new signal stack 	*/
+	unsigned int sig_ignore_mask;		/* saved ignore mask from the stack right below the new signal stack 	*/
 };
 
 
@@ -25,18 +27,30 @@ struct sig_arg
 * sigtramp
 *
 * @desc:	
+*
+* @param:	handler			signal handler function
+*		cntx			proc old stack pointer value from stack below
+*		osp			proc old stack pointer value from stack below
+*		rc			proc old return value from stack below
+*		oim			proc old ignore mask value from stack below
+*
+* @note:	this is signal function the context switcher first switches into, and then signal handler would be called
 */
-void sigtramp(void (*handler)(void *), void *cntx, void *osp, unsigned int rc, unsigned int oim)
+void sigtramp(void (*handler)(void *), void *cntx, void *osp, int rc, unsigned int oim)
 {
 	int *stack = (int *) osp;
 	handler(cntx);
-	sigreturn(osp, oim);
+
+	/* old stack pointer, return value, and ignore mask are passed back to the stack below */
+	sigreturn(osp, rc, oim);
 }
 
 /*
 * sighigh
 *
-* @desc:	
+* @desc:	retrieves the highest pending and not ignored signal for proc to be delivered on next dispatch
+*
+* @param:	p		proc to deliver signal to
 */
 int sighigh(pcb_t *p)
 {
@@ -65,7 +79,13 @@ int sighigh(pcb_t *p)
 /*
 * signal
 *
-* @desc:	
+* @desc:	deliver signal to proc by placing new signal stack in its space
+*
+* @param:	p		proc to deliver signal to
+*		sig_no		signal to be delivered to proc	
+*
+* @output:	returns the following values
+*		SIG_SUCCESS		signal has successfully been delivered onto proc stack
 */
 int signal(int pid, int sig_no)
 {	
@@ -127,16 +147,27 @@ int signal(int pid, int sig_no)
 /*
 * siginstall
 *
-* @desc:	
+* @desc:	install new handler for proc in its sig_table
+*
+* @param:	p			proc for installing new signal handler
+*		sig_no			signal for new handler
+*		new_handler		handler function
+*		old_handler		pointer for replaced signal handler function to be returned back to proc
+*
+* @output:	returns the following values
+*		SIG_SUCCESS		signal has successfully been installed for proc
 */
 int siginstall(pcb_t *p, int sig_no, void (*new_handler)(void *), void (**old_handler)(void *))
 {
 	unsigned int bit_mask=BIT_ON,i;	
 
+	if(!new_handler) return ERR_SIG_HANDLER;
 	if(sig_no < 0 || sig_no >= SIG_SZ) return ERR_SIG_NO;
 	if(new_handler > freemem) return ERR_SIG_HANDLER;
 
+	/* save old signal handler */
 	*old_handler = p->sig_table[sig_no];
+
 	p->sig_table[sig_no] = new_handler;
 
 	/* make mask to toggle on signal bit */
@@ -151,7 +182,13 @@ int siginstall(pcb_t *p, int sig_no, void (*new_handler)(void *), void (**old_ha
 /*
 * sigkill
 *
-* @desc:	
+* @desc:	pend an installed signal for proc
+*
+* @param:	pid		pid to proc for pending new signal
+*		sig_no		signal to be pended for proc
+*
+* @output:	returns the following values
+*		SIG_SUCCESS		signal has successfully been pended for proc
 */
 int sigkill(int pid, int sig_no)
 {	
@@ -161,13 +198,32 @@ int sigkill(int pid, int sig_no)
 	pcb_t* ipc = NULL;	
 	ipc_t* comm = NULL;
 
-	if(sig_no < 0 || sig_no >= PROC_SZ) return ERR_SIG_NO;
+	if(sig_no < 0 || sig_no >= PROC_SZ) return -2;
 	p = get_proc(pid);
-	if(!p) return ERR_SIG_PEND_PROC;
+	if(!p) return -1;
+
+
+	/* make mask to toggle on signal bit */
+	bit_mask=BIT_ON;
+	for(i=0 ; i<sig_no ; i++)
+		bit_mask *= 2;
+
+	bit_mask &= p->sig_install_mask;
+
+	/* signal not installed, target process will not receive signal */
+	if(!bit_mask)
+		return;
 
 	/* check if proc is sleeping */
 	if(p->state == SLEEP_STATE)
 		wake_early(p);
+
+	/* check if proc is waiting for kbd */
+	if(p->state == BLOCK_ON_DEV_STATE)
+	{
+		kbd_dequeue();		
+		p->rc = -128;
+	}
 
 	/* check if proc is blocked on ipc_recv or ipc_send */
 	if(p->state == BLOCK_ON_RECV_STATE || p->state == BLOCK_ON_SEND_STATE) 
@@ -211,16 +267,8 @@ int sigkill(int pid, int sig_no)
 		ready(p);
 	}
 
-	/* make mask to toggle on signal bit */
-	bit_mask=BIT_ON;
-	for(i=0 ; i<sig_no ; i++)
-		bit_mask *= 2;
-
-	bit_mask &= p->sig_install_mask;
-
 	/* enable proc target_mask */
-	if(bit_mask)
-		p->sig_pend_mask |= bit_mask;
+	p->sig_pend_mask |= bit_mask;
 
 	return SIG_SUCCESS;
 }
@@ -228,7 +276,10 @@ int sigkill(int pid, int sig_no)
 /*
 * sigcease
 *
-* @desc:	
+* @desc:	set old ignore mask for proc
+*
+* @param:	p		proc for settting the old ignore mask
+*		oim		old ignore mask
 */
 void sigcease(pcb_t *p, unsigned int oim)
 {
@@ -258,7 +309,11 @@ void sigcease(pcb_t *p, unsigned int oim)
 	p->sig_ignore_mask |= bit_mask;	
 }
 
-
+/*
+* puts_sig_mask
+*
+* @desc:	output all signal masks for all valid proc
+*/
 void puts_sig_mask()
 {
 	int i;

@@ -60,7 +60,7 @@ void dispatch()
 	unsigned int oim;
 
 	/* dev arg(s) */
-	int dev_no,fd_no;
+	int dev_no,fd_no,orc;
 	unsigned long cmd;	
 	unsigned char eof;
 
@@ -115,8 +115,7 @@ void dispatch()
 
                                 /* create new process */
                                 /* parameter checking is done inside create() */
-                                p->rc = create(funcptr, stack);
-
+                                p->rc = create(funcptr, stack);		
                                 p->state = READY_STATE;                         
                                 ready(p);
                                 break;
@@ -198,7 +197,6 @@ void dispatch()
 				recv(p, pid_ptr, buffer, buffer_len);
                                 break;
 
-			/* signal handlers */
 			case SIG_HANDLER:
                                 ap = (va_list)p->args;
                                 signal = va_arg(ap, unsigned int);
@@ -213,9 +211,13 @@ void dispatch()
 			case SIG_RETURN:
                                 ap = (va_list)p->args;
                                 osp = va_arg(ap, void*);
+				orc = va_arg(ap, int);
                                 oim = va_arg(ap, unsigned int);
 
+				/* return from signal stack to lower stack */
+				/* the lower stack pointed by osp could be another signal stack */
 				p->esp = (int *) osp;
+				p->rc = orc;
 				sigcease(p, oim);
 
 				p->state = READY_STATE;
@@ -229,6 +231,13 @@ void dispatch()
 
 				/* enable target bit in proc target_mask */
 				p->rc = sigkill(pid, signal);
+				
+				if(p->rc == -1)
+					p->rc = -18;
+
+				if(p->rc == -2)
+					p->rc = -3;
+
 				ready(p);                               	
 				break;
 
@@ -242,7 +251,7 @@ void dispatch()
 
 				/* open device */
 				p->rc = di_open(p, dev_no);
-
+		
                                 p->state = READY_STATE;                         				
 				ready(p);			
 				break;
@@ -260,7 +269,13 @@ void dispatch()
 
 			case DEV_WRITE:
 				/* device driver write not supported */
-				p->rc = -1;
+                                ap = (va_list)p->args;
+                                fd_no = va_arg(ap, int);
+                                buffer = va_arg(ap, void*);
+                                buffer_len = va_arg(ap, int);
+
+				/* write device */
+				p->rc = di_write(p, fd_no, buffer, buffer_len);			
 				
                                 p->state = READY_STATE;                         				
 				ready(p);

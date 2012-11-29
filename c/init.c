@@ -55,6 +55,10 @@ void initproc( void )				/* The beginning */
 	create(&rcvtest_root, PROC_STACK);
 #elif defined TIME_TEST
 	create(&timetest_root, PROC_STACK);
+#elif defined SIG_TEST
+	create(&sigtest_root, PROC_STACK);
+#elif defined DEV_TEST
+	create(&devtest_root, PROC_STACK);
 #else 
 	create(&root, PROC_STACK);
 #endif

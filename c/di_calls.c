@@ -14,21 +14,25 @@ extern devsw_t dev_table[DEV_SZ];
 /*
 * di_open
 *
-* @desc:	
+* @desc:	opens the specified device at device_no
 *
-* @param:	
+* @param:	p			proc that is making attempting to open a device
+*		device_no		device to be opened at device number in dev_table
 *		
-*		
+* @output:	SYSOK			specified device has been opened		
+*		SYSERR			failed device parameter checking
 *
-* @output:	
+* @note:	only 1 device can be opened in this operating system, however both ensuring correct device owner and number of opened device are asserted
 */
 int di_open(pcb_t *p, int device_no)
 {
 	int i;
 
+	/* check device_no is within the correct range */
 	if(device_no < 0 || device_no > DEV_SZ)
 		return -1;
 
+	/* check device is not opened by any other device */
     	if(dev_table[device_no].dvowner)
     		return -1;
 
@@ -60,21 +64,23 @@ int di_open(pcb_t *p, int device_no)
 /*
 * di_close
 *
-* @desc:	
+* @desc:	closes the specified device stored in proc fd_table
 *
-* @param:	
+* @param:	p			proc that is making attempting to close a device
+*		fd			fd_table index for opened device in proc fd_table
 *		
-*		
-*
-* @output:	
+* @output:	SYSOK			specified device has been closed		
+*		SYSERR			failed device parameter checking
 */
 int di_close(pcb_t *p, int fd)
 {
 	int dvmajor;
 
+	/* check fd is within the correct range */
 	if(fd < 0 || fd > FD_SZ)
 		return -1;
 
+	/* check for valid fd_table entry */
 	if(p->fd_table[fd].dvmajor == -1)
 		return -1;
 
@@ -93,37 +99,63 @@ int di_close(pcb_t *p, int fd)
 /*
 * di_write
 *
-* @desc:	
+* @desc:	writes a buffer of data to specificed opened device for proc
 *
-* @param:	
-*	
-*		
+* @param:	p			proc that is attempting to write to a device
+*		fd			fd_table index for opened device in proc fd_table
+*		buf			user supplied data buffer to be written to device
+*		buflen			length of data to be written to device
 *
-* @output:	
+* @output:	SYSERR			failed device parameter checking	
+*
+* @note: 	the implementation of the kbd device does not support syswrite, hence this call will always return SYSERR
 */
 int di_write(pcb_t *p, int fd, void *buf, int buflen)
 {
+	int dvmajor;
+
+	/* check fd is within the correct range */
+	if(fd < 0 || fd > FD_SZ)
+		return -1;
+
+	/* check for valid fd_table entry */
+	if(p->fd_table[fd].dvmajor == -1)
+		return -1;
+
+	if(!buf || buflen == 0)
+		return -1;
+
+	dvmajor = p->fd_table[fd].dvmajor;
+
+	/* check if the device is owned by the current proc */
+	if(dev_table[dvmajor].dvowner != p->pid)
+		return -1;
+
 	return -1;
 }
 
 /*
 * di_read
 *
-* @desc:	
+* @desc:	reads a buffer of data to specificed opened device for proc
 *
-* @param:	
+* @param:	p			proc that is attempting to read a device
+*		fd			fd_table index for opened device in proc fd_table
+*		buf			user supplied data buffer to copy device buffer
+*		buflen			length of data that can be copied into user buffer
 *		
-*		
-*
-* @output:	
+* @output:	SYSOK			specified device has been read		
+*		SYSERR			failed device parameter checking
 */
 int di_read(pcb_t *p, int fd, void *buf, int buflen)
 {
 	int dvmajor;
 
+	/* check fd is within the correct range */
 	if(fd < 0 || fd > FD_SZ)
 		return -1;
 
+	/* check for valid fd_table entry */
 	if(p->fd_table[fd].dvmajor == -1)
 		return -1;
 
@@ -144,11 +176,14 @@ int di_read(pcb_t *p, int fd, void *buf, int buflen)
 *
 * @desc:	
 *
-* @param:	
+* @param:	p			proc that is attempting to read a device
+*		fd			fd_table index for opened device in proc fd_table
+*		command			device specific defined macros for manipulating the device
 *		
-*		
+* @output:	SYSOK			specified device has been manipulated with command		
+*		SYSERR			failed device parameter checking	
 *
-* @output:	
+* @note:	for the kbd device implemented, only SET_OEF is supported
 */
 int di_ioctl(pcb_t *p, int fd, unsigned long command, ...)
 {
@@ -157,18 +192,21 @@ int di_ioctl(pcb_t *p, int fd, unsigned long command, ...)
 	va_start(ap, command);
 	int eof = va_arg(ap, int);
 
+	/* check fd is within the correct range */
 	if(fd < 0 || fd > FD_SZ)
 		return -1;
 
+	/* check for valid fd_table entry */
 	if(p->fd_table[fd].dvmajor == -1)
 		return -1;
 
+	/* check for invalid command that is not SET_OEF */
 	if(command != SET_EOF) 
 		return -1;
 
+	/* check for invalid eof ascii character */
 	if(eof < 0 || eof > 127)
 		return -1;
-
 
 	dvmajor = p->fd_table[fd].dvmajor;
 

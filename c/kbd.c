@@ -1,4 +1,4 @@
-/* kbd.c
+/* kbd.c :	device driver for keyboard (assignment 3)	
 * 
 * name:         Jack Wu
 * student id:   17254079
@@ -12,8 +12,11 @@
 /* Your code goes here */
 extern devsw_t dev_table[DEV_SZ];
 static unsigned char kbd_buf[5];
-static unsigned char kbd_eof = 10;		/* init eof to enter */
 static int kbd_buf_i = 0;	
+static unsigned char kbd_eof = 4;		/* init eof to enter */
+static unsigned int kbd_free = 4;
+static unsigned int kbd_echo_flag = FALSE;
+static unsigned int kbd_eof_flag = FALSE;
 pcb_t *kbd_q = NULL;
 
 typedef struct kbdi kbdi_t;		/* kbd queue interface */
@@ -28,7 +31,11 @@ struct kbdi
 /*
 * kbd_enqueue
 *
-* @desc:	
+* @desc:	place proc on device queue
+*
+* @param:	p	proc to be placed on queue
+*
+* @note:	this is an upper layer function
 */
 void kbd_enqueue(pcb_t *p)
 {
@@ -49,19 +56,11 @@ void kbd_enqueue(pcb_t *p)
 }
 
 /*
-* kbd_init
-*
-* @desc:	
-*/
-pcb_t* kbd_peek()
-{
-	return kbd_q;
-}
-
-/*
 * kbd_dequeue
 *
-* @desc:	
+* @desc:	places head queue proc back on ready_q
+*
+* @note:	this is an upper layer function
 */
 void kbd_dequeue()
 {
@@ -69,6 +68,10 @@ void kbd_dequeue()
 
 	if(kbd_q)
 	{
+		/* set proc rc as 0 for eof */
+		if(kbd_eof_flag)
+			p->rc = 0;
+
 		p = kbd_q;
 		kbd_q = kbd_q->next;
 		p->state = READY_STATE;
@@ -79,7 +82,7 @@ void kbd_dequeue()
 /*
 * puts_kbd_q
 *
-* @desc:	
+* @desc:	outputs all queued proc pid to console
 */
 void puts_kbd_q()
 {
@@ -97,7 +100,10 @@ void puts_kbd_q()
 /*
 * kbd_init
 *
-* @desc:	
+* @desc:	initialize echo and non-echo keyboard entries in the dev_table
+*
+* @note:	for unsupported calls, kbd_error is supplied
+*		for dvwrite, a kbd_write function is supplied, however this call also always returns -1	
 */
 void kbd_init()
 {
@@ -143,32 +149,39 @@ void kbd_init()
 /*
 * kbd_open
 *
-* @desc:	
-*
-* @param:	
+* @desc:	enables the keyboard hardware interrupt
 *		
-* @output:	
+* @output:	rc		returns 0 on successful device open
 */
 int kbd_open(devsw_t* d)
 {
+	int i;
+
 	/* enable keyboard hardware device */
 	enable_irq(1,0);
+
+	/* enable echo */
+	for(i=0 ; i<DEV_SZ ; i++)
+	{
+		if(dev_table[i].dvowner && i == KBD_ECHO)
+			kbd_echo_flag = TRUE;
+	}
+
 	return 0;
 }
 
 /*
 * kbd_close
 *
-* @desc:	
-*
-* @param:	
+* @desc:	disables the keyboard hardware interrupt
 *		
-*		
-*
-* @output:	
+* @output:	rc		returns 0 on successful device close
 */
 int kbd_close(devsw_t* d)
 {
+	kbd_echo_flag = FALSE;
+	kbd_eof_flag = FALSE;
+
 	/* disable keyboard hardware device */
 	enable_irq(1,1);
 	return 0;
@@ -177,15 +190,9 @@ int kbd_close(devsw_t* d)
 /*
 * kbd_write
 *
-* @desc:	
+* @desc:	unsupported keyboard feature for writing to device buffer
 *
-* @param:	
-*		
-*		
-*
-* @output:	
-*
-* @note:
+* @output:	rc		always returns -1
 */
 int kbd_write(devsw_t* d, void* buf, int buflen)
 {
@@ -195,22 +202,36 @@ int kbd_write(devsw_t* d, void* buf, int buflen)
 /*
 * kbd_read
 *
-* @desc:	
+* @desc:	places user buffer on kbd_q
 *
-* @param:	
-*		
-*		
+* @param:	p		proc to be placed on kbd_q
+*		d
+*		buf		user buffer
+*		buflen		user buffer length
 *
-* @output:	
+* @output:	rc		returns 0 on successful enqueuing
+*
+* @note:	this is an upper layer function
 */
 int kbd_read(pcb_t *p, devsw_t* d, void* buf, int buflen)
 {
 	int *mem = NULL;
 	kbdi_t *k = NULL;
 
+
+	/* eof flag has been toggled, return proc immediately */
+	if(kbd_eof_flag)
+	{
+		p->rc = 0;
+		p->state = READY_STATE;
+		ready(p);
+	}	
+
+	/* build kbd_q */
 	mem = kmalloc(sizeof(kbdi_t));
         k = (kbdi_t *) ((int)mem); 
 
+	strncpy((unsigned char*)buf, "", buflen);
 	k->d = d;
 	k->buf = buf;
 	k->buflen = buflen;
@@ -219,19 +240,24 @@ int kbd_read(pcb_t *p, devsw_t* d, void* buf, int buflen)
 	p->ptr = k;
 	
 	kbd_enqueue(p);
+
+	/* copy characters from internal buffer to user buffer immediately if internal buffer is not empty */
+	//if(kbd_free < 4)
+	//	kbd_notify();
+
 	return 0;
 }
 
 /*
 * kbd_ioctl
 *
-* @desc:	
+* @desc:	updates the eof character for keyboard input
 *
-* @param:	
+* @param:	eof		new eof character
 *		
-*		
+* @output:	rc		returns 0 on successful update
 *
-* @output:	
+* @note:	this is an upper layer function
 */
 int kbd_ioctl(int eof)
 {
@@ -242,20 +268,19 @@ int kbd_ioctl(int eof)
 /*
 * kbd_notify
 *
-* @desc:	
+* @desc:	copies device internal buffer data into user buffer
 *
-* @param:	
-*		
-*		
-*
-* @output:	
+* @note:	this is an upper layer function
 */
 void kbd_notify()
 {
 	unsigned char *buf;
-	unsigned char tmp[1];			/* temporary holder of character to concatenated onto the end of the user buffer */
+	unsigned char tmp[5];			/* temporary holder of character to concatenated onto the end of the user buffer */
 	kbdi_t* k = NULL;
 	pcb_t* p = NULL;
+
+	int i=kbd_buf_i;
+	strncpy(tmp, "", 5);
 
 	/* copy character from internal buffer to user buffer */
 	if(kbd_q)
@@ -263,53 +288,45 @@ void kbd_notify()
 		k = (kbdi_t*) kbd_q->ptr;
 		buf = (unsigned char *) k->buf;
 
-		switch(k->d->dvnum)
-		{			
-			/* keyboard no echo device, typped characters will only be copied to user buffer */				
-			case KBD_NECHO:
-				if(kbd_buf_i > k->bufi)
-				{
-					strcpy(buf, kbd_buf);
-					k->bufi = kbd_buf_i;
-				}		
-				else
-				{
-					strncpy(tmp, kbd_buf+(kbd_buf_i-1), 1); 
-					strncat(buf, tmp, 1);
-					k->bufi++;
-				}					
-				break;
-
-			/* keyboard echo device, typped characters will be copied to user buffer and console */				
-			case KBD_ECHO:
-				if(kbd_buf_i > k->bufi)
-				{
-					strcpy(buf, kbd_buf);
-					k->bufi = kbd_buf_i;
-				}		
-				else
-				{
-					strncpy(tmp, kbd_buf+(kbd_buf_i-1), 1); 
-					strncat(buf, tmp, 1);
-					k->bufi++;
-				}				
-
-				kprintf("kbd_echo: %s\n", buf);
+		/* keyboard no echo device, typped characters will only be copied to user buffer */				
+		if( kbd_buf_i > k->buflen) 
+		{
+			strncpy(tmp, kbd_buf, k->buflen ); 
+			kbd_free += k->buflen;
+			strncat(buf, tmp, k->buflen);
+		}
+		else
+		{
+			strncpy(tmp, kbd_buf, kbd_buf_i); 
+			strcat(buf, tmp);
+			kbd_free += kbd_buf_i;
 		}
 
+		k->bufi += kbd_buf_i;
+		kbd_buf_i = 0;
+		//kprintf("buf: %s	kbd_buf: %s\n", buf, kbd_buf);		
+
+		
 		/* return to user process if enter is pressed */
 		/* return process if user buffer is full */
-		if(kbd_buf[kbd_buf_i-1] == 10 || k->bufi == k->buflen || kbd_buf[kbd_buf_i-1] == kbd_eof)
+		if(kbd_buf[i-1] == ENTER_KEY || k->bufi >= k->buflen)
+		{
+			if(k->bufi > k->buflen)
+				kbd_q->rc = k->buflen;
+			else
+				kbd_q->rc = k->bufi;
+
 			kbd_dequeue();
+		}
 	}
 }
 
 /*
 * kbd_iint
 *
-* @desc:	
+* @desc:	handles keyboard device interrupts
 *
-* @output:	
+* @note:	this is a lower layer function
 */
 int kbd_iint()
 {
@@ -319,26 +336,33 @@ int kbd_iint()
 	{		
 		key = kbtoa(inb(READY_PORT));
 
+		if(key != 0 && key != kbd_eof && kbd_echo_flag)
+			kprintf("%c\n", key);
+
+
 		/* copy typed characters to internal buffer */
-		if(key != 0 && key != 4)
+		if(key != 0 && key != kbd_eof && kbd_free > 0)
 		{
 			kbd_buf[kbd_buf_i] = key;
 			kbd_buf_i++;
+			kbd_free--;
+			//kprintf("i: %d	free: %d\n", kbd_buf_i, kbd_free);
 		}	
 
-		if(key == 4)
+		/* ctrl+d pressed */
+		if(key == kbd_eof)
+		{
+			/* turn on eof flag to return 0 for subsequent reads on the same fd */
+			if(!kbd_eof_flag)
+				kbd_eof_flag = TRUE;
+
 			kbd_dequeue();
+		}
+
 
 		/* notify the upper kbd layer that a new character has arrived */
-		if(key != 0)
+		if(key != 0 && !kbd_eof_flag)
 			kbd_notify();	
-
-		/* reset internal buffer index when size is 4 */
-		if(kbd_buf_i == 4)
-		{		
-			strcpy(kbd_buf, "");
-			kbd_buf_i = 0;
-		}
 	}
 
 	return 0;
@@ -348,11 +372,11 @@ int kbd_iint()
 /*
 * kbd_error
 *
-* @desc:	
+* @desc:	returns SYSERR for any function not implemented for device
 *
-* @output:	
+* @output:	SYSERR
 */
 int kbd_error()
 {
-	return -1;
+	return SYSERR;
 }

@@ -177,9 +177,9 @@ int syssighandler(int sig_no, void (*new_handler)(void *), void (** old_handler)
 *
 * @param:	old_sp		user proc stack pointer address
 */
-void sigreturn(void *old_sp, unsigned int old_im)
+void sigreturn(void *old_sp, int old_rc, unsigned int old_im)
 {
-	return syscall(SIG_RETURN, old_sp, old_im);
+	return syscall(SIG_RETURN, old_sp, old_rc, old_im);
 }
 
 /*
@@ -214,9 +214,13 @@ int syssigwait(void)
 /*
 * sysopen
 *
-* @desc:	
+* @desc:	signals a device to be opened
 *
-* @output:	
+* @param:	device_no	device number to device
+*
+* @output:	rc		returns the status of the device call
+*				0	successful device open
+*				-1	device was not able to be opened
 */
 int sysopen(int device_no)
 {
@@ -226,9 +230,13 @@ int sysopen(int device_no)
 /*
 * sysclose
 *
-* @desc:	
+* @desc:	signals a device to be closed
 *
-* @output:	
+* @param:	fd		fd index into proc fd_table for closing device
+*
+* @output:	rc		returns the status of the device call
+*				0	successful device close
+*				-1	device was not able to be closed
 */
 int sysclose(int fd)
 {
@@ -238,9 +246,16 @@ int sysclose(int fd)
 /*
 * syswrite
 *
-* @desc:	
+* @desc:	signals data to be written to device
 *
-* @output:	
+* @param:	fd		fd index into proc fd_table for opened device
+*		buff		proc buffer to be written to device
+*		buflen		length of data to be written to device
+*
+* @output:	rc		returns the status of the device call
+*				-1	device was not able to be written to
+*
+* @note:	this call is not supported by the device, only -1 is returned
 */
 int syswrite(int fd, void *buff, int bufflen)
 {
@@ -250,9 +265,15 @@ int syswrite(int fd, void *buff, int bufflen)
 /*
 * sysread
 *
-* @desc:	
+* @desc:	signals data to be read from device
 *
-* @output:	
+* @param:	fd		fd index into proc fd_table for opened device
+*		buff		proc buffer to be read from device
+*		buflen		length of data to be read from device
+*
+* @output:	rc		returns the status of the device call
+*				0	proc buffer has been filled with device data
+*				-1	device was not able to be written to
 */
 int sysread(int fd, void *buff, int bufflen)
 {
@@ -262,9 +283,14 @@ int sysread(int fd, void *buff, int bufflen)
 /*
 * sysioctl
 *
-* @desc:	
+* @desc:	signal a device-specific command for device manipulation
+*	
+* @param:	fd		fd index into proc fd_table for opened device
+*		command		device specific command
 *
-* @output:	
+* @output:	rc		returns the status of the device call
+*				0	device has been successfully manipulated
+*				-1	invalid command parameters for device	
 */
 int sysioctl(int fd, unsigned long command, ...)
 {

@@ -17,6 +17,7 @@ typedef char            Bool;           /* boolean type                         
 
 /* universal return constants */
 #define OK               1              /* system call ok                       */
+#define SYSOK          	 0              /* system call success                  */
 #define SYSERR          -1              /* system call failed                   */
 #define EOF             -2              /* end-of-file (usu. from read)         */
 #define TIMEOUT         -3              /* time out  (usu. recvtim)             */
@@ -157,6 +158,16 @@ typedef char            Bool;           /* boolean type                         
 #endif
 
 
+#ifndef SIG_TEST
+//#define SIG_TEST
+#endif
+
+
+#ifndef DEV_TEST
+//#define DEV_TEST
+#endif
+
+
 /* ====================== */
 /* system data structures */
 typedef struct memHeader memHeader_t;
@@ -193,7 +204,7 @@ struct pcb
         unsigned int esp;               /* process stack pointer                                                        */
         unsigned int *mem;              /* process memory 'dataStart' pointer                                           */
         unsigned int args;              /* retains all arguments passed from a syscall()                                */
-        unsigned int rc;                /* return code from syscall()                                                   */
+        int rc;                		/* return code from syscall()                                                   */
 
 	unsigned int sig_table[SIG_SZ];	/* user process signal table 							*/
 	unsigned int sig_pend_mask;	/* all signals signals targetted to the proc 					*/
@@ -235,8 +246,8 @@ struct context_frame
 typedef struct devsw devsw_t;
 struct devsw 
 {
-	unsigned int dvowner;			/* proc which is currently using this device 	*/
-	unsigned int dvnum;			/* dev major number 				*/
+	unsigned int dvowner;		/* proc which is currently using this device 	*/
+	unsigned int dvnum;		/* dev major number 				*/
 	char *devname;
 	int (*dvinit)();		
 	int (*dvopen)();
@@ -256,9 +267,9 @@ struct devsw
 	int dvminor;
 };
 
-pcb_t proc_table[PROC_SZ];             /* list of process control blocks       */
-pcb_t *stop_q;                         /* stop queue for pcb                   */
-devsw_t dev_table[DEV_SZ];
+pcb_t proc_table[PROC_SZ];             	/* list of process control blocks       */
+pcb_t *stop_q;           		/* stop queue for pcb                   */
+devsw_t dev_table[DEV_SZ];		/* list of devices 			*/
 
 
 /* ================= */
@@ -325,7 +336,7 @@ extern unsigned int sysgetpid(void);
 extern void sysputs(char *str);
 
 extern int syssighandler(int sig_no, void (*new_handler)(void *), void (** old_handler)(void *));
-extern void sigreturn(void *old_sp, unsigned int old_im);
+extern void sigreturn(void *old_sp, int old_rc, unsigned int old_im);
 extern int syskill(int pid, int sig_no);
 extern int syssigwait(void);
 
@@ -367,7 +378,7 @@ extern void recv(pcb_t* p, unsigned int *pid, void *buffer, int buffer_len);
 extern int siginstall(pcb_t *p, int sig_no, void (*new_handler)(void *), void (** old_handler)(void *));	/* install signal for user proc 		*/
 extern int sigkill(int pid, int sig_no);									/* set target signal bit for proc		*/
 extern int sighigh(pcb_t *p);											/* pick highest signal and deliver to proc 	*/
-extern void sigtramp(void (*handler)(void *), void *cntx, void *osp, unsigned int rc, unsigned int oim);					
+extern void sigtramp(void (*handler)(void *), void *cntx, void *osp, int rc, unsigned int oim);					
 extern int signal(int pid, int sig_no);
 extern void sigcease(pcb_t *p, unsigned int oim);
 extern void puts_sig_table(pcb_t *p);
@@ -385,3 +396,5 @@ extern int di_ioctl(pcb_t *p, int fd, unsigned long command, ...);
 extern void sndtest_root(void);
 extern void rcvtest_root(void);
 extern void timetest_root(void);
+extern void sigtest_root(void);
+extern void devtest_root(void);
