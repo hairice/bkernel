@@ -8,7 +8,13 @@
 
 /* Your code goes here */
 
+void proc1(void);
+void proc2(void);
+void proc3(void);
 void handler1(void *arg);
+void handler2(void *arg);
+
+unsigned char console[80];
 
 /*
 * idleproc
@@ -23,7 +29,14 @@ void idleproc ()
 
 void handler1(void *arg)
 {
-	kprintf("handler1\n");
+	sprintf(console, "called handler1");
+	sysputs(console);
+}
+
+void handler2(void *arg)
+{
+	sprintf(console, "called handler2");
+	sysputs(console);
 }
 
 /*
@@ -32,200 +45,233 @@ void handler1(void *arg)
 * @desc:	executes the root process
 */
 void root()
-{
+{	
+	int rc,fd,n,child_pid[3];
+	unsigned int buffer[10];
+	unsigned int byte=10;
+	void *old_handler = NULL;
 
-	kprintf("root\n");
-/*
-	int child_pid[4], n=2000, byte=5,pid;
-	unsigned int *ptr;
-	char buffer[10], console[75];
+	sprintf(console, "Welcome to xeros!");
+	sysputs(console);
 
-	pid=sysgetpid();
+	fd = sysopen(1);
+	sprintf(console, "sysopen[%d]: %d", 1, fd);
+	sysputs(console);
 
-	child_pid[0]=syscreate(&proc1, PROC_STACK);
-	sprintf(console, "[p%d]\t\t[created]\t\t[p%d]\0", pid, child_pid[0]);
+	/* read 10 characters from keyboard into user buffer */
+	if(fd != -1)	
+		sysread(fd, buffer, byte);
+
+	sprintf(console, "sysread[%d]: %s", 1, buffer);
 	sysputs(console);
 	
-	child_pid[1]=syscreate(&proc2, PROC_STACK);
-	sprintf(console, "[p%d]\t\t[created]\t\t[p%d]\0", pid, child_pid[1]);
-	sysputs(console);
-
-	child_pid[2]=syscreate(&proc3, PROC_STACK);
-	sprintf(console, "[p%d]\t\t[created]\t\t[p%d]\0", pid, child_pid[2]);
-	sysputs(console);
-
-	child_pid[3]=syscreate(&proc4, PROC_STACK);
-	sprintf(console, "[p%d]\t\t[created]\t\t[p%d]\0", pid, child_pid[3]);
+	/* attempt to open no-echo keyboard */
+	sprintf(console, "rc: %d", sysopen(0));
 	sysputs(console);
 
 
-	sprintf(console, "\n--------------------------------------------\n\0");
+	/* attempt to open echo keyboard */
+	sprintf(console, "rc: %d", sysopen(0));
 	sysputs(console);
 
-	syssleep(4000);
-*/
+	/* close echo keyboard */
+	if(fd != -1)
+	{
+		fd = sysclose(fd);
+		sprintf(console, "sysclose[%d]: %d", 1, fd);
+		sysputs(console);
+	}
 
-	/* send the third created process a message to sleep for 10 seconds */
-/*
-	n=10000;
-	sprintf(buffer, "%d", n);
-	syssend(child_pid[2], buffer, strlen(buffer));
-*/
+	sprintf(console, " ");
+	sysputs(console);
 
-	/* send the fourth created process a message to sleep for 7 seconds */
-/*
-	n=7000;
-	sprintf(buffer, "%d", n);
-	syssend(child_pid[1], buffer, strlen(buffer));
-*/
+	/* open no-echo keyboard */
+	fd = sysopen(0);
+	sprintf(console, "sysopen[%d]: %d", 0, fd);
+	sysputs(console);
 
-	/* send the third created process a message to sleep for 20 seconds */
-/*
-	n=20000;
+
+	/* 1st read of 10 characters from keyboard into user buffer */
+	if(fd != -1)	
+		sysread(fd, buffer, byte);
+
+	sprintf(console, "sysread[%d]: %s", 0, buffer);
+	sysputs(console);
+
+
+	/* 2nd read of 10 characters from keyboard into user buffer */
+	if(fd != -1)	
+		sysread(fd, buffer, byte);
+
+	sprintf(console, "sysread[%d]: %s", 0, buffer);
+	sysputs(console);
+
+
+	/* 3rd read of 10 characters from keyboard into user buffer */
+	if(fd != -1)	
+		sysread(fd, buffer, byte);
+
+	sprintf(console, "sysread[%d]: %s", 0, buffer);
+	sysputs(console);
+
+	/* continue reading until eof */
+	if(fd != -1)	
+		sysread(fd, buffer, byte);
+	sprintf(console, "sysread[%d]: %s", 0, buffer);
+	sysputs(console);
+
+	/* close no-echo keyboard */
+	if(fd != -1)
+	{
+		fd = sysclose(fd);
+		sprintf(console, "sysclose[%d]: %d", 0, fd);
+		sysputs(console);
+	}
+
+	/* open echo keyboard again */
+	fd = sysopen(1);
+	sprintf(console, "sysopen[%d]: %d", 1, fd);
+	sysputs(console);
+
+	/* install signal 18 */
+	syssighandler(18, handler1, &old_handler);
+
+	/* send pid to child proc1 */
+	child_pid[0] = syscreate(&proc1, PROC_STACK);
+	n=0;
 	sprintf(buffer, "%d", n);
 	syssend(child_pid[0], buffer, strlen(buffer));
-*/
 
-	/* send the third created process a message to sleep for 27 seconds */
-/*
-	n=27000;
+	/* read from echo keyboard, but no user key press is required */
+	if(fd != -1)	
+		rc = sysread(fd, buffer, byte);
+
+	if(rc == -128)
+	{
+		sprintf(console, "error sysread: %d", rc);
+		sysputs(console);
+	}		
+
+	/* send pid to child proc2 */
+	child_pid[1] = syscreate(&proc2, PROC_STACK);
+	n=0;
 	sprintf(buffer, "%d", n);
-	syssend(child_pid[3], buffer, strlen(buffer));
-*/
+	syssend(child_pid[1], buffer, strlen(buffer));
 
-	/* attempt to receive a message from the fourth created process */
-/*
-	ptr = &(child_pid[3]);
-	memset (buffer,'0',byte);
-	byte = sysrecv(ptr, buffer, byte);
-	sprintf(console, "[p%d]\t\t[received_msg]\t\t[ret_status %d]\0", pid, byte);
-	sysputs(console);
-*/	
-	
-	/* attempt to send a message to the third created process */
-/*
-	n=1000;
+	/* install signal 18 */
+	syssighandler(18, handler2, &old_handler);
+
+	/* read from echo keyboard, but no user key press is required */
+	if(fd != -1)	
+		rc = sysread(fd, buffer, byte);
+
+	if(rc == -128)
+	{
+		sprintf(console, "error sysread: %d", rc);
+		sysputs(console);
+	}		
+
+	/* install old_handler into signal 20 */
+	syssighandler(20, old_handler, &old_handler);
+
+	/* send pid to child proc3 */
+	child_pid[2] = syscreate(&proc3, PROC_STACK);
+	n=0;
 	sprintf(buffer, "%d", n);
-	byte = syssend(child_pid[2], buffer, strlen(buffer));
-	sprintf(console, "[p%d]\t\t[sent_msg]\t\t[ret_status %d]\0", pid, byte);
-	sysputs(console);
-*/
+	syssend(child_pid[2], buffer, strlen(buffer));
 
-	/* eventual loop for root */	
-	for(;;);
+
+	/* read from echo keyboard, but no user key press is required */
+	if(fd != -1)	
+		rc = sysread(fd, buffer, byte);
+
+	if(rc == -128)
+	{
+		sprintf(console, "error sysread: %d", rc);
+		sysputs(console);
+	}		
+
+	/* continue reading until eof */
+	if(fd != -1)	
+		sysread(fd, buffer, byte);
+	sprintf(console, "sysread[%d]: %s", 1, buffer);
+	sysputs(console);
+
+	/* last sysread */
+	if(fd != -1)	
+		sysread(fd, buffer, byte);
+	sprintf(console, "sysread[%d]: %s", 1, buffer);
+	sysputs(console);
+
+	sprintf(console, "root complete");
+	sysputs(console);
 }
 
 /*
-* producer
+* proc1
 *
-* @desc:	executes the producer process
+* @desc:	executes the child proc1 process
 */
 void proc1 ()
 {
-	unsigned int byte=5,dst=0,n, pid;
+	unsigned int buffer[10];
+	unsigned int byte=10;
+	unsigned int dst=0;
 	unsigned int *ptr = &dst;
-	unsigned char buffer[5];
-	char *console[50];	
 
-	pid=sysgetpid();
-
-	syssleep(5000);
-	sprintf(console, "[p%d]\t\t[alive]", pid);
-	sysputs(console);
-
+	/* get root pid */
 	byte = sysrecv(ptr, buffer, byte);
-	n=atoi(buffer);
-	sprintf(console, "[p%d]\t\t[received_msg]\t\t[sleep %d ms]", pid, n);
-	sysputs(console);
 
-	syssleep(n);
-	sprintf(console, "[p%d]\t\t[exiting]\t\t[sleep_ended]", pid);
-	sysputs(console);
+	syssleep(1000);
+
+	/* send signal 20 to root process */
+	syskill(dst, 20);
+
+	/* send signal 18 to root process */
+	syskill(dst, 18);
 }
 
 /*
-* consumer
+* proc2
 *
-* @desc:	executes the consumer process
+* @desc:	executes the child proc1 process
 */
 void proc2 ()
 {
-	unsigned int byte=4,dst=0,n,pid;
+	unsigned int buffer[10];
+	unsigned int byte=10;
+	unsigned int dst=0;
 	unsigned int *ptr = &dst;
-	unsigned char buffer[5];	
-	char *console[50];	
 
-	pid=sysgetpid();
-
+	/* get root pid */
+	byte = sysrecv(ptr, buffer, byte);
 
 	syssleep(5000);
-	sprintf(console, "[p%d]\t\t[alive]", pid);
-	sysputs(console);
 
-	byte = sysrecv(ptr, buffer, byte);
-	n=atoi(buffer);
-	sprintf(console, "[p%d]\t\t[received_msg]\t\t[sleep %d ms]", pid, n);
-	sysputs(console);
-
-	syssleep(n);
-	sprintf(console, "[p%d]\t\t[exiting]\t\t[sleep_ended]", pid);
-	sysputs(console);
+	/* send signal 20 to root process */
+	syskill(dst, 18);
 }
 
+
 /*
-* consumer
+* proc2
 *
-* @desc:	executes the consumer process
+* @desc:	executes the child proc1 process
 */
 void proc3 ()
 {
-	unsigned int byte=5,dst=0,n,pid;
+	unsigned int buffer[10];
+	unsigned int byte=10;
+	unsigned int dst=0;
 	unsigned int *ptr = &dst;
-	unsigned char buffer[5];	
-	char *console[50];	
 
-
-	pid=sysgetpid();
+	/* get root pid */
+	byte = sysrecv(ptr, buffer, byte);
 
 	syssleep(5000);
-	sprintf(console, "[p%d]\t\t[alive]", pid);
-	sysputs(console);
 
-	byte = sysrecv(ptr, buffer, byte);
-	n=atoi(buffer);
-	sprintf(console, "[p%d]\t\t[received_msg]\t\t[sleep %d ms]", pid, n);
-	sysputs(console);
-
-	syssleep(n);
-	sprintf(console, "[p%d]\t\t[exiting]\t\t[sleep_ended]", pid);
-	sysputs(console);
+	/* send signal 20 to root process */
+	syskill(dst, 20);
 }
 
-/*
-* consumer
-*
-* @desc:	executes the consumer process
-*/
-void proc4 ()
-{
-	unsigned int byte=5,dst=0,n,pid;
-	unsigned int *ptr = &dst;
-	unsigned char buffer[5];	
-	char *console[50];	
-
-	pid=sysgetpid();
-
-	syssleep(5000);
-	sprintf(console, "[p%d]\t\t[alive]", pid);
-	sysputs(console);
-
-	byte = sysrecv(ptr, buffer, byte);
-	n=atoi(buffer);
-	sprintf(console, "[p%d]\t\t[received_msg]\t\t[sleep %d ms]", pid, n);
-	sysputs(console);
-
-	syssleep(n);
-	sprintf(console, "[p%d]\t\t[exiting]\t\t[sleep_ended]", pid);
-	sysputs(console);
-}
 
