@@ -29,8 +29,11 @@ void devtest_root(void)
 
 	
 	strncpy(buffer, "", byte);
+
+
+#ifdef DEV_OPEN_TEST
 	/*  
-	* @test: 	dev_test_1
+	* @test: 	dev_open_test
 	*
 	* @desc:	An invalid device major number is passed into sysopen
 	*
@@ -43,12 +46,19 @@ void devtest_root(void)
 	{		
 		kprintf("test\t\tresult\t\tcomment\n");
 		kprintf("-----------------------------------------------------------\n");
-		kprintf("dev_test_1\tpass\t\t-1 is returned\n\n");
+		kprintf("dev_open_test\tpass\t\t-1 is returned\n\n");
 	}
+	else
+	{
+		kprintf("test\t\tresult\t\tcomment\n");
+		kprintf("-----------------------------------------------------------\n");
+		kprintf("dev_open_test\tfail\t\t-1 is not returned\n\n");
+	}
+#endif
 
-
+#ifdef DEV_WRITE_TEST
 	/*  
-	* @test: 	dev_test_2
+	* @test: 	dev_write_test
 	*
 	* @desc:	An invalid file descriptor is passed into syswrite
 	*
@@ -61,12 +71,19 @@ void devtest_root(void)
 	{		
 		kprintf("test\t\tresult\t\tcomment\n");
 		kprintf("-----------------------------------------------------------\n");
-		kprintf("dev_test_2\tpass\t\t-1 is returned\n\n");
+		kprintf("dev_write_test\tpass\t\t-1 is returned\n\n");
 	}
+	else
+	{
+		kprintf("test\t\tresult\t\tcomment\n");
+		kprintf("-----------------------------------------------------------\n");
+		kprintf("dev_write_test\tfail\t\t-1 is not returned\n\n");
+	}
+#endif
 
-
+#ifdef DEV_IOCTL_TEST
 	/*  
-	* @test: 	dev_test_3
+	* @test: 	dev_ioctl_test
 	*
 	* @desc:	An invalid command in passed into the sysioctl
 	*
@@ -82,16 +99,28 @@ void devtest_root(void)
 	{		
 		kprintf("test\t\tresult\t\tcomment\n");
 		kprintf("-----------------------------------------------------------\n");
-		kprintf("dev_test_3\tpass\t\t-1 is returned\n\n");
+		kprintf("dev_ioctl_test\tpass\t\t-1 is returned\n\n");
 	}
+	else
+	{
+		kprintf("test\t\tresult\t\tcomment\n");
+		kprintf("-----------------------------------------------------------\n");
+		kprintf("dev_ioctl_test\tfail\t\t-1 is not returned\n\n");
+	}
+	
+	sysclose(fd);
+#endif
 
+#ifdef DEV_READ_TEST
 	/*  
-	* @test: 	dev_test_4
+	* @test: 	dev_read_test
 	*
 	* @desc:	A sysread operation is made on kbd, where an user buffer with length smaller than the internal kbd buffer is passed in
 	*
 	* @outcome:	After three characters are typed, three characters are put in user buffer and 3 is returned from sysread
 	*/
+	fd = sysopen(1);
+
 	if(fd != -1)
 		rc = sysread(fd, buffer, byte);
 
@@ -100,17 +129,28 @@ void devtest_root(void)
 	{		
 		kprintf("test\t\tresult\t\tcomment\n");
 		kprintf("-----------------------------------------------------------\n");
-		kprintf("dev_test_4\tpass\t\t3 is returned\n\n");
+		kprintf("dev_read_test\tpass\t\t3 is returned\n\n");
+	}
+	else
+	{
+		kprintf("test\t\tresult\t\tcomment\n");
+		kprintf("-----------------------------------------------------------\n");
+		kprintf("dev_read_test\tfail\t\tbuffer does not contain 3 characters\n\n");
 	}
 
+	sysclose(fd);
+#endif
 
+#ifdef DEV_EOF_TEST
 	/*  
-	* @test: 	dev_test_5
+	* @test: 	dev_eof_test
 	*
 	* @desc:	After setting EOF as 'a', a sysread operation is made on kbd, and 'a' is immediately pressed
 	*
 	* @outcome:	0 is returned from sysread after eof is pressed
 	*/
+	fd = sysopen(1);
+
 	strcpy(buffer, "");
 	sysioctl(fd, SET_EOF, 97);
 
@@ -122,6 +162,15 @@ void devtest_root(void)
 	{		
 		kprintf("\ntest\t\tresult\t\tcomment\n");
 		kprintf("-----------------------------------------------------------\n");
-		kprintf("dev_test_5\tpass\t\t0 is returned, eof detected\n");
+		kprintf("dev_eof_test\tpass\t\t0 is returned, eof detected\n");
 	}
+	else
+	{
+		kprintf("\ntest\t\tresult\t\tcomment\n");
+		kprintf("-----------------------------------------------------------\n");
+		kprintf("dev_eof_test\tfail\t\tincorrect eof returne value\n");
+	}
+
+	sysclose(fd);
+#endif
 }

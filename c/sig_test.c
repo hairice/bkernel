@@ -169,7 +169,7 @@ void sigtest_root(void)
 
 #ifdef SIG_INSTALL_TEST
 	/*  
-	* @test: 	sig_test_1
+	* @test: 	sig_install_test
 	*
 	* @desc:	A null handler is attempted for installing into signal 1
 	*
@@ -187,7 +187,7 @@ void sigtest_root(void)
 
 #ifdef SIG_KILL_TEST
 	/*  
-	* @test: 	sig_test_2
+	* @test: 	sig_kill_test
 	*
 	* @desc:	Root proc receives a syskill from child proc 1
 	*
@@ -211,7 +211,7 @@ void sigtest_root(void)
 
 #ifdef SIG_WAIT_TEST
 	/*  
-	* @test: 	sig_test_3
+	* @test: 	sig_wait_test
 	*
 	* @desc:	Root proc is put in BLOCK_ON_SIG_STATE
 	*
@@ -228,7 +228,7 @@ void sigtest_root(void)
 
 #ifdef SIG_PRIO_TEST
 	/*  
-	* @test: 	sig_test_4
+	* @test: 	sig_prio_test
 	*
 	* @desc:	5 signal stacks in priority order are put on the user stack, and unrolls based on priority
 	*
@@ -256,7 +256,7 @@ void sigtest_root(void)
 
 #ifdef SIG_SLEEP_TEST
 	/*  
-	* @test: 	sig_test_5
+	* @test: 	sig_sleep_test
 	*
 	* @desc:	root proc is interrupted while in a 5 seconds sleep by child proc 1
 	*

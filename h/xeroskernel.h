@@ -118,6 +118,10 @@ typedef char            Bool;           /* boolean type                         
 
 /* ========= */
 /* test mode */
+
+
+/* ============== */
+/* ipc send tests */
 #ifndef SEND_TEST
 /* uncomment to enable ipc_send tests, once this is uncommented sndtest_root() will be created */
 //#define SEND_TEST 
@@ -135,6 +139,8 @@ typedef char            Bool;           /* boolean type                         
 #endif
 
 
+/* ================= */
+/* ipc receive tests */
 #ifndef RECV_TEST
 /* uncomment to enable ipc_recv tests, once this is uncommented rcvtest_root() will be created */
 //#define RECV_TEST 
@@ -152,15 +158,20 @@ typedef char            Bool;           /* boolean type                         
 #endif
 
 
+/* ================ */
+/* time share tests */
 #ifndef TIME_TEST
 /* uncomment to enable time_share tests, once this is uncommented timetest_root() will be created and 1 time_share test will be enabled */
 //#define TIME_TEST 
 #endif
 
 
+/* ===================== */
+/* signal handling tests */
 #ifndef SIG_TEST
 /* uncomment to enable signal tests, once this is uncommented sigtest_root() will be created */
 //#define SIG_TEST
+
 
 #ifndef SIG_INSTALL_TEST
 /* uncomment to enable sig_install_test */
@@ -177,12 +188,10 @@ typedef char            Bool;           /* boolean type                         
 //#define SIG_WAIT_TEST
 #endif
 
-
 #ifndef SIG_PRIO_TEST
 /* uncomment to enable sig_prio_test */
 //#define SIG_PRIO_TEST
 #endif
-
 
 #ifndef SIG_SLEEP_TEST
 /* uncomment to enable sig_sleep_test */
@@ -193,9 +202,39 @@ typedef char            Bool;           /* boolean type                         
 #endif
 
 
+/* =================== */
+/* device driver tests */
 #ifndef DEV_TEST
 /* uncomment to enable device driver tests, once this is uncommented devtest_root() will be created */
 //#define DEV_TEST
+
+
+#ifndef DEV_OPEN_TEST
+/* uncomment to enable dev_open_test */
+//#define DEV_OPEN_TEST
+#endif
+
+#ifndef DEV_WRITE_TEST
+/* uncomment to enable dev_write_test */
+//#define DEV_WRITE_TEST
+#endif
+
+#ifndef DEV_IOCTL_TEST
+/* uncomment to enable dev_ioctl_test */
+//#define DEV_IOCTL_TEST
+#endif
+
+#ifndef DEV_READ_TEST
+/* uncomment to enable dev_read_test */
+//#define DEV_READ_TEST
+#endif
+
+#ifndef DEV_EOF_TEST
+/* uncomment to enable dev_eof_test */
+//#define DEV_EOF_TEST
+#endif
+
+
 #endif
 
 
