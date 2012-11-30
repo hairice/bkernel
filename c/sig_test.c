@@ -166,64 +166,116 @@ void sigtest_root(void)
 	sprintf(buffer, "%d", 0);
 	syssend(child_pid[1], buffer, strlen(buffer));
 
+
+#ifdef SIG_INSTALL_TEST
 	/*  
-	* @test: 	sig_handler_neg_1
+	* @test: 	sig_test_1
 	*
-	* @desc:	
+	* @desc:	A null handler is attempted for installing into signal 1
 	*
-	* @outcome:	
+	* @outcome:	-1 is returned from syssighandler
 	*/
 	rc = syssighandler(1, NULL, &old_handler);
 
 	if(rc < 0)
-		kprintf("pass1\n");
+	{
+		kprintf("\ntest\t\tresult\t\tcomment\n");
+		kprintf("-----------------------------------------------------------\n");
+		kprintf("sig_test_1\tpass\t\tnull signal handler detected\n\n");
+	}
+#endif
 
-
+#ifdef SIG_KILL_TEST
 	/*  
-	* @test: 	sig_kill_pos_1
+	* @test: 	sig_test_2
 	*
-	* @desc:	
+	* @desc:	Root proc receives a syskill from child proc 1
 	*
-	* @outcome:	
+	* @outcome:	Root proc regains control from its signal stack
 	*/
 	while(!kill_test);
 
-	kprintf("pass2\n");
+	if(kill_test)
+	{
+		kprintf("\ntest\t\tresult\t\tcomment\n");
+		kprintf("-----------------------------------------------------------\n");
+		kprintf("sig_test_2\tpass\t\tsignalled by signal 12\n\n");
+	}
+	else
+	{
+		kprintf("\ntest\t\tresult\t\tcomment\n");
+		kprintf("-----------------------------------------------------------\n");
+		kprintf("sig_test_2\tfail\t\tinvalid regain of control\n\n");
+	}
+#endif
 
-
+#ifdef SIG_WAIT_TEST
 	/*  
-	* @test: 	sig_wait_pos_1
+	* @test: 	sig_test_3
 	*
-	* @desc:	
+	* @desc:	Root proc is put in BLOCK_ON_SIG_STATE
 	*
-	* @outcome:	
+	* @outcome:	12 is returned from syssigwait
 	*/
 	rc = syssigwait();
 	if(rc == 12)
-		kprintf("pass3\n");
+	{
+		kprintf("\ntest\t\tresult\t\tcomment\n");
+		kprintf("-----------------------------------------------------------\n");
+		kprintf("sig_test_3\tpass\t\tunblocked by signal 12\n\n");
+	}
+#endif
 
-
+#ifdef SIG_PRIO_TEST
 	/*  
-	* @test: 	sig_prio_pos_1
+	* @test: 	sig_test_4
 	*
-	* @desc:	
+	* @desc:	5 signal stacks in priority order are put on the user stack, and unrolls based on priority
 	*
-	* @outcome:	
+	* @outcome:	Root proc regains control
 	*/
-
 	while(!priority_test);
 
 	for(i=0 ; i<5 ; i++)
 	{
 		if(!result[i])
 		{
-			kprintf("fail4: %d\n", i);
-			break;
+			kprintf("\ntest\t\tresult\t\tcomment\n");
+			kprintf("-----------------------------------------------------------\n");
+			kprintf("sig_test_4\tfail\t\tsignal stack unrolled order-of-order\n\n");
 		}
 
 		if(i == 4)
-			kprintf("pass4\n");
+		{
+			kprintf("\ntest\t\tresult\t\tcomment\n");
+			kprintf("-----------------------------------------------------------\n");
+			kprintf("sig_test_4\tpass\t\tsignal stack unrolled in priority order\n\n");
+		}
 	}
+#endif
+
+#ifdef SIG_SLEEP_TEST
+	/*  
+	* @test: 	sig_test_5
+	*
+	* @desc:	root proc is interrupted while in a 5 seconds sleep by child proc 1
+	*
+	* @outcome:	400 is returned
+	*/
+	rc = syssleep(5000);
+	if(rc == 400)
+	{
+		kprintf("\ntest\t\tresult\t\tcomment\n");
+		kprintf("-----------------------------------------------------------\n");
+		kprintf("sig_test_5\tpass\t\tawaken early by 400 ticks\n\n");
+	}
+	else
+	{
+		kprintf("\ntest\t\tresult\t\tcomment\n");
+		kprintf("-----------------------------------------------------------\n");
+		kprintf("sig_test_5\tfail\t\tincorrect rc or incorrect awake value\n\n");
+	}
+#endif
 
 	for(;;);
 }
@@ -243,19 +295,28 @@ void sigtest_proc1(void)
 	/* get root pid */
 	byte = sysrecv(ptr, buffer, byte);
 
+#ifdef SIG_KILL_TEST
 	syssleep(1000);
-
 	syskill(dst, 12);
+#endif
 
+
+#ifdef SIG_WAIT_TEST
 	syssleep(1000);
-
 	syskill(dst, 12);
+#endif
 
-	syssleep(1000);
-	
+#ifdef SIG_PRIO_TEST
+	syssleep(1000);	
 	syskill(dst, 1);
 	syskill(dst, 2);
 	syskill(dst, 6);
 	syskill(dst, 15);
 	syskill(dst, 27);
+#endif
+
+#ifdef SIG_SLEEP_TEST
+	syssleep(1000);
+	syskill(dst, 12);
+#endif
 }

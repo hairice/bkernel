@@ -159,11 +159,42 @@ typedef char            Bool;           /* boolean type                         
 
 
 #ifndef SIG_TEST
+/* uncomment to enable signal tests, once this is uncommented sigtest_root() will be created */
 //#define SIG_TEST
+
+#ifndef SIG_INSTALL_TEST
+/* uncomment to enable sig_install_test */
+#define SIG_INSTALL_TEST 
+#endif
+
+#ifndef SIG_KILL_TEST
+/* uncomment to enable sig_kill_test */
+//#define SIG_KILL_TEST
+#endif
+
+#ifndef SIG_WAIT_TEST
+/* uncomment to enable sig_wait_test */
+//#define SIG_WAIT_TEST
+#endif
+
+
+#ifndef SIG_PRIO_TEST
+/* uncomment to enable sig_prio_test */
+//#define SIG_PRIO_TEST
+#endif
+
+
+#ifndef SIG_SLEEP_TEST
+/* uncomment to enable sig_sleep_test */
+//#define SIG_SLEEP_TEST
+#endif
+
+
 #endif
 
 
 #ifndef DEV_TEST
+/* uncomment to enable device driver tests, once this is uncommented devtest_root() will be created */
 //#define DEV_TEST
 #endif
 
