@@ -164,7 +164,7 @@ typedef char            Bool;           /* boolean type                         
 
 #ifndef SIG_INSTALL_TEST
 /* uncomment to enable sig_install_test */
-#define SIG_INSTALL_TEST 
+//#define SIG_INSTALL_TEST 
 #endif
 
 #ifndef SIG_KILL_TEST
@@ -407,10 +407,10 @@ extern void recv(pcb_t* p, unsigned int *pid, void *buffer, int buffer_len);
 
 /* signal processing */
 extern int siginstall(pcb_t *p, int sig_no, void (*new_handler)(void *), void (** old_handler)(void *));	/* install signal for user proc 		*/
-extern int sigkill(int pid, int sig_no);									/* set target signal bit for proc		*/
+extern int signal(int pid, int sig_no);									/* set target signal bit for proc		*/
 extern int sighigh(pcb_t *p);											/* pick highest signal and deliver to proc 	*/
 extern void sigtramp(void (*handler)(void *), void *cntx, void *osp, int rc, unsigned int oim);					
-extern int signal(int pid, int sig_no);
+extern int sigdeliver(int pid, int sig_no);
 extern void sigcease(pcb_t *p, unsigned int oim);
 extern void puts_sig_table(pcb_t *p);
 extern void puts_sig_mask(void);

@@ -53,7 +53,7 @@ void dispatch()
         unsigned int *pid_ptr;  /* used for from_id for sysrecv()               */
 
 	/* sig arg(s) */
-	unsigned int signal;
+	unsigned int sig_no;
 	void *new_handler;
 	void **old_handler;
 	void *osp;
@@ -199,12 +199,12 @@ void dispatch()
 
 			case SIG_HANDLER:
                                 ap = (va_list)p->args;
-                                signal = va_arg(ap, unsigned int);
+                                sig_no = va_arg(ap, unsigned int);
                                 new_handler = va_arg(ap, void*);
                                 old_handler = va_arg(ap, void**);
 
 				/* install new signal */
-				p->rc = siginstall(p, signal, new_handler, old_handler);		
+				p->rc = siginstall(p, sig_no, new_handler, old_handler);		
                                 ready(p);                               
 				break;
 
@@ -227,10 +227,10 @@ void dispatch()
 			case SIG_KILL:
                                 ap = (va_list)p->args;
                                 pid = va_arg(ap, unsigned int);
-                                signal = va_arg(ap, unsigned int);
+                                sig_no = va_arg(ap, unsigned int);
 
 				/* enable target bit in proc target_mask */
-				p->rc = sigkill(pid, signal);
+				p->rc = signal(pid, sig_no);
 				
 				if(p->rc == -1)
 					p->rc = -18;

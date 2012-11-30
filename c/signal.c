@@ -73,11 +73,11 @@ int sighigh(pcb_t *p)
 	/* toggle off pend signal in mask */
 	p->sig_pend_mask &= ~bit_mask;
 
-	return signal(p->pid, sig_no);
+	return sigdeliver(p->pid, sig_no);
 }
 
 /*
-* signal
+* sigdeliver
 *
 * @desc:	deliver signal to proc by placing new signal stack in its space
 *
@@ -87,7 +87,7 @@ int sighigh(pcb_t *p)
 * @output:	returns the following values
 *		SIG_SUCCESS		signal has successfully been delivered onto proc stack
 */
-int signal(int pid, int sig_no)
+int sigdeliver(int pid, int sig_no)
 {	
 	int i;
 	unsigned int mem,bit_mask=BIT_ON;
@@ -180,7 +180,7 @@ int siginstall(pcb_t *p, int sig_no, void (*new_handler)(void *), void (**old_ha
 }																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																									
 
 /*
-* sigkill
+* signal
 *
 * @desc:	pend an installed signal for proc
 *
@@ -190,7 +190,7 @@ int siginstall(pcb_t *p, int sig_no, void (*new_handler)(void *), void (**old_ha
 * @output:	returns the following values
 *		SIG_SUCCESS		signal has successfully been pended for proc
 */
-int sigkill(int pid, int sig_no)
+int signal(int pid, int sig_no)
 {	
 	int i;
 	unsigned int bit_mask=BIT_OFF;
