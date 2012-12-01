@@ -121,6 +121,7 @@ void devtest_root(void)
 	*/
 	fd = sysopen(1);
 
+	kprintf("please enter 3 characters:\n");
 	if(fd != -1)
 		rc = sysread(fd, buffer, byte);
 
@@ -154,6 +155,7 @@ void devtest_root(void)
 	strcpy(buffer, "");
 	sysioctl(fd, SET_EOF, 97);
 
+	kprintf("please press a\n");
 	if(fd != -1)
 		rc = sysread(fd, buffer, byte);
 	
