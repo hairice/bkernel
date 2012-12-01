@@ -232,11 +232,11 @@ void dispatch()
 				/* enable target bit in proc target_mask */
 				p->rc = signal(pid, sig_no);
 				
-				if(p->rc == -1)
-					p->rc = -18;
+				if(p->rc == ERR_SIGNAL_PROC_NO)
+					p->rc = ERR_SIGKILL_PROC_NO;
 
-				if(p->rc == -2)
-					p->rc = -3;
+				if(p->rc == ERR_SIGNAL_SIG_NO)
+					p->rc = ERR_SIGKILL_SIG_NO;
 
 				ready(p);                               	
 				break;

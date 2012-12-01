@@ -167,7 +167,7 @@ int kbd_open(devsw_t* d)
 			kbd_echo_flag = TRUE;
 	}
 
-	return 0;
+	return DEV_SUCCESS;
 }
 
 /*
@@ -184,7 +184,7 @@ int kbd_close(devsw_t* d)
 
 	/* disable keyboard hardware device */
 	enable_irq(1,1);
-	return 0;
+	return DEV_SUCCESS;
 }
 
 /*
@@ -196,7 +196,7 @@ int kbd_close(devsw_t* d)
 */
 int kbd_write(devsw_t* d, void* buf, int buflen)
 {
-	return -1;
+	return DEV_ERR;
 }
 
 /*
@@ -237,15 +237,10 @@ int kbd_read(pcb_t *p, devsw_t* d, void* buf, int buflen)
 	k->buflen = buflen;
 	k->bufi = 0;
 
-	p->ptr = k;
-	
+	p->ptr = k;	
 	kbd_enqueue(p);
 
-	/* copy characters from internal buffer to user buffer immediately if internal buffer is not empty */
-	//if(kbd_free < 4)
-	//	kbd_notify();
-
-	return 0;
+	return DEV_SUCCESS;
 }
 
 /*
@@ -262,7 +257,7 @@ int kbd_read(pcb_t *p, devsw_t* d, void* buf, int buflen)
 int kbd_ioctl(int eof)
 {
 	kbd_eof = eof;
-	return 0;
+	return DEV_SUCCESS;
 }
 
 /*
@@ -282,13 +277,13 @@ void kbd_notify()
 	int i=kbd_buf_i;
 	strncpy(tmp, "", 5);
 
-	/* copy character from internal buffer to user buffer */
+	/* only transfer characters if a proc has been blocked on device */
 	if(kbd_q)
 	{
 		k = (kbdi_t*) kbd_q->ptr;
 		buf = (unsigned char *) k->buf;
 
-		/* keyboard no echo device, typped characters will only be copied to user buffer */				
+		/* copy character from internal buffer to user buffer */
 		if( kbd_buf_i > k->buflen) 
 		{
 			strncpy(tmp, kbd_buf, k->buflen ); 
@@ -304,9 +299,7 @@ void kbd_notify()
 
 		k->bufi += kbd_buf_i;
 		kbd_buf_i = 0;
-		//kprintf("buf: %s	kbd_buf: %s\n", buf, kbd_buf);		
 
-		
 		/* return to user process if enter is pressed */
 		/* return process if user buffer is full */
 		if(kbd_buf[i-1] == ENTER_KEY || k->bufi >= k->buflen)
@@ -365,7 +358,7 @@ int kbd_iint()
 			kbd_notify();	
 	}
 
-	return 0;
+	return DEV_SUCCESS;
 }
 
 
@@ -374,9 +367,10 @@ int kbd_iint()
 *
 * @desc:	returns SYSERR for any function not implemented for device
 *
-* @output:	SYSERR
+* @output:	DEV_ERR
 */
 int kbd_error()
 {
-	return SYSERR;
+	kprintf("device function not supported\n");
+	return DEV_ERR;
 }

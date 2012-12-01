@@ -51,7 +51,7 @@ void root()
 	unsigned int byte=10;
 	void *old_handler = NULL;
 
-	sprintf(console, "Welcome to xeros!");
+	sprintf(console, "Welcome to xeros test program!");
 	sysputs(console);
 
 	fd = sysopen(1);
@@ -59,6 +59,8 @@ void root()
 	sysputs(console);
 
 	/* read 10 characters from keyboard into user buffer */
+	sprintf(console, "please enter 10 characters: ");
+	sysputs(console);	
 	if(fd != -1)	
 		sysread(fd, buffer, byte);
 
@@ -92,6 +94,8 @@ void root()
 
 
 	/* 1st read of 10 characters from keyboard into user buffer */
+	sprintf(console, "please enter 10 characters: (no echo)");
+	sysputs(console);	
 	if(fd != -1)	
 		sysread(fd, buffer, byte);
 
@@ -100,6 +104,8 @@ void root()
 
 
 	/* 2nd read of 10 characters from keyboard into user buffer */
+	sprintf(console, "please enter 10 characters: (no echo)");
+	sysputs(console);	
 	if(fd != -1)	
 		sysread(fd, buffer, byte);
 
@@ -108,6 +114,8 @@ void root()
 
 
 	/* 3rd read of 10 characters from keyboard into user buffer */
+	sprintf(console, "please enter 10 characters: (no echo)");
+	sysputs(console);	
 	if(fd != -1)	
 		sysread(fd, buffer, byte);
 
@@ -115,6 +123,8 @@ void root()
 	sysputs(console);
 
 	/* continue reading until eof */
+	sprintf(console, "please enter less than 10 characters and press ctrl+d: (no echo)");
+	sysputs(console);	
 	if(fd != -1)	
 		sysread(fd, buffer, byte);
 	sprintf(console, "sysread[%d]: %s", 0, buffer);
@@ -127,6 +137,9 @@ void root()
 		sprintf(console, "sysclose[%d]: %d", 0, fd);
 		sysputs(console);
 	}
+
+	sprintf(console, " ");
+	sysputs(console);
 
 	/* open echo keyboard again */
 	fd = sysopen(1);
@@ -180,7 +193,6 @@ void root()
 	sprintf(buffer, "%d", n);
 	syssend(child_pid[2], buffer, strlen(buffer));
 
-
 	/* read from echo keyboard, but no user key press is required */
 	if(fd != -1)	
 		rc = sysread(fd, buffer, byte);
@@ -191,7 +203,12 @@ void root()
 		sysputs(console);
 	}		
 
+	sprintf(console, " ");
+	sysputs(console);
+
 	/* continue reading until eof */
+	sprintf(console, "please enter less than 10 characters and press ctrl+d: ");
+	sysputs(console);	
 	if(fd != -1)	
 		sysread(fd, buffer, byte);
 	sprintf(console, "sysread[%d]: %s", 1, buffer);
@@ -203,7 +220,10 @@ void root()
 	sprintf(console, "sysread[%d]: %s", 1, buffer);
 	sysputs(console);
 
-	sprintf(console, "root complete");
+	sprintf(console, " ");
+	sysputs(console);
+
+	sprintf(console, "test program exit!");
 	sysputs(console);
 }
 

@@ -17,6 +17,9 @@
 #define ENTER_KEY		10
 
 
+#define DEV_SUCCESS		0
+#define DEV_ERR			-1
+
 /* keyboard device */
 extern void kbd_init();
 extern int kbd_open(devsw_t* d);

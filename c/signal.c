@@ -64,7 +64,7 @@ int sighigh(pcb_t *p)
 		tmp_mask >>= 1;
 	}
 
-	if(sig_no == -1) return 0;
+	if(sig_no == -1) return ERR_SIGNAL_SIG_NO;
 
 	/* make mask to toggle off signal bit */
 	for(i=0 ; i<sig_no ; i++)
@@ -95,9 +95,9 @@ int sigdeliver(int pid, int sig_no)
 	sig_arg_t *sig_args = NULL;
 	context_frame_t *frame = NULL;
 
-	if(sig_no < 0 || sig_no >= SIG_SZ) return ERR_SIG_NO;
+	if(sig_no < 0 || sig_no >= SIG_SZ) return ERR_SIGNAL_SIG_NO;
 	p = get_proc(pid);
-	if(!p) return ERR_SIG_PEND_PROC;
+	if(!p) return ERR_SIGNAL_PROC_NO;
 
 	/* get user proc stack pointer */
 	mem = p->esp;
@@ -120,9 +120,6 @@ int sigdeliver(int pid, int sig_no)
 	}
 	p->sig_ignore_mask &= ~bit_mask;
 
-	//kprintf("signal\t\tpend_mask: %d\n", p->sig_pend_mask);
-	//kprintf("signal\t\tignore_mask: %d\n", ~(p->sig_ignore_mask));
-
 	/* setup sigtramp frame */
 	mem -= sizeof(context_frame_t);
 	frame = (context_frame_t*) mem;
@@ -133,13 +130,6 @@ int sigdeliver(int pid, int sig_no)
 	frame->eflags = 0x00003200;
 
 	p->esp = mem;
-
-	//newct->edi = 0;
-	//newct->esi = 0;
-	//newct->ebx = 0;
-	//newct->edx = 0;
-	//newct->ecx = 0;
-	//newct->eax = 0;
 	
 	return SIG_SUCCESS;
 }
@@ -161,9 +151,10 @@ int siginstall(pcb_t *p, int sig_no, void (*new_handler)(void *), void (**old_ha
 {
 	unsigned int bit_mask=BIT_ON,i;	
 
-	if(!new_handler) return ERR_SIG_HANDLER;
-	if(sig_no < 0 || sig_no >= SIG_SZ) return ERR_SIG_NO;
-	if(new_handler > freemem) return ERR_SIG_HANDLER;
+	/* check for valid signal number, and handler address */
+	if(!new_handler) return ERR_SIGNAL_HANDLER;
+	if(sig_no < 0 || sig_no >= SIG_SZ) return ERR_SIGNAL_HANDLER_SIG_NO;
+	if(new_handler > freemem) return ERR_SIGNAL_HANDLER;
 
 	/* save old signal handler */
 	*old_handler = p->sig_table[sig_no];
@@ -174,8 +165,8 @@ int siginstall(pcb_t *p, int sig_no, void (*new_handler)(void *), void (**old_ha
 	for(i=0 ; i<sig_no ; i++)
 		bit_mask *= 2;
 
+	/* toggle signal bit */
 	p->sig_install_mask |= bit_mask;
-
 	return SIG_SUCCESS;
 }																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																									
 
@@ -198,10 +189,10 @@ int signal(int pid, int sig_no)
 	pcb_t* ipc = NULL;	
 	ipc_t* comm = NULL;
 
-	if(sig_no < 0 || sig_no >= PROC_SZ) return -2;
+	/* check for valid signal number, proc number */
+	if(sig_no < 0 || sig_no >= PROC_SZ) return ERR_SIGNAL_SIG_NO;
 	p = get_proc(pid);
-	if(!p) return -1;
-
+	if(!p) return ERR_SIGNAL_PROC_NO;
 
 	/* make mask to toggle on signal bit */
 	bit_mask=BIT_ON;
@@ -222,7 +213,7 @@ int signal(int pid, int sig_no)
 	if(p->state == BLOCK_ON_DEV_STATE)
 	{
 		kbd_dequeue();		
-		p->rc = -128;
+		p->rc = ERR_SIGNAL_UNBLOCK_SYSCALL;
 	}
 
 	/* check if proc is blocked on ipc_recv or ipc_send */
@@ -252,8 +243,9 @@ int signal(int pid, int sig_no)
 				break;
 		}
 
+		/* add proc back to ready_q and set rc */
 		p->state = READY_STATE;
-		p->rc = -128;
+		p->rc = ERR_SIGNAL_UNBLOCK_SYSCALL;
 		ready(p);
 	}
 
@@ -303,8 +295,7 @@ void sigcease(pcb_t *p, unsigned int oim)
 		bit_mask |= BIT_ON;	
 	}
 
-	//kprintf("sigcease\tbit_mask: %d	oim: %d\n", bit_mask, ~oim);
-
+	/* revert previous ignore mask */
 	bit_mask -= ~oim;
 	p->sig_ignore_mask |= bit_mask;	
 }

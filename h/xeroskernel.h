@@ -33,10 +33,15 @@ typedef char            Bool;           /* boolean type                         
 
 
 /* signal return constants */
-#define	SIG_SUCCESS		0
-#define ERR_SIG_NO		-1
-#define ERR_SIG_HANDLER		-2
-#define ERR_SIG_PEND_PROC	-18
+#define	SIG_SUCCESS			0
+#define ERR_SIGKILL_SIG_NO		-3	/* invalid sig number in disp() 							*/
+#define ERR_SIGKILL_PROC_NO		-18	/* invalid proc number in disp() 							*/
+
+#define ERR_SIGNAL_PROC_NO		-1	/* invalid proc number in signal() 							*/
+#define ERR_SIGNAL_SIG_NO		-2	/* invalid sig number in signal () 							*/
+#define ERR_SIGNAL_HANDLER_SIG_NO	-1	/* invalid sig number in siginstall() 							*/
+#define ERR_SIGNAL_HANDLER		-2	/* invalid handler address 								*/
+#define ERR_SIGNAL_UNBLOCK_SYSCALL	-128	/* system interrupted by signal, this return value does not allow to syssleep () 	*/
 
 
 /* user process state constants */
@@ -286,7 +291,7 @@ struct pcb
 
         void *ptr;                      /* generic pointer, as of a2, this pointer is used to reference the ipc data    */
 
-	fd_t fd_table[FD_SZ];
+	fd_t fd_table[FD_SZ];		/* table of file descriptors */
 
         pcb_t *blocked_senders;         /* queue of blocked senders for a proc */
         pcb_t *blocked_receivers;       /* queue of blocked receivers for a proc */     
@@ -327,7 +332,7 @@ struct devsw
 	int (*dvseek)();
 	int (*dvgetc)();
 	int (*dvputc)();
-	int (*dvcntl)();
+	int (*dvcntl)();		/* manipulate keyboard eof			*/
 	void *dvcsr;
 	void *dvivec;
 	void *dvovec;
@@ -446,11 +451,11 @@ extern void recv(pcb_t* p, unsigned int *pid, void *buffer, int buffer_len);
 
 /* signal processing */
 extern int siginstall(pcb_t *p, int sig_no, void (*new_handler)(void *), void (** old_handler)(void *));	/* install signal for user proc 		*/
-extern int signal(int pid, int sig_no);									/* set target signal bit for proc		*/
+extern int signal(int pid, int sig_no);										/* set target signal bit for proc		*/
 extern int sighigh(pcb_t *p);											/* pick highest signal and deliver to proc 	*/
 extern void sigtramp(void (*handler)(void *), void *cntx, void *osp, int rc, unsigned int oim);					
-extern int sigdeliver(int pid, int sig_no);
-extern void sigcease(pcb_t *p, unsigned int oim);
+extern int sigdeliver(int pid, int sig_no);									/* place signal stack in user space 		*/
+extern void sigcease(pcb_t *p, unsigned int oim);								/* restore previous ignore mask 		*/
 extern void puts_sig_table(pcb_t *p);
 extern void puts_sig_mask(void);
 
