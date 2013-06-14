@@ -3,9 +3,20 @@ Bochs Kernel
 This repo contains a monolithic x86 kernel for the bochs emulator (http://bochs.sourceforge.net/)
 
 
-Significance
-------------
-The kernel is a preemptive multiprogramming kernel with user and kernel spaces.
+Setup
+-------
+The following setup has been tested in an Ubuntu 10.04 (Lucid Lynx) system.
+
+1. Install bochs emulator <br />
+<code>
+$: sudo apt-get install bochs
+$: sudo apt-get install bochs-x
+</code>
+
+2. Compile and run the kernel in bochs <br />
+<code>
+$: make beros
+</code>
 
 
 Main Components
@@ -13,13 +24,9 @@ Main Components
 This kernel is based on a layered approach with the following components,
 * Memory manager
 * Process manager (dispatcher, context switcher)
-* IPC
+* IPC (direct, blocked, non-buffered, synchronous)
 * Real-time clock
-* Signal 
-* Device driver (with hardware abstract layer)
+* Priority Signal 
+* Keyboard device driver
 
 
-Startup
--------
-1. Change into the top directory and type "make beros"
-2. Select option 6 to load and boot kernel in bochs
