@@ -18,6 +18,9 @@ $: sudo apt-get install bochs-x
 
 2. Compile and run the kernel in bochs <br />
 <code>
+$: cd path/to/bochs_os/
+</code>
+<code>
 $: make beros
 </code>
 
