@@ -20,6 +20,7 @@ $: sudo apt-get install bochs-x
 <code>
 $: cd path/to/bochs_os/
 </code>
+<br />
 <code>
 $: make beros
 </code>
