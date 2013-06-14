@@ -9,7 +9,10 @@ The following setup has been tested in an Ubuntu 10.04 (Lucid Lynx) system.
 
 1. Install bochs emulator <br />
 <code>
-$: sudo apt-get install bochs
+$: sudo apt-get install bochs 
+</code>
+<br />
+<code>
 $: sudo apt-get install bochs-x
 </code>
 
