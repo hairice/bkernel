@@ -1,11 +1,4 @@
-/* dev_test.c : device kbd test cases
-* 
-* name:		Jack Wu
-* student id:	17254079
-*/
-
 #include <xeroskernel.h>
-
 
 /*
 * devtest_root

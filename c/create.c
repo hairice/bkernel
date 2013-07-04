@@ -1,21 +1,40 @@
-/* create.c : create a process
-* 
-* name:		Jack Wu
-* student id:	17254079
-*/
+/* Process Manager 
+ *
+ * This is the process manager, where processes can be created based on unused 
+ * process ids
+ *
+ * Copyright (c) 2013 Jack Wu <jack.wu@live.ca>
+ *
+ * This file is part of bkernel.
+ *
+ * bkernel is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * bkernel is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include <xeroskernel.h>
 
-/* Your code goes here. */
-#define STACK_PAD 0x10		/* amount of space the context_frame is shifted from the end 	*/
-				/* of the memory allocation 					*/
+#define STACK_PAD 0x10		/* amount of space the context_frame is shifted from 
+						 	 * the end of the memory allocation 					
+							 */
 
 extern pcb_t *stop_q;
 extern pcb_t proc_table[PROC_SZ];
 
-static int min_pid = MIN_PID;		/* lower bound of used pid region 						*/
-static int max_pid = MIN_PID;		/* upper bound of used pid region 						*/
-static int next_pid = MIN_PID+1;	/* reference to the next pid, the next pid may/may not be an available pid 	*/
+static int min_pid = MIN_PID;		/* lower bound of used pid region */
+static int max_pid = MIN_PID;		/* upper bound of used pid region */
+static int next_pid = MIN_PID+1;	/* reference to the next pid, the next pid 
+									 * may/may not be an available pid 	
+									 */
 
 
 /*
@@ -37,7 +56,9 @@ int create(void (*func)(void), int stack)
 	context_frame_t *frame;
 	pcb_t *p = NULL;
 
-	/* add new proc if provided func is not null or stack_size is at least MIN_STACK */
+	/* add new proc if provided func is not null or stack_size is at least 
+	 * MIN_STACK 
+	 */
 	if(!func || stack < MIN_STACK) return SYSERR;
 
 	/* remove head of stop queue */
@@ -57,7 +78,7 @@ int create(void (*func)(void), int stack)
 	/* set process context frame and pcb */
 	frame->iret_cs = getCS();
 	frame->iret_eip = (unsigned int) func;
-    	frame->esp = (unsigned int)(frame);
+	frame->esp = (unsigned int)(frame);
 	frame->ebp = frame->esp;
 	frame->eflags = 0x00003200;
 	frame->iret_func = &sysstop;
@@ -160,7 +181,7 @@ unsigned int find_pid ()
 	{
 		next_pid = pid+1;
 		min_pid = pid;		
-	
+
 		if(next_pid+1 == max_pid)
 			next_pid = max_pid;
 

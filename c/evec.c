@@ -1,10 +1,24 @@
-/* evec.c -- initevec, set_evec */
+/* Event Manager
+ *
+ * This file is part of bkernel.
+ *
+ * bkernel is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * bkernel is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include <i386.h>    
 #include <xeroslib.h>
 #include <xeroskernel.h>
-
-//#include <string.h>
 
 extern struct idt idt[256];
 extern struct segtr idtr; 
@@ -28,8 +42,6 @@ void initevec(void)
 	init8259();
 
 }
-
-
 
 /*------------------------------------------------------------------------
  * set_evec - set exception vector to point to an exception handler

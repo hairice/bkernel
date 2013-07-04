@@ -1,69 +1,64 @@
-/* initialize.c - initproc 
-* 
-* name:		Jack Wu
-* student id:	17254079
-*/
+/* Kernel Initializer 
+ *
+ * This is kernel initializer, where the memory manager, process manager, and
+ * real-time clock
+ *
+ * Copyright (c) 2013 Jack Wu <jack.wu@live.ca>
+ *
+ * This file is part of bkernel.
+ *
+ * bkernel is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * bkernel is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include <i386.h>
 #include <xeroskernel.h>
 #include <xeroslib.h>
 
-extern	int	entry( void );  /* start of kernel image, use &start    */
-extern	int	end( void );    /* end of kernel image, use &end        */
-extern  long	freemem; 	/* start of free memory (set in i386.c) */
-extern char	*maxaddr;	/* max memory address (set in i386.c)	*/
-
-/************************************************************************/
-/***				NOTE:				      ***/
-/***								      ***/
-/***   This is where the system begins after the C environment has    ***/
-/***   been established.  Interrupts are initially DISABLED.  The     ***/
-/***   interrupt table has been initialized with a default handler    ***/
-/***								      ***/
-/***								      ***/
-/************************************************************************/
+extern int entry(void); 	/* start of kernel image, use &start    */
+extern int end(void); 		/* end of kernel image, use &end        */
+extern long freemem; 		/* start of free memory (set in i386.c) */
+extern char *maxaddr; 		/* max memory address (set in i386.c)	*/
 
 /*------------------------------------------------------------------------
  *  The init process, this is where it all begins...
  *------------------------------------------------------------------------
  */
-extern pcb_t proc_table[PROC_SZ];
+ extern pcb_t proc_table[PROC_SZ];
 
 /*
-* initproc
-*
-* @desc:	initializes xeros by starting the memory management unit, dispatcher, and context switcher
-*/
-void initproc( void )				/* The beginning */
-{
-	int i;
-	kprintf( "\n\nCPSC 415, 2012W1 \n32 Bit Xeros 1.1\nLocated at: %x to %x\n", &entry, &end ); 
-        /* Your code goes here */
-	kmeminit();
-	kbd_init();
-	contextinit();
+ * initproc
+ *
+ * @desc:	initializes xeros by starting the memory management unit, 
+ * 			dispatcher, and context switcher
+ */
+ void initproc(void)
+ {
+ 	int i;
 
-	/* fill the stop queue */
-	for(i=0 ; i<PROC_SZ ; i++) 
-		stop(&proc_table[i]);
+ 	kmeminit();
+ 	kbd_init();
+ 	contextinit();
 
-	create(&idleproc, PROC_STACK);
+	/* fill the process stop queue */
+ 	for (i = 0; i < PROC_SZ; i++)
+ 		stop(&proc_table[i]);
 
-#ifdef SEND_TEST	
-	create(&sndtest_root, PROC_STACK);
-#elif defined RECV_TEST
-	create(&rcvtest_root, PROC_STACK);
-#elif defined TIME_TEST
-	create(&timetest_root, PROC_STACK);
-#elif defined SIG_TEST
-	create(&sigtest_root, PROC_STACK);
-#elif defined DEV_TEST
-	create(&devtest_root, PROC_STACK);
-#else 
-	create(&root, PROC_STACK);
-#endif
-	dispatch();
+ 	create(&idleproc, PROC_STACK);
+ 	create(&root, PROC_STACK);
+ 	dispatch();
 
-        /* This code should never be reached after you are done */
-	for(;;); /* loop forever */
-}
+
+ 	for (;;)
+ 		;
+ }

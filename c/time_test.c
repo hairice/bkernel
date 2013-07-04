@@ -1,9 +1,3 @@
-/* snd_test.c : ipc_send test cases
-* 
-* name:		Jack Wu
-* student id:	17254079
-*/
-
 #include <xeroskernel.h>
 #define MAX_CNT	5
 
@@ -12,7 +6,6 @@ static unsigned int cnt=0;
 extern void timetest_proc1(void);
 extern void timetest_proc2(void);
 extern void timetest_proc3(void);
-
 
 /*
 * timetest_root

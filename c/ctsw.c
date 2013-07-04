@@ -1,33 +1,41 @@
-/* ctsw.c : context switcher
-* 
-* name:		Jack Wu
-* student id:	17254079
-*/
+/* Context Switcher
+ *
+ * This is the context switcher used for soft and hard interrupts.
+ *
+ * Copyright (c) 2013 Jack Wu <jack.wu@live.ca>
+ *
+ * This file is part of bkernel.
+ *
+ * bkernel is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * bkernel is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include <xeroskernel.h>
 #include <i386.h>
-
-/* Your code goes here - You will need to write some assembly code. You must
-   use the gnu conventions for specifying the instructions. (i.e this is the
-   format used in class and on the slides.) You are not allowed to change the
-   compiler/assembler options or issue directives to permit usage of Intel's
-   assembly language conventions.
-*/
-
 
 void _kdb_entry_point(void);		/* keyboard isr 			*/
 void _timer_entry_point(void);		/* timer isr 				*/
 void _syscall_entry_point(void);	/* system call isr 			*/
 void _common_entry_point(void);		/* system call and interrupt isr 	*/
 
-static unsigned int esp;		/* user stack pointer location 		*/
-static unsigned int k_esp;		/* kernel stack pointer location 	*/
-static unsigned int rc;			/* syscall() call request id 		*/
+static unsigned int esp;			/* user stack pointer location 		*/
+static unsigned int k_esp;			/* kernel stack pointer location 	*/
+static unsigned int rc;				/* syscall() call request id 		*/
 static unsigned int interrupt;		/* interrupt code
-					*  0 - system call
-					*  1 - timer interrupt
-					*/
-static unsigned int args;		/* args passed from syscall() 		*/
+									 *  0 - system call
+									 *  1 - timer interrupt
+									 */
+static unsigned int args;			/* args passed from syscall() 		*/
 
 /*
 * contextswitch

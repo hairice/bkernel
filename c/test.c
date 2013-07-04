@@ -1,9 +1,3 @@
-/* test.c : Test Driver for Xeros
-* 
-* name:		Jack Wu
-* student id:	17254079
-*/
-
 #include <xeroskernel.h>
 
 int exit_proc=0;	/* testproc trigger to sysstop() */

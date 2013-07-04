@@ -1,16 +1,9 @@
-/* snd_test.c : ipc_send test cases
-* 
-* name:		Jack Wu
-* student id:	17254079
-*/
-
 #include <xeroskernel.h>
 
 static Bool result[2];
 extern void sndtest_proc1(void);
 extern void sndtest_proc2(void);
 extern void sndtest_proc3(void);
-
 
 /*
 * sndtest_root

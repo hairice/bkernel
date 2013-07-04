@@ -1,9 +1,3 @@
-/* sig_test.c : signal test cases
-* 
-* name:		Jack Wu
-* student id:	17254079
-*/
-
 #include <xeroskernel.h>
 
 extern void sigtest_proc1(void);

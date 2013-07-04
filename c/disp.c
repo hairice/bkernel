@@ -1,18 +1,33 @@
-/* disp.c : dispatcher
-* 
-* name:         Jack Wu
-* student id:   17254079
-*/
+/* Dispatcher
+ *
+ * This is the dispatcher, where the next process is scheduled and delegates 
+ * any soft interrupts from processes
+ *
+ * Copyright (c) 2013 Jack Wu <jack.wu@live.ca>
+ *
+ * This file is part of bkernel.
+ *
+ * bkernel is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * bkernel is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include <xeroskernel.h>
 #include <stdarg.h>
 
-/* Your code goes here */
 extern pcb_t *stop_q;
 extern pcb_t proc_table[PROC_SZ];
 
 pcb_t *ready_q;
-
 
 /*
 * dispatch

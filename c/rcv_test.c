@@ -1,9 +1,3 @@
-/* snd_test.c : ipc_send test cases
-* 
-* name:		Jack Wu
-* student id:	17254079
-*/
-
 #include <xeroskernel.h>
 
 static Bool result[2];

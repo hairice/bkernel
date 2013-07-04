@@ -1,18 +1,26 @@
-/* user.c : User processes
-* 
-* name:		Jack Wu
-* student id:	17254079
-*/
+/* User Space
+ *
+ * This file is the user-space code.
+ *
+ * Copyright (c) 2013 Jack Wu <jack.wu@live.ca>
+ *
+ * This file is part of bkernel.
+ *
+ * bkernel is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * bkernel is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include <xeroskernel.h>
-
-/* Your code goes here */
-
-void proc1(void);
-void proc2(void);
-void proc3(void);
-void handler1(void *arg);
-void handler2(void *arg);
 
 unsigned char console[80];
 
@@ -27,18 +35,6 @@ void idleproc ()
 }
 
 
-void handler1(void *arg)
-{
-	sprintf(console, "called handler1");
-	sysputs(console);
-}
-
-void handler2(void *arg)
-{
-	sprintf(console, "called handler2");
-	sysputs(console);
-}
-
 /*
 * root
 *
@@ -46,252 +42,11 @@ void handler2(void *arg)
 */
 void root()
 {	
-	int rc,fd,n,child_pid[3];
-	unsigned int buffer[10];
-	unsigned int byte=10;
-	void *old_handler = NULL;
-
-	sprintf(console, "Welcome to xeros test program!");
-	sysputs(console);
-
-	fd = sysopen(1);
-	sprintf(console, "sysopen[%d]: %d", 1, fd);
-	sysputs(console);
-
-	/* read 10 characters from keyboard into user buffer */
-	sprintf(console, "please enter 10 characters: ");
-	sysputs(console);	
-	if(fd != -1)	
-		sysread(fd, buffer, byte);
-
-	sprintf(console, "sysread[%d]: %s", 1, buffer);
-	sysputs(console);
-	
-	/* attempt to open no-echo keyboard */
-	sprintf(console, "rc: %d", sysopen(0));
+	sprintf(console, "Welcome to bkernel!");
 	sysputs(console);
 
 
-	/* attempt to open echo keyboard */
-	sprintf(console, "rc: %d", sysopen(0));
-	sysputs(console);
-
-	/* close echo keyboard */
-	if(fd != -1)
-	{
-		fd = sysclose(fd);
-		sprintf(console, "sysclose[%d]: %d", 1, fd);
-		sysputs(console);
-	}
-
-	sprintf(console, " ");
-	sysputs(console);
-
-	/* open no-echo keyboard */
-	fd = sysopen(0);
-	sprintf(console, "sysopen[%d]: %d", 0, fd);
-	sysputs(console);
-
-
-	/* 1st read of 10 characters from keyboard into user buffer */
-	sprintf(console, "please enter 10 characters: (no echo)");
-	sysputs(console);	
-	if(fd != -1)	
-		sysread(fd, buffer, byte);
-
-	sprintf(console, "sysread[%d]: %s", 0, buffer);
-	sysputs(console);
-
-
-	/* 2nd read of 10 characters from keyboard into user buffer */
-	sprintf(console, "please enter 10 characters: (no echo)");
-	sysputs(console);	
-	if(fd != -1)	
-		sysread(fd, buffer, byte);
-
-	sprintf(console, "sysread[%d]: %s", 0, buffer);
-	sysputs(console);
-
-
-	/* 3rd read of 10 characters from keyboard into user buffer */
-	sprintf(console, "please enter 10 characters: (no echo)");
-	sysputs(console);	
-	if(fd != -1)	
-		sysread(fd, buffer, byte);
-
-	sprintf(console, "sysread[%d]: %s", 0, buffer);
-	sysputs(console);
-
-	/* continue reading until eof */
-	sprintf(console, "please enter less than 10 characters and press ctrl+d: (no echo)");
-	sysputs(console);	
-	if(fd != -1)	
-		sysread(fd, buffer, byte);
-	sprintf(console, "sysread[%d]: %s", 0, buffer);
-	sysputs(console);
-
-	/* close no-echo keyboard */
-	if(fd != -1)
-	{
-		fd = sysclose(fd);
-		sprintf(console, "sysclose[%d]: %d", 0, fd);
-		sysputs(console);
-	}
-
-	sprintf(console, " ");
-	sysputs(console);
-
-	/* open echo keyboard again */
-	fd = sysopen(1);
-	sprintf(console, "sysopen[%d]: %d", 1, fd);
-	sysputs(console);
-
-	/* install signal 18 */
-	syssighandler(18, handler1, &old_handler);
-
-	/* send pid to child proc1 */
-	child_pid[0] = syscreate(&proc1, PROC_STACK);
-	n=0;
-	sprintf(buffer, "%d", n);
-	syssend(child_pid[0], buffer, strlen(buffer));
-
-	/* read from echo keyboard, but no user key press is required */
-	if(fd != -1)	
-		rc = sysread(fd, buffer, byte);
-
-	if(rc == -128)
-	{
-		sprintf(console, "error sysread: %d", rc);
-		sysputs(console);
-	}		
-
-	/* send pid to child proc2 */
-	child_pid[1] = syscreate(&proc2, PROC_STACK);
-	n=0;
-	sprintf(buffer, "%d", n);
-	syssend(child_pid[1], buffer, strlen(buffer));
-
-	/* install signal 18 */
-	syssighandler(18, handler2, &old_handler);
-
-	/* read from echo keyboard, but no user key press is required */
-	if(fd != -1)	
-		rc = sysread(fd, buffer, byte);
-
-	if(rc == -128)
-	{
-		sprintf(console, "error sysread: %d", rc);
-		sysputs(console);
-	}		
-
-	/* install old_handler into signal 20 */
-	syssighandler(20, old_handler, &old_handler);
-
-	/* send pid to child proc3 */
-	child_pid[2] = syscreate(&proc3, PROC_STACK);
-	n=0;
-	sprintf(buffer, "%d", n);
-	syssend(child_pid[2], buffer, strlen(buffer));
-
-	/* read from echo keyboard, but no user key press is required */
-	if(fd != -1)	
-		rc = sysread(fd, buffer, byte);
-
-	if(rc == -128)
-	{
-		sprintf(console, "error sysread: %d", rc);
-		sysputs(console);
-	}		
-
-	sprintf(console, " ");
-	sysputs(console);
-
-	/* continue reading until eof */
-	sprintf(console, "please enter less than 10 characters and press ctrl+d: ");
-	sysputs(console);	
-	if(fd != -1)	
-		sysread(fd, buffer, byte);
-	sprintf(console, "sysread[%d]: %s", 1, buffer);
-	sysputs(console);
-
-	/* last sysread */
-	if(fd != -1)	
-		sysread(fd, buffer, byte);
-	sprintf(console, "sysread[%d]: %s", 1, buffer);
-	sysputs(console);
-
-	sprintf(console, " ");
-	sysputs(console);
-
-	sprintf(console, "test program exit!");
+	sprintf(console, "Goodbye!");
 	sysputs(console);
 }
-
-/*
-* proc1
-*
-* @desc:	executes the child proc1 process
-*/
-void proc1 ()
-{
-	unsigned int buffer[10];
-	unsigned int byte=10;
-	unsigned int dst=0;
-	unsigned int *ptr = &dst;
-
-	/* get root pid */
-	byte = sysrecv(ptr, buffer, byte);
-
-	syssleep(1000);
-
-	/* send signal 20 to root process */
-	syskill(dst, 20);
-
-	/* send signal 18 to root process */
-	syskill(dst, 18);
-}
-
-/*
-* proc2
-*
-* @desc:	executes the child proc1 process
-*/
-void proc2 ()
-{
-	unsigned int buffer[10];
-	unsigned int byte=10;
-	unsigned int dst=0;
-	unsigned int *ptr = &dst;
-
-	/* get root pid */
-	byte = sysrecv(ptr, buffer, byte);
-
-	syssleep(5000);
-
-	/* send signal 20 to root process */
-	syskill(dst, 18);
-}
-
-
-/*
-* proc2
-*
-* @desc:	executes the child proc1 process
-*/
-void proc3 ()
-{
-	unsigned int buffer[10];
-	unsigned int byte=10;
-	unsigned int dst=0;
-	unsigned int *ptr = &dst;
-
-	/* get root pid */
-	byte = sysrecv(ptr, buffer, byte);
-
-	syssleep(5000);
-
-	/* send signal 20 to root process */
-	syskill(dst, 20);
-}
-
 

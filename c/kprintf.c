@@ -1,34 +1,3 @@
-/* kprintf.c - kprintf, kputc, kbmputc */
-
-#include <i386.h>
-#include <xeroslib.h>
-#include <xeroskernel.h>
-#include <stdarg.h>
-
-static  void	kputc(int, unsigned char);
-
-
-/*------------------------------------------------------------------------
- *  kprintf  --  kernel printf: formatted, unbuffered output to CONSOLE
- *------------------------------------------------------------------------
- */
-int kprintf(char * fmt, ...)
-{
-  //	unsigned int	saveof;
-
-  va_list ap;
-  va_start(ap, fmt);
-  
-    //  _doprnt(fmt, &args, kputc, 0);
-
-    _doprnt(fmt, (void *) ap,  kputc, 0);
-  return 1;
-}
-
-
-
-
-
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -66,6 +35,31 @@ int kprintf(char * fmt, ...)
  *
  *	@(#)cga.c	5.3 (Berkeley) 4/28/91
  */
+
+#include <i386.h>
+#include <xeroslib.h>
+#include <xeroskernel.h>
+#include <stdarg.h>
+
+static  void	kputc(int, unsigned char);
+
+
+/*------------------------------------------------------------------------
+ *  kprintf  --  kernel printf: formatted, unbuffered output to CONSOLE
+ *------------------------------------------------------------------------
+ */
+int kprintf(char * fmt, ...)
+{
+  //	unsigned int	saveof;
+
+  va_list ap;
+  va_start(ap, fmt);
+  
+    //  _doprnt(fmt, &args, kputc, 0);
+
+    _doprnt(fmt, (void *) ap,  kputc, 0);
+  return 1;
+}
 
 #define	COL		80
 #define	ROW		25
