@@ -1,12 +1,26 @@
-.SUFFIXES: .o .c
-#
 # Makefile for PC Xeros to compile on a PC running Linux.
 #
+# Copyright (c) 2013 Jack Wu <jack.wu@live.ca>
+#
+# This file is part of bkernel.
+#
+# bkernel is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# bkernel is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Foobar. If not, see <http://www.gnu.org/licenses/>.
 
+.SUFFIXES: .o .c
 CCPREFIX = 
 
-
-# Things that need not be changed, usually
+# gcc compiler flags
 OS      = LINUX
 DEFS	= -DBSDURG  -DVERBOSE -DPRINTERR
 INCLUDE = -I../h
@@ -24,33 +38,28 @@ AWK     = awk
 
 
 # Use the following line if you want to boot Xeros from floppy diskette
-#
 BRELOC = 0x100000
 TEXTSPOT= 0x000000
 BOOTPLOC= 0x150000
 
 # Ignore these 
-#BRELOC = 0x150000
-#TEXTSPOT= 0x150000
+# BRELOC = 0x150000
+# TEXTSPOT= 0x150000
 
 # Linker line, do not modify this, please.
 LDSTR	= -e start -Ttext ${TEXTSPOT}
 
-
-#Do NOT modify these lines
+# bkernel objects
 SOBJ = startup.o intr.o 
-IOBJ = init.o i386.o evec.o kprintf.o
-UOBJ = mem.o disp.o ctsw.o syscall.o create.o user.o msg.o sleep.o signal.o di_calls.o kbd.o scanToASCII.o snd_test.o rcv_test.o time_test.o sig_test.o dev_test.o
+KOBJ = init.o i386.o evec.o kprintf.o mem.o disp.o ctsw.o syscall.o create.o msg.o sleep.o signal.o 
+DOBJ = di_calls.o kbd.o scanToASCII.o
+UOBJ = user.o 
 
-#Add your sources here
-MY_OBJ = 
-
-
-# Don't modiy any of this unless you are really sure
+# bkernel targets
 all: xeros 
 
-xeros: Makefile ${SOBJ} ${IOBJ} ${UOBJ} ${MY_OBJ} ${LIB}/libxc.a
-	$(LD) ${LDSTR} ${SOBJ} ${IOBJ} ${UOBJ} ${MY_OBJ} ${LIB}/libxc.a -o ${XEROS}
+xeros: Makefile ${SOBJ} ${KOBJ} ${DOBJ} ${UOBJ} ${LIB}/libxc.a
+	$(LD) ${LDSTR} ${SOBJ} ${KOBJ} ${DOBJ} ${UOBJ} ${LIB}/libxc.a -o ${XEROS}
 
 clean: 
 	rm -rf *.o *.bak *.a core errs ${XEROS} ${XEROS}.boot
@@ -68,7 +77,10 @@ intr.o: ../c/intr.S ../c/xint.s
 startup.o: ../c/startup.S Makefile
 	${CPP} ${SDEFS} -DBRELOC=${BRELOC} -DBOOTPLOC=${BOOTPLOC} -DLINUX_XINU ../c/startup.S | ${AS} -o startup.o 
 
-${IOBJ}: 
+${KOBJ}: 
+	${CC} ${CFLAGS} ../c/`basename $@ .o`.[c]
+
+${DOBJ}: 
 	${CC} ${CFLAGS} ../c/`basename $@ .o`.[c]
 
 ${UOBJ}: 
@@ -90,8 +102,3 @@ signal.o: ../c/signal.c ../h/xeroskernel.h
 di_calls.o: ../c/di_calls.c ../h/xeroskernel.h
 scanToASCII.o: ../c/scanToASCII.c ../h/scanToASCII.h
 kbd.o: ../c/kbd.c ../h/xeroskernel.h ../h/kbd.h
-snd_test.o: ../c/snd_test.c ../h/xeroskernel.h
-rcv_test.o: ../c/rcv_test.c ../h/xeroskernel.h
-time_test.o: ../c/time_test.c ../h/xeroskernel.h
-sig_test.o: ../c/sig_test.c ../h/xeroskernel.h
-dev_test.o: ../c/dev_test.c ../h/xeroskernel.h
