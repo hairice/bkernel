@@ -1,5 +1,12 @@
-compile/*.o
-boot/zBoot/
+# bochs output log
 bochsout.txt
+
+# compiled image and object files
+boot/zBoot/
 boot/zImage
+compile/xeros
+compile/*.o
+
+# bkernel test files
+c/*_test.c
 
